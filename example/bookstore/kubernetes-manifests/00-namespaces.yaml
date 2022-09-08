@@ -1,0 +1,27 @@
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: bookbuyer
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: bookthief
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: bookwarehouse
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: bookstore
+
+
+
+

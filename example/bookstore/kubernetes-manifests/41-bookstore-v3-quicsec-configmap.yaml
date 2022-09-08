@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: bookstore
+  name: bookstore-v3-quicsec-configmap
+  labels:
+    release: bookstore-v3-quicsec-cm
+data:
+  quicsec-config.json: |
+    {
+        "quicsec": {
+          "authz_rules": [
+            "spiffe://bookstore-v3.bookstore.svc.cluster.local/ns/bookbuyer/sa/bookbuyer"
+          ]
+        }
+    }

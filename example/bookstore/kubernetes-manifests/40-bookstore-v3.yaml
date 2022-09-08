@@ -1,0 +1,112 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: bookstore
+  namespace: bookstore
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bookstore-v3
+  namespace: bookstore
+  labels:
+    app: bookstore-v3
+spec:
+  ports:
+  - port: 14001
+    name: bookstore-port
+    protocol: UDP
+  selector:
+    app: bookstore-v3
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: bookstore
+  namespace: bookstore
+rules:
+- apiGroups: ["cert-manager.io"]
+  resources: ["certificaterequests"]
+  verbs: ["create"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: bookstore
+  namespace: bookstore
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: bookstore
+subjects:
+- kind: ServiceAccount
+  name: bookstore
+  namespace: bookstore
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bookstore-v3
+  namespace: bookstore
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bookstore-v3
+      version: v3
+  template:
+    metadata:
+      labels:
+        app: bookstore-v3
+        version: v3
+    spec:
+      serviceAccountName: bookstore
+      nodeSelector:
+        kubernetes.io/arch: amd64
+        kubernetes.io/os: linux
+      containers:
+        - image: ghcr.io/quicsec/bookstore:qsv0.10
+          imagePullPolicy: Always
+          name: bookstore-v3
+          ports:
+            - containerPort: 14001
+              name: web
+              protocol: UDP
+          command: ["/bookstore"]
+          args: ["--port", "14001"]
+          env:
+            - name: IDENTITY
+              value: bookstore-v3
+            - name: BOOKWAREHOUSE_NAMESPACE
+              value: bookwarehouse
+            - name: QUICSEC_CERT_FILE
+              value: "/var/run/secrets/spiffe.io/tls.crt"
+            - name: QUICSEC_KEY_FILE
+              value: "/var/run/secrets/spiffe.io/tls.key"
+            - name: QUICSEC_CA_FILE
+              value: "/var/run/secrets/spiffe.io/ca.crt"
+            - name: QUICSEC_AUTHZ_RULES_PATH
+              value: "/etc/quicsec/quicsec-config.json"
+            - name: QUICSEC_PROMETHEUS_BIND
+              value: "0.0.0.0:9393"
+            - name: QUICSEC_QLOG_DIR_PATH
+              value: ""
+            - name: QUICSEC_MTLS_ENABLE
+              value: "1"
+          volumeMounts:
+          - name: spiffe
+            mountPath: "/var/run/secrets/spiffe.io"
+          - name: quicsec-config
+            mountPath: "/etc/quicsec"
+      volumes:
+      - name: spiffe
+        csi:
+          driver: spiffe.csi.cert-manager.io
+          readOnly: true
+      - name: quicsec-config
+        configMap:
+          name: bookstore-v3-quicsec-configmap
+      imagePullSecrets:
+        - name: trvll-pull-secret
+---

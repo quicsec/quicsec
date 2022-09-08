@@ -1,0 +1,24 @@
+ARG GO_VERSION
+FROM --platform=$BUILDPLATFORM golang:$GO_VERSION AS builder
+ARG TARGETOS
+ARG TARGETARCH
+ARG BINARY
+
+# ENV username=foo
+# ENV access_token=ghp_foobarfoobarfoobarfoobarfoobarfoobar
+RUN git config --global url."https://${username}:${access_token}@github.com".insteadOf "https://github.com"
+
+RUN go env -w GOPRIVATE=github.com/quicsec/quicsec
+
+WORKDIR /osm
+COPY . .
+RUN --mount=type=cache,target=/root/.cache/go-build \
+    --mount=type=cache,target=/go/pkg \
+    CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -v ./demo/cmd/$BINARY
+
+FROM mcr.microsoft.com/windows/nanoserver:ltsc2022 AS final-windows
+#FROM gcr.io/distroless/base AS final-linux
+FROM ubuntu:20.04 AS final-linux
+FROM final-$TARGETOS
+ARG BINARY
+COPY --from=builder /osm/$BINARY* /
