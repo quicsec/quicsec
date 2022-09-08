@@ -1,0 +1,120 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: bookbuyer
+  namespace: bookbuyer
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bookbuyer
+  namespace: bookbuyer
+  labels:
+    app: bookbuyer
+spec:
+  ports:
+  - port: 14001
+    name: bookbuyer
+  selector:
+    app: bookbuyer
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: bookbuyer
+  namespace: bookbuyer
+rules:
+- apiGroups: ["cert-manager.io"]
+  resources: ["certificaterequests"]
+  verbs: ["create"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: bookbuyer
+  namespace: bookbuyer
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: bookbuyer
+subjects:
+- kind: ServiceAccount
+  name: bookbuyer
+  namespace: bookbuyer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bookbuyer
+  namespace: bookbuyer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bookbuyer
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: bookbuyer
+        version: v1
+    spec:
+      serviceAccountName: bookbuyer
+      nodeSelector:
+        kubernetes.io/arch: amd64
+        kubernetes.io/os: linux
+      containers:
+        - name: bookbuyer
+          image: ghcr.io/quicsec/bookbuyer:qsv0.10
+          imagePullPolicy: Always
+          ports:
+          - containerPort: 14001
+            name: web
+          command: ["/bookbuyer"]
+          env:
+            - name: BOOKSTORE_NAMESPACE
+              value: bookstore
+            - name: BOOKSTORE_SVC
+              value: bookstore-v3
+            - name: BOOKSTORE_SVC_PORT
+              value: "14001"
+            - name: WAREHOUSE_SVC
+              value: bookwarehouse
+            - name: CI_MAX_ITERATIONS_THRESHOLD
+              value: "60"
+            - name: ENABLE_EGRESS
+              value: "true"
+            - name: CI_CLIENT_CONCURRENT_CONNECTIONS
+              value: "1"
+            - name: CI_SLEEP_BETWEEN_REQUESTS_SECONDS
+              value: "5"
+            - name: QUICSEC_CERT_FILE
+              value: "/var/run/secrets/spiffe.io/tls.crt"
+            - name: QUICSEC_KEY_FILE
+              value: "/var/run/secrets/spiffe.io/tls.key"
+            - name: QUICSEC_CA_FILE
+              value: "/var/run/secrets/spiffe.io/ca.crt"
+            - name: QUICSEC_AUTHZ_RULES_PATH
+              value: "/etc/quicsec/quicsec-config.json"
+            - name: QUICSEC_INSEC_SKIP_VERIFY
+              value: "1"
+            - name: QUICSEC_PROMETHEUS_BIND
+              value: "0.0.0.0:9393"
+            - name: QUICSEC_QLOG_DIR_PATH
+              value: ""
+          volumeMounts:
+          - name: spiffe
+            mountPath: "/var/run/secrets/spiffe.io"
+          - name: quicsec-config
+            mountPath: "/etc/quicsec"
+      imagePullSecrets:
+      - name: trvll-pull-secret
+      volumes:
+      - name: quicsec-config
+        configMap:
+          name: bookbuyer-v3-quicsec-configmap
+      - name: spiffe
+        csi:
+          driver: spiffe.csi.cert-manager.io
+          readOnly: true

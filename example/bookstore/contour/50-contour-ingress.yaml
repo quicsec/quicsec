@@ -1,0 +1,40 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: bookthief
+  namespace: bookthief
+  labels:
+    app: bookthief
+spec:
+  rules:
+  - host: "bookthief.com"
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: bookthief
+            port:
+              number: 14001
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: bookbuyer
+  namespace: bookbuyer
+  labels:
+    app: bookbuyer
+spec:
+  rules:
+  - host: "bookbuyer.com"
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: bookbuyer
+            port:
+              number: 14001
+
