@@ -1,0 +1,118 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: bookthief
+  namespace: bookthief
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bookthief
+  namespace: bookthief
+  labels:
+    app: bookthief
+spec:
+  ports:
+  - port: 14001
+    name: bookthief
+  selector:
+    app: bookthief
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: bookthief
+  namespace: bookthief
+rules:
+- apiGroups: ["cert-manager.io"]
+  resources: ["certificaterequests"]
+  verbs: ["create"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: bookthief
+  namespace: bookthief
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: bookthief
+subjects:
+- kind: ServiceAccount
+  name: bookthief
+  namespace: bookthief
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bookthief
+  namespace: bookthief
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bookthief
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: bookthief
+        version: v1
+    spec:
+      serviceAccountName: bookthief
+      nodeSelector:
+        kubernetes.io/arch: amd64
+        kubernetes.io/os: linux
+      containers:
+        - name: bookthief
+          image: ghcr.io/quicsec/bookthief:qsv0.10
+          imagePullPolicy: Always
+          ports:
+          - containerPort: 14001
+            name: web
+          command: ["/bookthief"]
+          env:
+            - name: BOOKSTORE_NAMESPACE
+              value: bookstore
+            - name: BOOKSTORE_SVC
+              value: bookstore-v3
+            - name: BOOKSTORE_SVC_PORT
+              value: "14001"
+            - name: "BOOKTHIEF_EXPECTED_RESPONSE_CODE"
+              value: "0"
+            - name: "CI_MAX_ITERATIONS_THRESHOLD"
+              value: "60"
+            - name: ENABLE_EGRESS
+              value: "true"
+            - name: QUICSEC_CERT_FILE
+              value: "/var/run/secrets/spiffe.io/tls.crt"
+            - name: QUICSEC_KEY_FILE
+              value: "/var/run/secrets/spiffe.io/tls.key"
+            - name: QUICSEC_CA_FILE
+              value: "/var/run/secrets/spiffe.io/ca.crt"
+            - name: QUICSEC_AUTHZ_RULES_PATH
+              value: "/etc/quicsec/quicsec-config.json"
+            - name: QUICSEC_INSEC_SKIP_VERIFY
+              value: "1"
+            - name: QUICSEC_PROMETHEUS_BIND
+              value: "0.0.0.0:9393"
+            - name: QUICSEC_QLOG_DIR_PATH
+              value: ""
+          volumeMounts:
+          - name: spiffe
+            mountPath: "/var/run/secrets/spiffe.io"
+          - name: quicsec-config
+            mountPath: "/etc/quicsec"
+      imagePullSecrets:
+      - name: trvll-pull-secret
+      volumes:
+      - name: quicsec-config
+        configMap:
+          name: bookthief-v3-quicsec-configmap
+      - name: spiffe
+        csi:
+          driver: spiffe.csi.cert-manager.io
+          readOnly: true

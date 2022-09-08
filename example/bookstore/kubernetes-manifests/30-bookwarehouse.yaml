@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: bookwarehouse
+  namespace: bookwarehouse
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bookwarehouse
+  namespace: bookwarehouse
+  labels:
+    app: bookwarehouse
+spec:
+  ports:
+  - port: 14001
+    name: bookwarehouse-port
+  selector:
+    app: bookwarehouse
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bookwarehouse
+  namespace: bookwarehouse
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bookwarehouse
+  template:
+    metadata:
+      labels:
+        app: bookwarehouse
+        version: v1
+    spec:
+      serviceAccountName: bookwarehouse
+      nodeSelector:
+        kubernetes.io/arch: amd64
+        kubernetes.io/os: linux
+      containers:
+        # Main container with APP
+        - name: bookwarehouse
+          image: ghcr.io/quicsec/bookwarehouse:qsv0.10
+          imagePullPolicy: IfNotPresent
+          command: ["/bookwarehouse"]
+          env:
+            - name: IDENTITY
+              value: "bookwarehouse.kube"
+      imagePullSecrets:
+        - name: trvll-pull-secret
