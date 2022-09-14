@@ -16,5 +16,5 @@ Run the server app:
 
 ```
 cd quicsec/examples
-go run main.go -www ./ -bind localhost:4433 -v
+go run main.go -www ./www -bind localhost:4433 -v
 ```
