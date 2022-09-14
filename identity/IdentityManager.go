@@ -2,22 +2,20 @@ package identity
 
 import (
 	"crypto/tls"
+	"errors"
+
 	"github.com/quicsec/quicsec/utils"
 )
 
-func GetIndentityPaths() (string, string) {
-	certFile := utils.GetEnv("CERT_FILE", "/data/etc/leaf_cert.crt")
-	keyFile := utils.GetEnv("KEY_FILE", "/data/etc/leaf_cert.key")
+func GetIndentityCert() (*tls.Certificate, error) {
+	certFile := utils.GetEnv("CERT_FILE", "")
+	keyFile := utils.GetEnv("KEY_FILE", "")
 
-	return certFile, keyFile
-}
+	if len(certFile) == 0 || len(keyFile) == 0 {
+		return nil, errors.New("tls: must provide certificate on production mode, you can configure this via environment variables: `CERT_FILE` and `KEY_FILE`")
+	}
 
-func GetTLSConfig() *tls.Config {
-	cert, err := tls.LoadX509KeyPair(GetIndentityPaths())
-	if err != nil {
-		panic(err)
-	}
-	return &tls.Config{
-		Certificates: []tls.Certificate{cert},
-	}
+	cert, err := tls.LoadX509KeyPair(certFile, keyFile)
+
+	return &cert, err
 }

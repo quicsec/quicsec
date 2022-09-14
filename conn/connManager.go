@@ -24,14 +24,16 @@ func ListenAndServe(addr string, handler http.Handler) error {
 	// Load certs
 	var err error
 	enableQlog := true// configurable
-	certFile, keyFile := identity.GetIndentityPaths()
 
-	certs := make([]tls.Certificate, 1)
-	certs[0], err = tls.LoadX509KeyPair(certFile, keyFile)
+	idCert, err := identity.GetIndentityCert()
+
 	if err != nil {
 		return err
 	}
 
+	certs := make([]tls.Certificate, 1)
+	certs[0] = *idCert
+	
 	tlsConfig := &tls.Config{
 		Certificates: certs,
 		VerifyPeerCertificate: auth.QuicsecVerifyPeerCertificate,
