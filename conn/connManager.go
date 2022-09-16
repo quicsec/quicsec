@@ -2,6 +2,8 @@ package conn
 
 import (
 	"crypto/tls"
+	"crypto/x509"
+	"log"
 	"net"
 	"net/http"
 
@@ -32,10 +34,21 @@ func ListenAndServe(addr string, handler http.Handler) error {
 	certs := make([]tls.Certificate, 1)
 	certs[0] = *idCert
 
+	pool, err := x509.SystemCertPool()
+
+	if err != nil {
+        log.Fatal(err)
+    }
+
+	identity.AddRootCA(pool)
+
 	tlsConfig := &tls.Config{
 		Certificates:          certs,
 		VerifyPeerCertificate: auth.QuicsecVerifyPeerCertificate,
 		KeyLogWriter:          keyLog,
+		ClientAuth: tls.RequireAndVerifyClientCert,
+		InsecureSkipVerify: true,
+		ClientCAs: pool,
 	}
 
 	// Open the listeners

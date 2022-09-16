@@ -2,7 +2,10 @@ module github.com/quicsec/quicsec
 
 go 1.17
 
-require github.com/lucas-clemente/quic-go v0.29.1-0.20220909133949-17761bf35f0e
+require (
+	github.com/lucas-clemente/quic-go v0.29.1-0.20220909133949-17761bf35f0e
+	github.com/prometheus/client_golang v1.13.0
+)
 
 require (
 	github.com/beorn7/perks v1.0.1 // indirect
@@ -18,7 +21,6 @@ require (
 	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
 	github.com/nxadm/tail v1.4.8 // indirect
 	github.com/onsi/ginkgo v1.16.4 // indirect
-	github.com/prometheus/client_golang v1.13.0 // indirect
 	github.com/prometheus/client_model v0.2.0 // indirect
 	github.com/prometheus/common v0.37.0 // indirect
 	github.com/prometheus/procfs v0.8.0 // indirect
