@@ -1,9 +1,9 @@
 package quicsec
 
 import (
+	"fmt"
 	"net/http"
 	"sync"
-	"fmt"
 
 	"github.com/quicsec/quicsec/conn"
 )
@@ -11,7 +11,7 @@ import (
 type binds []string
 
 func ListenAndServe(bs []string, handler http.Handler) error {
-	
+
 	if len(bs) == 0 {
 		bs = binds{"localhost:8443"}
 	}

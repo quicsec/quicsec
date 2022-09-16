@@ -1,42 +1,41 @@
 package conn
 
 import (
-	"bufio"
-	"fmt"
-	"io"
-	"log"
-	"net/http"
-	"os"
-	"net"
 	"crypto/tls"
+	"net"
+	"net/http"
 
 	"github.com/lucas-clemente/quic-go"
 	"github.com/lucas-clemente/quic-go/http3"
-	"github.com/lucas-clemente/quic-go/logging"
-	"github.com/lucas-clemente/quic-go/qlog"
 
-	"github.com/quicsec/quicsec/utils"
 	"github.com/quicsec/quicsec/auth"
 	"github.com/quicsec/quicsec/identity"
+	"github.com/quicsec/quicsec/operations"
 )
 
 func ListenAndServe(addr string, handler http.Handler) error {
 	// Load certs
 	var err error
-	enableQlog := true// configurable
+
+	// init logger, preshared dump and tracers (metrics and qlog)
+	logger, keyLog, opsTracer := operations.OperationsInit()
+
+	logger.Debugf("Quicsec ListenAndServe initialization")
 
 	idCert, err := identity.GetIndentityCert()
 
 	if err != nil {
+		operations.ProbeError(operations.ConstIdentityMan, err)
 		return err
 	}
 
 	certs := make([]tls.Certificate, 1)
 	certs[0] = *idCert
-	
+
 	tlsConfig := &tls.Config{
-		Certificates: certs,
+		Certificates:          certs,
 		VerifyPeerCertificate: auth.QuicsecVerifyPeerCertificate,
+		KeyLogWriter:          keyLog,
 	}
 
 	// Open the listeners
@@ -67,24 +66,14 @@ func ListenAndServe(addr string, handler http.Handler) error {
 		handler = http.DefaultServeMux
 	}
 
-	quicConf := &quic.Config{}
-
-	if enableQlog {
-		quicConf.Tracer = qlog.NewTracer(func(_ logging.Perspective, connID []byte) io.WriteCloser {
-			filename := fmt.Sprintf("qlog/server_%x.qlog", connID)
-			f, err := os.Create(filename)
-			if err != nil {
-				log.Fatal(err)
-			}
-			log.Printf("Creating qlog file %s.\n", filename)
-			return utils.NewBufferedWriteCloser(bufio.NewWriter(f), f)
-		})
+	quicConf := &quic.Config{
+		Tracer: opsTracer,
 	}
 
 	// Start the servers
 	quicServer := &http3.Server{
-		TLSConfig: tlsConfig,
-		Handler: handler,
+		TLSConfig:  tlsConfig,
+		Handler:    handler,
 		QuicConfig: quicConf,
 	}
 
