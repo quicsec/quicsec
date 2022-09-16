@@ -19,6 +19,18 @@ cd quicsec/examples
 go run main.go -www ./www -bind localhost:4433 -v
 ```
 
+# AuthN by SpiffeID
+The spiffe ID from client must be authorized in the configuration to a request be accepted by the server.
+The authorized URI should be added to the *AuthIDs* constant in [IdentityManager.go](identity/IdentityManager.go#L17).
+
+ex:
+```
+AuthIDs = []string{"spiffe://example.com/foo/bar",
+					"spiffe://other.com/foo/bar",
+					"spiffe://another.com/foo/bar",
+					"spiffe://anotherdomain.foo.bar/foo/bar"}
+```
+It will be part of the ConfManager component in the near future.
 # Operations Manager configuration
 
 The configurations are availables in the file [OperationsManager.go](operations/OperationsManager.go#L16). The Operations Manager has four configurables subsystem:
