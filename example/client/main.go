@@ -11,11 +11,10 @@ import (
 	"github.com/quicsec/quicsec"
 )
 
-var
-(
+var (
 	headers = map[string]string{
-		"client-app":	"quicsec-client",
-		"user-agent":	"golang-quicsec-client/3",
+		"client-app": "quicsec-client",
+		"user-agent": "golang-quicsec-client/3",
 	}
 
 	interestingHeaders = []string{
@@ -37,7 +36,7 @@ func main() {
 	flag.Parse()
 
 	req, err := http.NewRequest("GET", *url, nil)
-	
+
 	if err != nil {
 		fmt.Printf("Error requesting %s: %s\n", *url, err)
 	}
@@ -73,15 +72,15 @@ func main() {
 		fmt.Printf("Status: \n\t\t%s\n", resp.Status)
 
 		fmt.Println("Response Body:")
-		
+
 		body := &bytes.Buffer{}
 
 		_, err = io.Copy(body, resp.Body)
-		
+
 		if err != nil {
 			fmt.Println(err)
 		}
 
 		fmt.Printf("\t\t%s", body.Bytes())
-	}		
+	}
 }

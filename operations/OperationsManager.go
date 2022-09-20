@@ -2,6 +2,7 @@ package operations
 
 import (
 	"io"
+	"sync"
 
 	"github.com/lucas-clemente/quic-go/logging"
 	"github.com/quicsec/quicsec/utils"
@@ -32,6 +33,7 @@ var (
 )
 
 var logger utils.Logger
+var onlyOnce sync.Once
 
 // logInit initialize the logger
 func logInit() utils.Logger {
@@ -62,35 +64,37 @@ func OperationsInit() (utils.Logger, io.Writer, logging.Tracer) {
 	var tracer logging.Tracer
 	var keyLog io.Writer
 
-	logger = logInit()
-	logger.Debugf("%s: initialization", ConstOperationsMan)
+	onlyOnce.Do(func() {
+		logger = logInit()
+		logger.Debugf("%s: initialization", ConstOperationsMan)
 
-	if sharedSecretEnable {
-		logger.Debugf("%s: pre shared key dump enabled", ConstOperationsMan)
-		keyLog = ssecretsInit(sharedSecretFile)
-	} else {
-		logger.Debugf("%s: pre shared key dump disabled", ConstOperationsMan)
-	}
+		if sharedSecretEnable {
+			logger.Debugf("%s: pre shared key dump enabled", ConstOperationsMan)
+			keyLog = ssecretsInit(sharedSecretFile)
+		} else {
+			logger.Debugf("%s: pre shared key dump disabled", ConstOperationsMan)
+		}
 
-	if qlogEnable {
-		logger.Debugf("%s: qlog enabled (dir:%s)", ConstOperationsMan, qlogFilePath)
-		qlogTracer := qlogInit(qlogFilePath)
-		tracers = append(tracers, qlogTracer)
-	} else {
-		logger.Debugf("%s: qlog disabled", ConstOperationsMan)
-	}
+		if qlogEnable {
+			logger.Debugf("%s: qlog enabled (dir:%s)", ConstOperationsMan, qlogFilePath)
+			qlogTracer := qlogInit(qlogFilePath)
+			tracers = append(tracers, qlogTracer)
+		} else {
+			logger.Debugf("%s: qlog disabled", ConstOperationsMan)
+		}
 
-	if metricsEnable {
-		logger.Debugf("%s: Trace metrics enabled", ConstOperationsMan)
-		metricsInit()
-		tracers = append(tracers, &MetricsTracer{})
-	} else {
-		logger.Debugf("%s: Trace metrics disabled", ConstOperationsMan)
-	}
+		if metricsEnable {
+			logger.Debugf("%s: Trace metrics enabled", ConstOperationsMan)
+			metricsInit()
+			tracers = append(tracers, &MetricsTracer{})
+		} else {
+			logger.Debugf("%s: Trace metrics disabled", ConstOperationsMan)
+		}
 
-	if len(tracers) > 0 {
-		tracer = logging.NewMultiplexedTracer(tracers...)
-	}
+		if len(tracers) > 0 {
+			tracer = logging.NewMultiplexedTracer(tracers...)
+		}
+	})
 
 	return logger, keyLog, tracer
 }
