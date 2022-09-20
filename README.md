@@ -5,18 +5,38 @@ This project uses [quic-go](https://github.com/lucas-clemente/quic-go) as QUIC i
 
 # QUICk start
 
+## Server
+
 Export environment variables:
 
 ```
 export CERT_FILE=/foo/bar/certs/server.pem
 export KEY_FILE=/foo/bar/certs/server.key
+export CA_FILE=/foo/bar/certs/ca.pem
 ```
 
 Run the server app:
 
 ```
-cd quicsec/examples
+cd quicsec/examples/server
 go run main.go -www ./www -bind localhost:4433 -v
+```
+
+## Client
+
+Export environment variables:
+
+```
+export CERT_FILE=/foo/bar/certs/client.pem
+export KEY_FILE=/foo/bar/certs/client.key
+export CA_FILE=/foo/bar/certs/ca.pem
+```
+
+Run the client app:
+
+```
+cd quicsec/examples/client
+go run main.go -url https://localhost:4433/index.html
 ```
 
 # AuthN by SpiffeID

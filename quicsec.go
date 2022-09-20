@@ -37,3 +37,7 @@ func ListenAndServe(bs []string, handler http.Handler) error {
 
 	return err
 }
+
+func Do (req *http.Request) (*http.Response, error) {
+	return conn.Do(req)
+}

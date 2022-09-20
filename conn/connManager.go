@@ -115,3 +115,55 @@ func ListenAndServe(addr string, handler http.Handler) error {
 		return err
 	}
 }
+
+func Do(req *http.Request) (*http.Response, error) {
+	var err error
+	var client *http.Client
+
+	// init logger, preshared dump and tracers (metrics and qlog)
+	logger, keyLog, opsTracer := operations.OperationsInit()
+
+	logger.Debugf("Quicsec client.Do initialization")
+
+	idCert, err := identity.GetIndentityCert()
+
+	if err != nil {
+		operations.ProbeError(operations.ConstIdentityMan, err)
+		return nil, err
+	}
+
+	certs := make([]tls.Certificate, 1)
+	certs[0] = *idCert
+
+	pool, err := x509.SystemCertPool()
+
+	if err != nil {
+        log.Fatal(err)
+    }
+
+	identity.AddRootCA(pool)
+
+	tlsConfig := &tls.Config{
+		Certificates:          certs,
+		RootCAs: 			   pool,
+		InsecureSkipVerify:    false,
+		KeyLogWriter:          keyLog,
+	}
+
+	quicConf := &quic.Config{
+		Tracer: opsTracer,
+	}
+
+	roudTripper := &http3.RoundTripper{
+		TLSClientConfig: tlsConfig,
+		QuicConfig: quicConf,
+	}
+
+	client = &http.Client{
+		Transport: roudTripper,
+	}
+
+	resp, err := client.Do(req)
+
+	return resp, err
+}
