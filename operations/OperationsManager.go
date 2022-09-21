@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/lucas-clemente/quic-go/logging"
+	"github.com/quicsec/quicsec/config"
 	"github.com/quicsec/quicsec/utils"
 )
 
@@ -20,34 +21,21 @@ var (
 	prometheusServerEnable = true // data avaiable by http server
 
 	// Log configs
-	logVerbose    = true // use to set log level
-	logTimeFormat = "[Quicsec]"
+	logVerbose        = true // use to set log level
+	logTimeFormat     = "[Quicsec]"
+	logOutputFileFlag = false
+	logOutputFilePath = "./output.log"
 
 	// qlog configs
-	qlogEnable   = true
-	qlogFilePath = "./qlog"
+	qlogEnable  = true
+	qlogDirPath = "./qlog"
 
 	// shared secrect for the connection
-	sharedSecretEnable = true
-	sharedSecretFile   = "pre-shared-key.txt"
+	sharedSecretEnable   = true
+	sharedSecretFilePath = "pre-shared-key.txt"
 )
 
-var logger utils.Logger
 var onlyOnce sync.Once
-
-// logInit initialize the logger
-func logInit() utils.Logger {
-	logger = utils.DefaultLogger
-
-	if logVerbose {
-		logger.SetLogLevel(utils.LogLevelDebug)
-	} else {
-		logger.SetLogLevel(utils.LogLevelInfo)
-	}
-	logger.SetLogTimeFormat(logTimeFormat)
-
-	return logger
-}
 
 func ProbeError(subsystem string, err error) {
 	logger.Debugf("%s: error %s", subsystem, err.Error())
@@ -63,6 +51,8 @@ func OperationsInit() (utils.Logger, io.Writer, logging.Tracer) {
 	var tracers []logging.Tracer
 	var tracer logging.Tracer
 	var keyLog io.Writer
+	conf := config.LoadConfig()
+	conf.ShowConfig()
 
 	onlyOnce.Do(func() {
 		logger = logInit()
@@ -70,14 +60,14 @@ func OperationsInit() (utils.Logger, io.Writer, logging.Tracer) {
 
 		if sharedSecretEnable {
 			logger.Debugf("%s: pre shared key dump enabled", ConstOperationsMan)
-			keyLog = ssecretsInit(sharedSecretFile)
+			keyLog = utils.CreateFileRotate(sharedSecretFilePath, 2)
 		} else {
 			logger.Debugf("%s: pre shared key dump disabled", ConstOperationsMan)
 		}
 
 		if qlogEnable {
-			logger.Debugf("%s: qlog enabled (dir:%s)", ConstOperationsMan, qlogFilePath)
-			qlogTracer := qlogInit(qlogFilePath)
+			logger.Debugf("%s: qlog enabled (dir:%s)", ConstOperationsMan, qlogDirPath)
+			qlogTracer := qlogInit(qlogDirPath)
 			tracers = append(tracers, qlogTracer)
 		} else {
 			logger.Debugf("%s: qlog disabled", ConstOperationsMan)

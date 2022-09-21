@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"strings"
@@ -28,6 +29,7 @@ const logEnv = "QUIC_GO_LOG_LEVEL"
 type Logger interface {
 	SetLogLevel(LogLevel)
 	SetLogTimeFormat(format string)
+	SetLogOutput(io.Writer)
 	WithPrefix(prefix string) Logger
 	Debug() bool
 
@@ -56,8 +58,14 @@ func (l *defaultLogger) SetLogLevel(level LogLevel) {
 // SetLogTimeFormat sets the format of the timestamp
 // an empty string disables the logging of timestamps
 func (l *defaultLogger) SetLogTimeFormat(format string) {
-	log.SetFlags(0) // disable timestamp logging done by the log package
+	//log.SetFlags(0) // disable timestamp logging done by the log package
 	l.timeFormat = format
+}
+
+// SetLogOutput sets the output file
+// by default, the sysout is used
+func (l *defaultLogger) SetLogOutput(f io.Writer) {
+	log.SetOutput(f)
 }
 
 // Debugf logs something

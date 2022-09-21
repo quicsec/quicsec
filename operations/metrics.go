@@ -104,13 +104,16 @@ var _ logging.ConnectionTracer = &metricsConnTracer{}
 
 func runMetrics() {
 	prometheusBind := utils.GetEnv("QUICSEC_PROMETHEUS_BIND", "0")
+	metrics_path := "/metrics"
 
 	if prometheusBind == "0" {
 		ProbeError(ConstOperationsMan, errors.New("need to configure QUICSEC_PROMETHEUS_BIND for prometheus/http"))
 		return
+	} else {
+		logger.Debugf("%s: Prometheus metrics avaiable at (http://%s)", ConstOperationsMan, prometheusBind+metrics_path)
 	}
 
-	http.Handle("/metrics", promhttp.Handler())
+	http.Handle(metrics_path, promhttp.Handler())
 	log.Fatal(http.ListenAndServe(prometheusBind, nil))
 }
 
