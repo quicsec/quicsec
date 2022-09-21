@@ -13,7 +13,7 @@ import (
 	"github.com/lucas-clemente/quic-go"
 	"github.com/lucas-clemente/quic-go/logging"
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/quicsec/quicsec/utils"
+	"github.com/quicsec/quicsec/config"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
@@ -102,16 +102,11 @@ type metricsConnTracer struct {
 
 var _ logging.ConnectionTracer = &metricsConnTracer{}
 
-func runMetrics() {
-	prometheusBind := utils.GetEnv("QUICSEC_PROMETHEUS_BIND", "0")
+func runPrometheusHTTP(address string) {
+	prometheusBind := address
 	metrics_path := "/metrics"
 
-	if prometheusBind == "0" {
-		ProbeError(ConstOperationsMan, errors.New("need to configure QUICSEC_PROMETHEUS_BIND for prometheus/http"))
-		return
-	} else {
-		logger.Debugf("%s: Prometheus metrics avaiable at (http://%s)", ConstOperationsMan, prometheusBind+metrics_path)
-	}
+	logger.Debugf("%s: Prometheus metrics avaiable at (http://%s)", ConstOperationsMan, prometheusBind+metrics_path)
 
 	http.Handle(metrics_path, promhttp.Handler())
 	log.Fatal(http.ListenAndServe(prometheusBind, nil))
@@ -210,8 +205,11 @@ func metricsInit() {
 	collector = newAggregatingCollector()
 	prometheus.MustRegister(collector)
 
-	if prometheusServerEnable {
-		go runMetrics()
+	pFlag, pAddr := config.GetPrometheusHTTPConfig()
+	if pFlag {
+		go runPrometheusHTTP(pAddr)
+	} else {
+		logger.Debugf("%s: In order to lookup the Prometheus metrics, configure QUICSEC_PROMETHEUS_BIND", ConstOperationsMan)
 	}
 }
 func (m *MetricsTracer) TracerForConnection(_ context.Context, p logging.Perspective, connID logging.ConnectionID) logging.ConnectionTracer {

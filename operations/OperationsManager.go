@@ -14,25 +14,8 @@ const (
 	ConstIdentityMan   = "Identity Manager"
 )
 
-// configuration - should be confiruable by the Config Manager */
 var (
-	// Metrics and Prometheus configs
-	metricsEnable          = true
-	prometheusServerEnable = true // data avaiable by http server
-
-	// Log configs
-	logVerbose        = true // use to set log level
-	logTimeFormat     = "[Quicsec]"
-	logOutputFileFlag = false
-	logOutputFilePath = "./output.log"
-
-	// qlog configs
-	qlogEnable  = true
-	qlogDirPath = "./qlog"
-
-	// shared secrect for the connection
-	sharedSecretEnable   = true
-	sharedSecretFilePath = "pre-shared-key.txt"
+	logTimeFormat = "[Quicsec]"
 )
 
 var onlyOnce sync.Once
@@ -52,28 +35,27 @@ func OperationsInit() (utils.Logger, io.Writer, logging.Tracer) {
 	var tracer logging.Tracer
 	var keyLog io.Writer
 	conf := config.LoadConfig()
-	conf.ShowConfig()
 
 	onlyOnce.Do(func() {
 		logger = logInit()
 		logger.Debugf("%s: initialization", ConstOperationsMan)
 
-		if sharedSecretEnable {
-			logger.Debugf("%s: pre shared key dump enabled", ConstOperationsMan)
-			keyLog = utils.CreateFileRotate(sharedSecretFilePath, 2)
+		if conf.SharedSecretEnableFlag {
+			logger.Debugf("%s: pre shared key dump enabled, dump at:%s", ConstOperationsMan, conf.SharedSecretFilePath)
+			keyLog = utils.CreateFileRotate(conf.SharedSecretFilePath, 2)
 		} else {
 			logger.Debugf("%s: pre shared key dump disabled", ConstOperationsMan)
 		}
 
-		if qlogEnable {
-			logger.Debugf("%s: qlog enabled (dir:%s)", ConstOperationsMan, qlogDirPath)
-			qlogTracer := qlogInit(qlogDirPath)
+		if conf.QlogEnableFlag {
+			logger.Debugf("%s: qlog enabled (dir:%s)", ConstOperationsMan, conf.QlogDirPath)
+			qlogTracer := qlogInit(conf.QlogDirPath)
 			tracers = append(tracers, qlogTracer)
 		} else {
 			logger.Debugf("%s: qlog disabled", ConstOperationsMan)
 		}
 
-		if metricsEnable {
+		if conf.MetricsEnableFlag {
 			logger.Debugf("%s: Trace metrics enabled", ConstOperationsMan)
 			metricsInit()
 			tracers = append(tracers, &MetricsTracer{})

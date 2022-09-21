@@ -31,6 +31,6 @@ func QuicsecVerifyPeerCertificate(rawCerts [][]byte, verifiedChains [][]*x509.Ce
 			return nil
 		}
 	}
-	
+
 	return fmt.Errorf("auth: No valid spiffe ID was found =(")
 }
