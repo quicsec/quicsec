@@ -106,7 +106,7 @@ func runPrometheusHTTP(address string) {
 	prometheusBind := address
 	metrics_path := "/metrics"
 
-	logger.Debugf("%s: Prometheus metrics avaiable at (http://%s)", ConstOperationsMan, prometheusBind+metrics_path)
+	logger.Debugf("%s: Prometheus metrics avaiable at (http://%s)", ConstOperationsManager, prometheusBind+metrics_path)
 
 	http.Handle(metrics_path, promhttp.Handler())
 	log.Fatal(http.ListenAndServe(prometheusBind, nil))
@@ -209,7 +209,7 @@ func metricsInit() {
 	if pFlag {
 		go runPrometheusHTTP(pAddr)
 	} else {
-		logger.Debugf("%s: In order to lookup the Prometheus metrics, configure QUICSEC_PROMETHEUS_BIND", ConstOperationsMan)
+		logger.Debugf("%s: In order to lookup the Prometheus metrics, configure QUICSEC_PROMETHEUS_BIND", ConstOperationsManager)
 	}
 }
 func (m *MetricsTracer) TracerForConnection(_ context.Context, p logging.Perspective, connID logging.ConnectionID) logging.ConnectionTracer {

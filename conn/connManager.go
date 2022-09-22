@@ -27,7 +27,7 @@ func ListenAndServe(addr string, handler http.Handler) error {
 	idCert, err := identity.GetIndentityCert()
 
 	if err != nil {
-		operations.ProbeError(operations.ConstIdentityMan, err)
+		operations.ProbeError(operations.ConstIdentityManager, err)
 		return err
 	}
 
@@ -37,8 +37,8 @@ func ListenAndServe(addr string, handler http.Handler) error {
 	pool, err := x509.SystemCertPool()
 
 	if err != nil {
-        log.Fatal(err)
-    }
+		log.Fatal(err)
+	}
 
 	identity.AddRootCA(pool)
 
@@ -46,9 +46,9 @@ func ListenAndServe(addr string, handler http.Handler) error {
 		Certificates:          certs,
 		VerifyPeerCertificate: auth.QuicsecVerifyPeerCertificate,
 		KeyLogWriter:          keyLog,
-		ClientAuth: tls.RequireAndVerifyClientCert,
-		InsecureSkipVerify: true,
-		ClientCAs: pool,
+		ClientAuth:            tls.RequireAndVerifyClientCert,
+		InsecureSkipVerify:    true,
+		ClientCAs:             pool,
 	}
 
 	// Open the listeners
@@ -128,7 +128,7 @@ func Do(req *http.Request) (*http.Response, error) {
 	idCert, err := identity.GetIndentityCert()
 
 	if err != nil {
-		operations.ProbeError(operations.ConstIdentityMan, err)
+		operations.ProbeError(operations.ConstIdentityManager, err)
 		return nil, err
 	}
 
@@ -138,16 +138,16 @@ func Do(req *http.Request) (*http.Response, error) {
 	pool, err := x509.SystemCertPool()
 
 	if err != nil {
-        log.Fatal(err)
-    }
+		log.Fatal(err)
+	}
 
 	identity.AddRootCA(pool)
 
 	tlsConfig := &tls.Config{
-		Certificates:          certs,
-		RootCAs: 			   pool,
-		InsecureSkipVerify:    false,
-		KeyLogWriter:          keyLog,
+		Certificates:       certs,
+		RootCAs:            pool,
+		InsecureSkipVerify: false,
+		KeyLogWriter:       keyLog,
 	}
 
 	quicConf := &quic.Config{
@@ -156,7 +156,7 @@ func Do(req *http.Request) (*http.Response, error) {
 
 	roudTripper := &http3.RoundTripper{
 		TLSClientConfig: tlsConfig,
-		QuicConfig: quicConf,
+		QuicConfig:      quicConf,
 	}
 
 	client = &http.Client{

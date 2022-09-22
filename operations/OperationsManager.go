@@ -10,18 +10,22 @@ import (
 )
 
 const (
-	ConstOperationsMan = "Operations Manager"
-	ConstIdentityMan   = "Identity Manager"
+	ConstOperationsManager = "Operations Manager"
+	ConstIdentityManager   = "Identity Manager"
+	ConstConfigManager     = "Configuration Manager"
 )
 
 var (
 	logTimeFormat = "[Quicsec]"
+	onlyOnce      sync.Once
 )
-
-var onlyOnce sync.Once
 
 func ProbeError(subsystem string, err error) {
 	logger.Debugf("%s: error %s", subsystem, err.Error())
+}
+
+func GetLogger() utils.Logger {
+	return logger
 }
 
 // OperationsInit initialize the Operations Manager
@@ -38,29 +42,29 @@ func OperationsInit() (utils.Logger, io.Writer, logging.Tracer) {
 
 	onlyOnce.Do(func() {
 		logger = logInit()
-		logger.Debugf("%s: initialization", ConstOperationsMan)
+		logger.Debugf("%s: initialization", ConstOperationsManager)
 
 		if conf.SharedSecretEnableFlag {
-			logger.Debugf("%s: pre shared key dump enabled, dump at:%s", ConstOperationsMan, conf.SharedSecretFilePath)
+			logger.Debugf("%s: pre shared key dump enabled, dump at:%s", ConstOperationsManager, conf.SharedSecretFilePath)
 			keyLog = utils.CreateFileRotate(conf.SharedSecretFilePath, 2)
 		} else {
-			logger.Debugf("%s: pre shared key dump disabled", ConstOperationsMan)
+			logger.Debugf("%s: pre shared key dump disabled", ConstOperationsManager)
 		}
 
 		if conf.QlogEnableFlag {
-			logger.Debugf("%s: qlog enabled (dir:%s)", ConstOperationsMan, conf.QlogDirPath)
+			logger.Debugf("%s: qlog enabled (dir:%s)", ConstOperationsManager, conf.QlogDirPath)
 			qlogTracer := qlogInit(conf.QlogDirPath)
 			tracers = append(tracers, qlogTracer)
 		} else {
-			logger.Debugf("%s: qlog disabled", ConstOperationsMan)
+			logger.Debugf("%s: qlog disabled", ConstOperationsManager)
 		}
 
 		if conf.MetricsEnableFlag {
-			logger.Debugf("%s: Trace metrics enabled", ConstOperationsMan)
+			logger.Debugf("%s: Trace metrics enabled", ConstOperationsManager)
 			metricsInit()
 			tracers = append(tracers, &MetricsTracer{})
 		} else {
-			logger.Debugf("%s: Trace metrics disabled", ConstOperationsMan)
+			logger.Debugf("%s: Trace metrics disabled", ConstOperationsManager)
 		}
 
 		if len(tracers) > 0 {

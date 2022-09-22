@@ -20,7 +20,7 @@ func qlogInit(qlogDir string) logging.Tracer {
 	return qlog.NewTracer(func(pers logging.Perspective, connID []byte) io.WriteCloser {
 		// create the directory, if it doesn't exist
 		if err := os.MkdirAll(qlogDir, 0777); err != nil {
-			logger.Debugf("%s: creating the qlog directory failed: %s", ConstOperationsMan, err)
+			logger.Debugf("%s: creating the qlog directory failed: %s", ConstOperationsManager, err)
 			return nil
 		}
 
@@ -36,7 +36,7 @@ func qlogInit(qlogDir string) logging.Tracer {
 		if err != nil {
 			log.Fatal(err)
 		}
-		logger.Debugf("%s: qlog file for connection \"%x\" created", ConstOperationsMan, connID)
+		logger.Debugf("%s: qlog file for connection \"%x\" created", ConstOperationsManager, connID)
 
 		return utils.NewBufferedWriteCloser(bufio.NewWriter(f), f)
 	})

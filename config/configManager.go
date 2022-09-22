@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"sync"
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
@@ -37,8 +38,11 @@ type Config struct {
 
 	// Authentication Manager
 	// authManager - authz rules
-	SpiffeID []string
+	AuthzRulesPath string `mapstructure:"AUTHZ_RULES_PATH"`
+	SpiffeID       []string
 }
+
+var onlyOnce sync.Once
 
 // default config values
 var globalConfig = Config{
@@ -97,85 +101,85 @@ func (c Config) ShowConfig() {
 	c.showAuthzRules()
 }
 
-func init() {
-	viper.AutomaticEnv()
-	viper.SetEnvPrefix("QUICSEC")
-	viper.AddConfigPath(".")
-	viper.SetConfigName("config.json")
-	viper.SetConfigType("json")
-	viper.AllowEmptyEnv(true)
+func LoadConfig() Config {
+	onlyOnce.Do(func() {
+		viper.AutomaticEnv()
+		viper.SetEnvPrefix("QUICSEC")
+		viper.AddConfigPath(".")
+		viper.SetConfigType("json")
+		viper.AllowEmptyEnv(true)
 
-	err := viper.ReadInConfig()
-	if err != nil {
-		fmt.Printf("cannot read cofiguration: %s\n", err)
-	}
+		// watch authz json file for changes
+		viper.WatchConfig()
+		viper.OnConfigChange(func(e fsnotify.Event) {
+			globalConfig.SpiffeID = viper.GetStringSlice("quicsec.authz_rules")
+		})
 
-	// watch authz json file for changes
-	viper.WatchConfig()
-	viper.OnConfigChange(func(e fsnotify.Event) {
+		//defaults
+		viper.SetDefault("CERT_FILE", "certs/cert.pem")
+		viper.SetDefault("KEY_FILE", "certs/cert.key")
+		viper.SetDefault("CA_FILE", "certs/ca.pem")
+		viper.SetDefault("METRICS_ENABLE", "1")
+		viper.SetDefault("PROMETHEUS_BIND", "") // example: "192.168.56.101:8080"
+		viper.SetDefault("LOG_VERBOSE", "1")
+		viper.SetDefault("LOG_FILE_PATH", "") // example: output.log
+		viper.SetDefault("QLOG_DIR_PATH", "./qlog/")
+		viper.SetDefault("SECRET_FILE_PATH", "") // example: pre-shared-secret.txt
+		viper.SetDefault("AUTHZ_RULES_PATH", "config.json")
+
+		err := viper.Unmarshal(&globalConfig)
+		if err != nil {
+			fmt.Printf("environment cant be loaded: %s\n", err)
+		}
+
+		if globalConfig.AuthzRulesPath != "" {
+			fmt.Printf("Read authz rules from: %s\n", globalConfig.AuthzRulesPath)
+			viper.SetConfigName(globalConfig.AuthzRulesPath)
+		}
+
+		err = viper.ReadInConfig()
+		if err != nil {
+			fmt.Printf("cannot read cofiguration: %s\n", err)
+		}
+
 		globalConfig.SpiffeID = viper.GetStringSlice("quicsec.authz_rules")
+
+		// pre shared secret
+		if globalConfig.SharedSecretFilePath != "" {
+			globalConfig.SharedSecretEnableFlag = true
+		}
+		// qlog dir
+		if globalConfig.QlogDirPath == "" {
+			globalConfig.QlogEnableFlag = false
+		}
+
+		// prometheus metrics
+		if globalConfig.MetricsEnable == 1 {
+			globalConfig.MetricsEnableFlag = true
+		} else {
+			globalConfig.MetricsEnableFlag = false
+		}
+
+		// prometheus metrics http
+		if globalConfig.PrometheusBind != "" {
+			globalConfig.PrometheusEnableFlag = true
+		}
+
+		// log into file
+		if globalConfig.LogOutputFile != "" {
+			globalConfig.LogOutputFileFlag = true
+		} else {
+			globalConfig.LogOutputFileFlag = false
+		}
+
+		// log verbose
+		if globalConfig.LogVerbose == 1 {
+			globalConfig.LogVerboseFlag = true
+		} else {
+			globalConfig.LogVerboseFlag = false
+		}
+
 	})
 
-	//defaults
-	viper.SetDefault("CERT_FILE", "certs/cert.pem")
-	viper.SetDefault("KEY_FILE", "certs/cert.key")
-	viper.SetDefault("CA_FILE", "certs/ca.pem")
-	viper.SetDefault("METRICS_ENABLE", "1")
-	viper.SetDefault("PROMETHEUS_BIND", "") // example: "192.168.56.101:8080"
-	viper.SetDefault("LOG_VERBOSE", "1")
-	viper.SetDefault("LOG_FILE_PATH", "") // example: output.log
-	viper.SetDefault("QLOG_DIR_PATH", "./qlog/")
-	viper.SetDefault("SECRET_FILE_PATH", "") // example: pre-shared-secret.txt
-
-	err = viper.Unmarshal(&globalConfig)
-	if err != nil {
-		fmt.Printf("environment cant be loaded: %s\n", err)
-	}
-
-	globalConfig.SpiffeID = viper.GetStringSlice("quicsec.authz_rules")
-
-	// pre shared secret
-	if globalConfig.SharedSecretFilePath != "" {
-		globalConfig.SharedSecretEnableFlag = true
-	}
-	// qlog dir
-	if globalConfig.QlogDirPath == "" {
-		globalConfig.QlogEnableFlag = false
-	}
-
-	// prometheus metrics
-	if globalConfig.MetricsEnable == 1 {
-		globalConfig.MetricsEnableFlag = true
-	} else {
-		globalConfig.MetricsEnableFlag = false
-	}
-
-	// prometheus metrics http
-	if globalConfig.PrometheusBind != "" {
-		globalConfig.PrometheusEnableFlag = true
-	}
-
-	// log file
-	if globalConfig.LogOutputFile != "" {
-		globalConfig.LogOutputFileFlag = true
-	}
-
-	// log into file
-	if globalConfig.LogOutputFile != "" {
-		globalConfig.LogOutputFileFlag = true
-	} else {
-		globalConfig.LogOutputFileFlag = false
-	}
-
-	// prometheus metrics
-	if globalConfig.LogVerbose == 1 {
-		globalConfig.LogVerboseFlag = true
-	} else {
-		globalConfig.LogVerboseFlag = false
-	}
-
-}
-
-func LoadConfig() Config {
 	return globalConfig
 }
