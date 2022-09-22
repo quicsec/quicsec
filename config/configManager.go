@@ -40,6 +40,10 @@ type Config struct {
 	// authManager - authz rules
 	AuthzRulesPath string `mapstructure:"AUTHZ_RULES_PATH"`
 	SpiffeID       []string
+
+	//mTLS
+	InsecureSkipVerifyFlag	bool 
+	InsecureSkipVerify 		uint64 `mapstructure:"INSEC_SKIP_VERIFY"`
 }
 
 var onlyOnce sync.Once
@@ -50,6 +54,7 @@ var globalConfig = Config{
 	QlogEnableFlag:         true,
 	SharedSecretEnableFlag: false,
 	LogOutputFileFlag:      false,
+	InsecureSkipVerifyFlag: false,
 }
 
 func GetPathCertFile() string {
@@ -80,6 +85,10 @@ func GetEnableVerbose() bool {
 	return globalConfig.LogVerboseFlag
 }
 
+func GetInsecureSkipVerify() bool {
+	return globalConfig.InsecureSkipVerifyFlag
+}
+
 func (c Config) showAuthzRules() {
 	for _, id := range c.SpiffeID {
 		fmt.Printf("URI:%s\n", id)
@@ -96,6 +105,7 @@ func (c Config) ShowConfig() {
 	fmt.Printf("LogOutputFile:%s\n", c.LogOutputFile)
 	fmt.Printf("MetricsEnable:%d\n", c.MetricsEnable)
 	fmt.Printf("qlogDirPath:%s\n", c.QlogDirPath)
+	fmt.Printf("InsecureSkipVerify:%d\n", c.InsecureSkipVerify)
 	fmt.Printf("sharedSecretFilePath:%s\n", c.SharedSecretFilePath)
 	fmt.Printf("Authz rules:\n")
 	c.showAuthzRules()
@@ -126,6 +136,7 @@ func LoadConfig() Config {
 		viper.SetDefault("QLOG_DIR_PATH", "./qlog/")
 		viper.SetDefault("SECRET_FILE_PATH", "") // example: pre-shared-secret.txt
 		viper.SetDefault("AUTHZ_RULES_PATH", "config.json")
+		viper.SetDefault("INSEC_SKIP_VERIFY", "0")
 
 		err := viper.Unmarshal(&globalConfig)
 		if err != nil {
@@ -177,6 +188,12 @@ func LoadConfig() Config {
 			globalConfig.LogVerboseFlag = true
 		} else {
 			globalConfig.LogVerboseFlag = false
+		}
+
+		if globalConfig.InsecureSkipVerify == 1 {
+			globalConfig.InsecureSkipVerifyFlag = true
+		} else {
+			globalConfig.InsecureSkipVerifyFlag = false
 		}
 
 	})

@@ -11,6 +11,7 @@ import (
 	"github.com/lucas-clemente/quic-go/http3"
 
 	"github.com/quicsec/quicsec/auth"
+	"github.com/quicsec/quicsec/config"
 	"github.com/quicsec/quicsec/identity"
 	"github.com/quicsec/quicsec/operations"
 )
@@ -146,7 +147,7 @@ func Do(req *http.Request) (*http.Response, error) {
 	tlsConfig := &tls.Config{
 		Certificates:       certs,
 		RootCAs:            pool,
-		InsecureSkipVerify: false,
+		InsecureSkipVerify: config.GetInsecureSkipVerify(),
 		KeyLogWriter:       keyLog,
 	}
 
