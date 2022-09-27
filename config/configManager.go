@@ -42,8 +42,15 @@ type Config struct {
 	SpiffeID       []string
 
 	//mTLS
+	//Skip CA certificate verification
 	InsecureSkipVerifyFlag	bool 
 	InsecureSkipVerify 		uint64 `mapstructure:"INSEC_SKIP_VERIFY"`
+	//[TODO] After implementing CABundle custom verify, this flag should
+	// configure the custom verification and not that one from cypto/tls
+
+	// mTLS enable
+	MTlsEnableFlag	bool
+	MTlsEnable 		uint64 `mapstructure:"MTLS_ENABLE"`
 }
 
 var onlyOnce sync.Once
@@ -55,6 +62,7 @@ var globalConfig = Config{
 	SharedSecretEnableFlag: false,
 	LogOutputFileFlag:      false,
 	InsecureSkipVerifyFlag: false,
+	MTlsEnableFlag: 		true,
 }
 
 func GetPathCertFile() string {
@@ -89,6 +97,10 @@ func GetInsecureSkipVerify() bool {
 	return globalConfig.InsecureSkipVerifyFlag
 }
 
+func GetMtlsEnable() bool {
+	return globalConfig.MTlsEnableFlag
+}
+
 func (c Config) showAuthzRules() {
 	for _, id := range c.SpiffeID {
 		fmt.Printf("URI:%s\n", id)
@@ -106,6 +118,7 @@ func (c Config) ShowConfig() {
 	fmt.Printf("MetricsEnable:%d\n", c.MetricsEnable)
 	fmt.Printf("qlogDirPath:%s\n", c.QlogDirPath)
 	fmt.Printf("InsecureSkipVerify:%d\n", c.InsecureSkipVerify)
+	fmt.Printf("MtlsEnable:%d\n", c.MTlsEnable)
 	fmt.Printf("sharedSecretFilePath:%s\n", c.SharedSecretFilePath)
 	fmt.Printf("Authz rules:\n")
 	c.showAuthzRules()
@@ -137,6 +150,7 @@ func LoadConfig() Config {
 		viper.SetDefault("SECRET_FILE_PATH", "") // example: pre-shared-secret.txt
 		viper.SetDefault("AUTHZ_RULES_PATH", "config.json")
 		viper.SetDefault("INSEC_SKIP_VERIFY", "0")
+		viper.SetDefault("MTLS_ENABLE", "1")
 
 		err := viper.Unmarshal(&globalConfig)
 		if err != nil {
@@ -190,10 +204,18 @@ func LoadConfig() Config {
 			globalConfig.LogVerboseFlag = false
 		}
 
+		// skip CA verify
 		if globalConfig.InsecureSkipVerify == 1 {
 			globalConfig.InsecureSkipVerifyFlag = true
 		} else {
 			globalConfig.InsecureSkipVerifyFlag = false
+		}
+
+		// mTLS
+		if globalConfig.MTlsEnable == 1 {
+			globalConfig.MTlsEnableFlag = true
+		} else {
+			globalConfig.MTlsEnableFlag = false
 		}
 
 	})
