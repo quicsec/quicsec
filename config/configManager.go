@@ -128,15 +128,9 @@ func LoadConfig() Config {
 	onlyOnce.Do(func() {
 		viper.AutomaticEnv()
 		viper.SetEnvPrefix("QUICSEC")
-		viper.AddConfigPath(".")
+		viper.AddConfigPath("/")
 		viper.SetConfigType("json")
 		viper.AllowEmptyEnv(true)
-
-		// watch authz json file for changes
-		viper.WatchConfig()
-		viper.OnConfigChange(func(e fsnotify.Event) {
-			globalConfig.SpiffeID = viper.GetStringSlice("quicsec.authz_rules")
-		})
 
 		//defaults
 		viper.SetDefault("CERT_FILE", "certs/cert.pem")
@@ -166,6 +160,13 @@ func LoadConfig() Config {
 		if err != nil {
 			fmt.Printf("cannot read cofiguration: %s\n", err)
 		}
+
+		// watch authz json file for changes
+		viper.WatchConfig()
+		viper.OnConfigChange(func(e fsnotify.Event) {
+			globalConfig.SpiffeID = viper.GetStringSlice("quicsec.authz_rules")
+		})
+
 
 		globalConfig.SpiffeID = viper.GetStringSlice("quicsec.authz_rules")
 
