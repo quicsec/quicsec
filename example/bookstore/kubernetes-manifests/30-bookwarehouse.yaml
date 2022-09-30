@@ -41,11 +41,11 @@ spec:
       containers:
         # Main container with APP
         - name: bookwarehouse
-          image: ghcr.io/quicsec/bookwarehouse:qsv0.10
+          image: ghcr.io/quicsec/bookwarehouse:qsv0.13
           imagePullPolicy: IfNotPresent
           command: ["/bookwarehouse"]
           env:
             - name: IDENTITY
               value: "bookwarehouse.kube"
       imagePullSecrets:
-        - name: trvll-pull-secret
+        - name: quicsec-pull-secret
