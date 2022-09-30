@@ -29,9 +29,9 @@ The Configuration Manager is respossible to [configure the quicsec](#general-con
 ## General configuration
 All general configurations are done via env vars. It's possible to configure:
 
-**1. Logger (info or verbose mode)**
+**1. Logger (info or debug mode)**
 ```
-QUICSEC_LOG_VERBOSE="0"                                 //default: 1
+QUICSEC_LOG_DEBUG="0"                                   //default: 1
 QUICSEC_LOG_FILE_PATH="/tmp/output.log"                 //default: ""
 ```
 If `QUICSEC_LOG_FILE_PATH` is set to "", the stdout is automatically used.
@@ -65,6 +65,14 @@ The certificates for both client/server are configurable via env vars:
 QUICSEC_CERT_FILE="/path/to/server.pem"                 //default: "certs/cert.pem"
 QUICSEC_KEY_FILE="/path/to/server.key"                  //default: "certs/cert.key"
 QUICSEC_CA_FILE="/path/to/ca.pem"                       //default: "certs/ca.pem"
+```
+
+**6. Flag to enable mTLS and skip the verify**
+
+If insecure skip verify is true, the client won't check the server certificate.
+```
+QUICSEC_MTLS_ENABLE="0"                                   //default: 1
+QUICSEC_INSEC_SKIP_VERIFY="1"                             //default: 0
 ```
 
 ## AuthZ rules

@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/fsnotify/fsnotify"
+	"github.com/quicsec/quicsec/operations/log"
 	"github.com/spf13/viper"
 )
 
@@ -24,8 +25,8 @@ type Config struct {
 
 	// opsManager - logs
 	LogOutputFileFlag bool
-	LogVerboseFlag    bool
-	LogVerbose        int64  `mapstructure:"LOG_VERBOSE"`
+	LogDebugFlag      bool
+	LogDebug          int64  `mapstructure:"LOG_DEBUG"`
 	LogOutputFile     string `mapstructure:"LOG_FILE_PATH"`
 
 	// opsManager - qlog
@@ -43,14 +44,14 @@ type Config struct {
 
 	//mTLS
 	//Skip CA certificate verification
-	InsecureSkipVerifyFlag	bool 
-	InsecureSkipVerify 		uint64 `mapstructure:"INSEC_SKIP_VERIFY"`
+	InsecureSkipVerifyFlag bool
+	InsecureSkipVerify     uint64 `mapstructure:"INSEC_SKIP_VERIFY"`
 	//[TODO] After implementing CABundle custom verify, this flag should
 	// configure the custom verification and not that one from cypto/tls
 
 	// mTLS enable
-	MTlsEnableFlag	bool
-	MTlsEnable 		uint64 `mapstructure:"MTLS_ENABLE"`
+	MTlsEnableFlag bool
+	MTlsEnable     uint64 `mapstructure:"MTLS_ENABLE"`
 }
 
 var onlyOnce sync.Once
@@ -62,7 +63,7 @@ var globalConfig = Config{
 	SharedSecretEnableFlag: false,
 	LogOutputFileFlag:      false,
 	InsecureSkipVerifyFlag: false,
-	MTlsEnableFlag: 		true,
+	MTlsEnableFlag:         true,
 }
 
 func GetPathCertFile() string {
@@ -89,8 +90,8 @@ func GetLogFileConfig() (bool, string) {
 	return globalConfig.LogOutputFileFlag, globalConfig.LogOutputFile
 }
 
-func GetEnableVerbose() bool {
-	return globalConfig.LogVerboseFlag
+func GetEnableDebug() bool {
+	return globalConfig.LogDebugFlag
 }
 
 func GetInsecureSkipVerify() bool {
@@ -113,7 +114,7 @@ func (c Config) ShowConfig() {
 	fmt.Printf("KeyFile:%s\n", c.KeyFile)
 	fmt.Printf("CAFile:%s\n", c.CAFile)
 	fmt.Printf("PrometheusBind:%s\n", c.PrometheusBind)
-	fmt.Printf("LogVerbose:%d\n", c.LogVerbose)
+	fmt.Printf("LogVerbose:%d\n", c.LogDebug)
 	fmt.Printf("LogOutputFile:%s\n", c.LogOutputFile)
 	fmt.Printf("MetricsEnable:%d\n", c.MetricsEnable)
 	fmt.Printf("qlogDirPath:%s\n", c.QlogDirPath)
@@ -138,7 +139,7 @@ func LoadConfig() Config {
 		viper.SetDefault("CA_FILE", "certs/ca.pem")
 		viper.SetDefault("METRICS_ENABLE", "1")
 		viper.SetDefault("PROMETHEUS_BIND", "") // example: "192.168.56.101:8080"
-		viper.SetDefault("LOG_VERBOSE", "1")
+		viper.SetDefault("LOG_DEBUG", "1")
 		viper.SetDefault("LOG_FILE_PATH", "") // example: output.log
 		viper.SetDefault("QLOG_DIR_PATH", "./qlog/")
 		viper.SetDefault("SECRET_FILE_PATH", "") // example: pre-shared-secret.txt
@@ -151,22 +152,39 @@ func LoadConfig() Config {
 			fmt.Printf("environment cant be loaded: %s\n", err)
 		}
 
+		// log debug
+		if globalConfig.LogDebug == 1 {
+			globalConfig.LogDebugFlag = true
+		} else {
+			globalConfig.LogDebugFlag = false
+		}
+
+		// log into file
+		if globalConfig.LogOutputFile != "" {
+			globalConfig.LogOutputFileFlag = true
+		} else {
+			globalConfig.LogOutputFileFlag = false
+		}
+
+		log.InitLoggerLogr(globalConfig.LogDebugFlag, globalConfig.LogOutputFile)
+		confLogger := log.LoggerLgr.WithName(log.ConstConfigManager)
+		confLogger.V(log.DebugLevel).Info("all environment variables loaded")
+
 		if globalConfig.AuthzRulesPath != "" {
-			fmt.Printf("Read authz rules from: %s\n", globalConfig.AuthzRulesPath)
+			confLogger.V(log.DebugLevel).Info("Read authz rules", "path", globalConfig.AuthzRulesPath)
 			viper.SetConfigName(globalConfig.AuthzRulesPath)
 		}
 
 		err = viper.ReadInConfig()
 		if err != nil {
-			fmt.Printf("cannot read cofiguration: %s\n", err)
+			confLogger.V(log.DebugLevel).Info("cannot read authz cofiguration. Skip this error.", "skip_error", err)
+		} else {
+			// watch authz json file for changes
+			viper.WatchConfig()
+			viper.OnConfigChange(func(e fsnotify.Event) {
+				globalConfig.SpiffeID = viper.GetStringSlice("quicsec.authz_rules")
+			})
 		}
-
-		// watch authz json file for changes
-		viper.WatchConfig()
-		viper.OnConfigChange(func(e fsnotify.Event) {
-			globalConfig.SpiffeID = viper.GetStringSlice("quicsec.authz_rules")
-		})
-
 
 		globalConfig.SpiffeID = viper.GetStringSlice("quicsec.authz_rules")
 
@@ -191,20 +209,6 @@ func LoadConfig() Config {
 			globalConfig.PrometheusEnableFlag = true
 		}
 
-		// log into file
-		if globalConfig.LogOutputFile != "" {
-			globalConfig.LogOutputFileFlag = true
-		} else {
-			globalConfig.LogOutputFileFlag = false
-		}
-
-		// log verbose
-		if globalConfig.LogVerbose == 1 {
-			globalConfig.LogVerboseFlag = true
-		} else {
-			globalConfig.LogVerboseFlag = false
-		}
-
 		// skip CA verify
 		if globalConfig.InsecureSkipVerify == 1 {
 			globalConfig.InsecureSkipVerifyFlag = true
@@ -218,6 +222,8 @@ func LoadConfig() Config {
 		} else {
 			globalConfig.MTlsEnableFlag = false
 		}
+
+		confLogger.V(log.DebugLevel).Info("all configuration loaded")
 
 	})
 

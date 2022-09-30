@@ -1,9 +1,8 @@
 {
 	"quicsec": {
 		"authz_rules": [
-			"spiffe://demo.http3.page/quicmesh/client15/",
-			"spiffe://demo.http3.page/quicmesh/client03/",
-			"spiffe://example.http3.page/quicmesh/client31/"
+			"spiffe://anotherdomain.foo.bar/foo/bar",
+			"spiffe://somedomain.foo.bar/foo/bar"
 		]
 	}
 }
