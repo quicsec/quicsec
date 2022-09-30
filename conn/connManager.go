@@ -36,9 +36,9 @@ func ListenAndServe(addr string, handler http.Handler) error {
 	certs[0] = *idCert
 
 	tlsConfig := &tls.Config{
-		Certificates:          certs,
-		KeyLogWriter:          keyLog,
-		InsecureSkipVerify:    true,
+		Certificates:       certs,
+		KeyLogWriter:       keyLog,
+		InsecureSkipVerify: true,
 	}
 
 	if config.GetMtlsEnable() {
@@ -51,7 +51,7 @@ func ListenAndServe(addr string, handler http.Handler) error {
 		identity.AddRootCA(pool)
 
 		tlsConfig.ClientCAs = pool
-		tlsConfig.VerifyPeerCertificate = auth.QuicsecVerifyPeerCertificate
+		tlsConfig.VerifyPeerCertificate = auth.WrapVerifyPeerCertificate(auth.QuicsecVerifyPeerCertificate, pool)
 		tlsConfig.ClientAuth = tls.RequireAndVerifyClientCert
 	} else {
 		tlsConfig.ClientAuth = tls.NoClientCert
@@ -158,7 +158,7 @@ func Do(req *http.Request) (*http.Response, error) {
 
 	if config.GetMtlsEnable() {
 		tlsConfig.InsecureSkipVerify = true
-		tlsConfig.VerifyPeerCertificate = auth.QuicsecVerifyPeerCertificate
+		tlsConfig.VerifyPeerCertificate = auth.WrapVerifyPeerCertificate(auth.QuicsecVerifyPeerCertificate, pool)
 	}
 
 	quicConf := &quic.Config{
