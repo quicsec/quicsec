@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"net"
 	"net/http"
 	"sync"
@@ -14,6 +13,7 @@ import (
 	"github.com/lucas-clemente/quic-go/logging"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/quicsec/quicsec/config"
+	"github.com/quicsec/quicsec/operations/log"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
@@ -105,11 +105,15 @@ var _ logging.ConnectionTracer = &metricsConnTracer{}
 func runPrometheusHTTP(address string) {
 	prometheusBind := address
 	metrics_path := "/metrics"
+	http_url := "http://" + prometheusBind + metrics_path
 
-	logger.Debugf("%s: Prometheus metrics avaiable at (http://%s)", ConstOperationsManager, prometheusBind+metrics_path)
+	log.LoggerLgr.WithName(log.ConstOperationsManager).V(log.DebugLevel).Info("Prometheus metrics avaiable", "url", http_url)
 
 	http.Handle(metrics_path, promhttp.Handler())
-	log.Fatal(http.ListenAndServe(prometheusBind, nil))
+	err := http.ListenAndServe(prometheusBind, nil)
+	if err != nil {
+		log.LoggerLgr.WithName(log.ConstOperationsManager).Error(err, "ListenAndServe failed for prometheus")
+	}
 }
 
 // metricsInit start tracing the metrics using prometheus
@@ -209,7 +213,7 @@ func metricsInit() {
 	if pFlag {
 		go runPrometheusHTTP(pAddr)
 	} else {
-		logger.Debugf("%s: In order to lookup the Prometheus metrics, configure QUICSEC_PROMETHEUS_BIND", ConstOperationsManager)
+		log.LoggerLgr.WithName(log.ConstOperationsManager).V(log.DebugLevel).Info("configure QUICSEC_PROMETHEUS_BIND to access Prometheus metrics")
 	}
 }
 func (m *MetricsTracer) TracerForConnection(_ context.Context, p logging.Perspective, connID logging.ConnectionID) logging.ConnectionTracer {

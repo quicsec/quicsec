@@ -14,7 +14,7 @@ openssl req -out server.csr -new -newkey rsa:2048 -nodes -keyout server.key \
 echo "Sign certificate:"
 openssl x509 -req -sha256 -days 3650 -in server.csr  -out server.pem \
   -CA ca.pem -CAkey ca.key -CAcreateserial \
-  -extfile <(printf "subjectAltName=DNS:localhost,URI:spiffe://somedomain.foo.bar/foo/bar,URI:foo.bar")
+  -extfile <(printf "subjectAltName=URI:spiffe://somedomain.foo.bar/foo/bar")
 
 # debug output the certificate
 openssl x509 -noout -text -in server.pem
@@ -26,7 +26,7 @@ openssl req -out client.csr -new -newkey rsa:2048 -nodes -keyout client.key \
 echo "Sign certificate:"
 openssl x509 -req -sha256 -days 3650 -in client.csr  -out client.pem \
   -CA ca.pem -CAkey ca.key -CAcreateserial \
-  -extfile <(printf "subjectAltName=DNS:localhost,URI:spiffe://anotherdomain.foo.bar/foo/bar,URI:foo.bar")
+  -extfile <(printf "subjectAltName=URI:spiffe://anotherdomain.foo.bar/foo/bar")
 
 # debug output the certificate
 openssl x509 -noout -text -in server.pem

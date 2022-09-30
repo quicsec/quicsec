@@ -6,27 +6,13 @@ import (
 
 	"github.com/lucas-clemente/quic-go/logging"
 	"github.com/quicsec/quicsec/config"
+	"github.com/quicsec/quicsec/operations/log"
 	"github.com/quicsec/quicsec/utils"
 )
 
-const (
-	ConstOperationsManager = "Operations Manager"
-	ConstIdentityManager   = "Identity Manager"
-	ConstConfigManager     = "Configuration Manager"
-)
-
 var (
-	logTimeFormat = "[Quicsec]"
-	onlyOnce      sync.Once
+	onlyOnce sync.Once
 )
-
-func ProbeError(subsystem string, err error) {
-	logger.Debugf("%s: error %s", subsystem, err.Error())
-}
-
-func GetLogger() utils.Logger {
-	return logger
-}
 
 // OperationsInit initialize the Operations Manager
 // The following tasks are:
@@ -34,37 +20,41 @@ func GetLogger() utils.Logger {
 // 2. Creates the shared secret file to dump the traffic secrets
 // 3. Creates the qlog
 // 4. Start tracing the metrics
-func OperationsInit() (utils.Logger, io.Writer, logging.Tracer) {
+func OperationsInit() (io.Writer, logging.Tracer) {
 	var tracers []logging.Tracer
 	var tracer logging.Tracer
 	var keyLog io.Writer
 	conf := config.LoadConfig()
 
 	onlyOnce.Do(func() {
-		logger = logInit()
-		logger.Debugf("%s: initialization", ConstOperationsManager)
+
+		opsLogger := log.LoggerLgr.WithName(log.ConstOperationsManager)
+
+		opsLogger.Info("module initialization")
 
 		if conf.SharedSecretEnableFlag {
-			logger.Debugf("%s: pre shared key dump enabled, dump at:%s", ConstOperationsManager, conf.SharedSecretFilePath)
+			opsLogger.V(log.DebugLevel).Info("pre shared key dump enabled", "path", conf.SharedSecretFilePath)
+
 			keyLog = utils.CreateFileRotate(conf.SharedSecretFilePath, 2)
 		} else {
-			logger.Debugf("%s: pre shared key dump disabled", ConstOperationsManager)
+			opsLogger.V(log.DebugLevel).Info("pre shared key dump disabled")
 		}
 
 		if conf.QlogEnableFlag {
-			logger.Debugf("%s: qlog enabled (dir:%s)", ConstOperationsManager, conf.QlogDirPath)
+			opsLogger.V(log.DebugLevel).Info("qlog enabled", "path", conf.QlogDirPath)
+
 			qlogTracer := qlogInit(conf.QlogDirPath)
 			tracers = append(tracers, qlogTracer)
 		} else {
-			logger.Debugf("%s: qlog disabled", ConstOperationsManager)
+			opsLogger.V(log.DebugLevel).Info("qlog disabled")
 		}
 
 		if conf.MetricsEnableFlag {
-			logger.Debugf("%s: Trace metrics enabled", ConstOperationsManager)
+			opsLogger.V(log.DebugLevel).Info("trace metrics enabled")
 			metricsInit()
 			tracers = append(tracers, &MetricsTracer{})
 		} else {
-			logger.Debugf("%s: Trace metrics disabled", ConstOperationsManager)
+			opsLogger.V(log.DebugLevel).Info("trace metrics disabled")
 		}
 
 		if len(tracers) > 0 {
@@ -72,5 +62,5 @@ func OperationsInit() (utils.Logger, io.Writer, logging.Tracer) {
 		}
 	})
 
-	return logger, keyLog, tracer
+	return keyLog, tracer
 }
