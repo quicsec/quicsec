@@ -4,12 +4,12 @@ import (
 	"bufio"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"time"
 
 	"github.com/lucas-clemente/quic-go/logging"
 	"github.com/lucas-clemente/quic-go/qlog"
+	"github.com/quicsec/quicsec/log"
 	"github.com/quicsec/quicsec/utils"
 )
 
@@ -19,8 +19,10 @@ import (
 func qlogInit(qlogDir string) logging.Tracer {
 	return qlog.NewTracer(func(pers logging.Perspective, connID []byte) io.WriteCloser {
 		// create the directory, if it doesn't exist
+		opsLogger := log.LoggerLgr.WithName(log.ConstOperationsManager)
+
 		if err := os.MkdirAll(qlogDir, 0777); err != nil {
-			logger.Debugf("%s: creating the qlog directory failed: %s", ConstOperationsManager, err)
+			opsLogger.Error(err, "creating the qlog directory failed")
 			return nil
 		}
 
@@ -34,9 +36,9 @@ func qlogInit(qlogDir string) logging.Tracer {
 
 		f, err := os.Create(filename)
 		if err != nil {
-			log.Fatal(err)
+			opsLogger.Error(err, "creating the qlog file failed")
 		}
-		logger.Debugf("%s: qlog file for connection \"%x\" created", ConstOperationsManager, connID)
+		opsLogger.V(log.DebugLevel).Info("qlog file created", "ODCID", fmt.Sprintf("%x", connID), "path", filename)
 
 		return utils.NewBufferedWriteCloser(bufio.NewWriter(f), f)
 	})

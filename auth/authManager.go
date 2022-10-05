@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/quicsec/quicsec/identity"
+	"github.com/quicsec/quicsec/log"
 	"github.com/quicsec/quicsec/spiffeid"
 )
 
@@ -129,6 +130,8 @@ func WrapVerifyPeerCertificate(wrapped func([][]byte, [][]*x509.Certificate) err
 }
 
 func QuicsecVerifyPeerCertificate(rawCerts [][]byte, verifiedChains [][]*x509.Certificate) error {
+	authLogger := log.LoggerLgr.WithName(log.ConstAuthManager)
+	authLogger.V(log.DebugLevel).Info("verify peer certificate function called")
 
 	if len(rawCerts) != 1 {
 		return fmt.Errorf("auth: required exactly one peer certificate")
@@ -137,18 +140,16 @@ func QuicsecVerifyPeerCertificate(rawCerts [][]byte, verifiedChains [][]*x509.Ce
 	cert, err := x509.ParseCertificate(rawCerts[0])
 
 	if err != nil {
-		return fmt.Errorf("auth: failed to parse peer certificate")
+		return fmt.Errorf("auth: failed to parse peer certificate: %v", err)
 	}
 
 	for _, uri := range cert.URIs {
-		fmt.Println("Validating URI: ", uri)
 		rv := identity.VerifyIdentity(uri.String())
-
 		if rv {
-			fmt.Println("Authorized!")
+			authLogger.Info("verify peer certificate", "authorized", "yes", "URI", uri.String())
 			return nil
 		} else {
-			fmt.Println("Not Authorized!")
+			authLogger.Info("verify peer certificate", "authorized", "no", "URI", uri.String())
 		}
 	}
 

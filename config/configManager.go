@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/fsnotify/fsnotify"
+	"github.com/quicsec/quicsec/log"
 	"github.com/spf13/viper"
 )
 
@@ -43,14 +44,14 @@ type Config struct {
 
 	//mTLS
 	//Skip CA certificate verification
-	InsecureSkipVerifyFlag	bool 
-	InsecureSkipVerify 		uint64 `mapstructure:"INSEC_SKIP_VERIFY"`
+	InsecureSkipVerifyFlag bool
+	InsecureSkipVerify     uint64 `mapstructure:"INSEC_SKIP_VERIFY"`
 	//[TODO] After implementing CABundle custom verify, this flag should
 	// configure the custom verification and not that one from cypto/tls
 
 	// mTLS enable
-	MTlsEnableFlag	bool
-	MTlsEnable 		uint64 `mapstructure:"MTLS_ENABLE"`
+	MTlsEnableFlag bool
+	MTlsEnable     uint64 `mapstructure:"MTLS_ENABLE"`
 }
 
 var onlyOnce sync.Once
@@ -62,7 +63,7 @@ var globalConfig = Config{
 	SharedSecretEnableFlag: false,
 	LogOutputFileFlag:      false,
 	InsecureSkipVerifyFlag: false,
-	MTlsEnableFlag: 		true,
+	MTlsEnableFlag:         true,
 }
 
 func GetPathCertFile() string {
@@ -151,22 +152,32 @@ func LoadConfig() Config {
 			fmt.Printf("environment cant be loaded: %s\n", err)
 		}
 
+		// log verbose
+		if globalConfig.LogVerbose == 1 {
+			globalConfig.LogVerboseFlag = true
+		} else {
+			globalConfig.LogVerboseFlag = false
+		}
+
+		log.InitLoggerLogr(globalConfig.LogVerboseFlag)
+		confLogger := log.LoggerLgr.WithName(log.ConstConfigManager)
+		confLogger.V(log.DebugLevel).Info("all environment variables loaded")
+
 		if globalConfig.AuthzRulesPath != "" {
-			fmt.Printf("Read authz rules from: %s\n", globalConfig.AuthzRulesPath)
+			confLogger.V(log.DebugLevel).Info("Read authz rules", "path", globalConfig.AuthzRulesPath)
 			viper.SetConfigName(globalConfig.AuthzRulesPath)
 		}
 
 		err = viper.ReadInConfig()
 		if err != nil {
-			fmt.Printf("cannot read cofiguration: %s\n", err)
+			confLogger.V(log.DebugLevel).Info("cannot read authz cofiguration. Skip this error.", "skip_error", err)
+		} else {
+			// watch authz json file for changes
+			viper.WatchConfig()
+			viper.OnConfigChange(func(e fsnotify.Event) {
+				globalConfig.SpiffeID = viper.GetStringSlice("quicsec.authz_rules")
+			})
 		}
-
-		// watch authz json file for changes
-		viper.WatchConfig()
-		viper.OnConfigChange(func(e fsnotify.Event) {
-			globalConfig.SpiffeID = viper.GetStringSlice("quicsec.authz_rules")
-		})
-
 
 		globalConfig.SpiffeID = viper.GetStringSlice("quicsec.authz_rules")
 
@@ -198,13 +209,6 @@ func LoadConfig() Config {
 			globalConfig.LogOutputFileFlag = false
 		}
 
-		// log verbose
-		if globalConfig.LogVerbose == 1 {
-			globalConfig.LogVerboseFlag = true
-		} else {
-			globalConfig.LogVerboseFlag = false
-		}
-
 		// skip CA verify
 		if globalConfig.InsecureSkipVerify == 1 {
 			globalConfig.InsecureSkipVerifyFlag = true
@@ -218,6 +222,8 @@ func LoadConfig() Config {
 		} else {
 			globalConfig.MTlsEnableFlag = false
 		}
+
+		confLogger.V(log.DebugLevel).Info("all configuration loaded")
 
 	})
 
