@@ -3,7 +3,6 @@ package conn
 import (
 	"crypto/tls"
 	"crypto/x509"
-	"log"
 	"net"
 	"net/http"
 
@@ -13,7 +12,8 @@ import (
 	"github.com/quicsec/quicsec/auth"
 	"github.com/quicsec/quicsec/config"
 	"github.com/quicsec/quicsec/identity"
-	"github.com/quicsec/quicsec/operations"
+	"github.com/quicsec/quicsec/log"
+	ops "github.com/quicsec/quicsec/operations"
 )
 
 func ListenAndServe(addr string, handler http.Handler) error {
@@ -21,16 +21,20 @@ func ListenAndServe(addr string, handler http.Handler) error {
 	var err error
 
 	// init logger, preshared dump and tracers (metrics and qlog)
-	logger, keyLog, opsTracer := operations.OperationsInit()
+	keyLog, opsTracer := ops.OperationsInit()
+	connLogger := log.LoggerLgr.WithName(log.ConstConnManager)
+	identityLogger := log.LoggerLgr.WithName(log.ConstIdentityManager)
 
-	logger.Debugf("Quicsec ListenAndServe initialization")
+	connLogger.Info("ListenAndServe() initialization")
 
 	idCert, err := identity.GetIndentityCert()
 
 	if err != nil {
-		operations.ProbeError(operations.ConstIdentityManager, err)
+		identityLogger.Error(err, "failed to fetch identity")
 		return err
 	}
+
+	identityLogger.V(log.DebugLevel).Info("identity successfully obtained for the server")
 
 	certs := make([]tls.Certificate, 1)
 	certs[0] = *idCert
@@ -42,38 +46,53 @@ func ListenAndServe(addr string, handler http.Handler) error {
 	}
 
 	if config.GetMtlsEnable() {
+		connLogger.V(log.DebugLevel).Info("mTLS enabled by configuration")
 		pool, err := x509.SystemCertPool()
 
 		if err != nil {
-			log.Fatal(err)
+			connLogger.Error(err, "failed to get system cert pool")
+			return err
 		}
 
-		identity.AddRootCA(pool)
+		err = identity.AddRootCA(pool)
+		if err != nil {
+			identityLogger.Error(err, "failed to add CA into the pool")
+			return err
+		}
+
+		identityLogger.V(log.DebugLevel).Info("CA successfully loaded into the pool")
 
 		tlsConfig.ClientCAs = pool
 		tlsConfig.VerifyPeerCertificate = auth.WrapVerifyPeerCertificate(auth.QuicsecVerifyPeerCertificate, pool)
 		tlsConfig.ClientAuth = tls.RequireAndVerifyClientCert
 	} else {
+		connLogger.V(log.DebugLevel).Info("mTLS disabled by configuration")
 		tlsConfig.ClientAuth = tls.NoClientCert
 	}
+
+	connLogger.V(log.DebugLevel).Info("try to bind address for tcp/udp", "addr", addr)
 
 	// Open the listeners
 	udpAddr, err := net.ResolveUDPAddr("udp", addr)
 	if err != nil {
+		connLogger.Error(err, "failed to resolve the address of UDP end point")
 		return err
 	}
 	udpConn, err := net.ListenUDP("udp", udpAddr)
 	if err != nil {
+		connLogger.Error(err, "failed to Listen at UDP address")
 		return err
 	}
 	defer udpConn.Close()
 
 	tcpAddr, err := net.ResolveTCPAddr("tcp", addr)
 	if err != nil {
+		connLogger.Error(err, "failed to resolve the address of TCP end point")
 		return err
 	}
 	tcpConn, err := net.ListenTCP("tcp", tcpAddr)
 	if err != nil {
+		connLogger.Error(err, "failed to Listen at TCP address")
 		return err
 	}
 	defer tcpConn.Close()
@@ -127,16 +146,21 @@ func Do(req *http.Request) (*http.Response, error) {
 	var client *http.Client
 
 	// init logger, preshared dump and tracers (metrics and qlog)
-	logger, keyLog, opsTracer := operations.OperationsInit()
+	keyLog, opsTracer := ops.OperationsInit()
 
-	logger.Debugf("Quicsec client.Do initialization")
+	connLogger := log.LoggerLgr.WithName(log.ConstConnManager)
+	identityLogger := log.LoggerLgr.WithName(log.ConstIdentityManager)
+
+	connLogger.Info("client.Do() initialization")
 
 	idCert, err := identity.GetIndentityCert()
 
 	if err != nil {
-		operations.ProbeError(operations.ConstIdentityManager, err)
+		identityLogger.Error(err, "failed to fetch identity for client")
 		return nil, err
 	}
+
+	identityLogger.V(log.DebugLevel).Info("identity successfully obtained for the client")
 
 	certs := make([]tls.Certificate, 1)
 	certs[0] = *idCert
@@ -144,21 +168,36 @@ func Do(req *http.Request) (*http.Response, error) {
 	pool, err := x509.SystemCertPool()
 
 	if err != nil {
-		log.Fatal(err)
+		connLogger.Error(err, "failed to get system cert pool")
+		return nil, err
 	}
 
-	identity.AddRootCA(pool)
+	err = identity.AddRootCA(pool)
+	if err != nil {
+		identityLogger.Error(err, "failed to add CA into the pool")
+		return nil, err
+	}
+
+	identityLogger.V(log.DebugLevel).Info("CA successfully loaded into the pool")
 
 	tlsConfig := &tls.Config{
 		Certificates:       certs,
-		RootCAs:            pool,
 		InsecureSkipVerify: config.GetInsecureSkipVerify(),
 		KeyLogWriter:       keyLog,
 	}
 
 	if config.GetMtlsEnable() {
+		connLogger.V(log.DebugLevel).Info("mTLS enabled by configuration")
 		tlsConfig.InsecureSkipVerify = true
 		tlsConfig.VerifyPeerCertificate = auth.WrapVerifyPeerCertificate(auth.QuicsecVerifyPeerCertificate, pool)
+	} else {
+
+		if !config.GetInsecureSkipVerify() {
+			// even if mTLS is disable, we need to validate if the
+			// cert from the server cert is valid agains the CA pool
+			tlsConfig.InsecureSkipVerify = true
+			tlsConfig.VerifyPeerCertificate = auth.WrapVerifyPeerCertificate(nil, pool)
+		}
 	}
 
 	quicConf := &quic.Config{
@@ -173,8 +212,12 @@ func Do(req *http.Request) (*http.Response, error) {
 	client = &http.Client{
 		Transport: roudTripper,
 	}
-
+	identityLogger.V(log.DebugLevel).Info("send client request")
 	resp, err := client.Do(req)
+
+	if err != nil {
+		connLogger.Error(err, "failed client.Do()")
+	}
 
 	return resp, err
 }
