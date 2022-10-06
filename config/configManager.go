@@ -5,7 +5,7 @@ import (
 	"sync"
 
 	"github.com/fsnotify/fsnotify"
-	"github.com/quicsec/quicsec/log"
+	"github.com/quicsec/quicsec/operations/log"
 	"github.com/spf13/viper"
 )
 

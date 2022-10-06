@@ -9,7 +9,7 @@ import (
 
 	"github.com/lucas-clemente/quic-go/logging"
 	"github.com/lucas-clemente/quic-go/qlog"
-	"github.com/quicsec/quicsec/log"
+	"github.com/quicsec/quicsec/operations/log"
 	"github.com/quicsec/quicsec/utils"
 )
 

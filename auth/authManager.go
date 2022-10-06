@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/quicsec/quicsec/identity"
-	"github.com/quicsec/quicsec/log"
+	"github.com/quicsec/quicsec/operations/log"
 	"github.com/quicsec/quicsec/spiffeid"
 )
 

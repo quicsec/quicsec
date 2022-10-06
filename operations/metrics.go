@@ -13,7 +13,7 @@ import (
 	"github.com/lucas-clemente/quic-go/logging"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/quicsec/quicsec/config"
-	"github.com/quicsec/quicsec/log"
+	"github.com/quicsec/quicsec/operations/log"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
