@@ -12,7 +12,8 @@ import (
 	"github.com/quicsec/quicsec/auth"
 	"github.com/quicsec/quicsec/config"
 	"github.com/quicsec/quicsec/identity"
-	"github.com/quicsec/quicsec/log"
+	"github.com/quicsec/quicsec/operations/log"
+
 	ops "github.com/quicsec/quicsec/operations"
 )
 
