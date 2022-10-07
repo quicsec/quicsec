@@ -18,6 +18,8 @@ import (
 
 	"github.com/openservicemesh/osm/demo/cmd/common"
 	"github.com/openservicemesh/osm/pkg/logger"
+
+	"github.com/quicsec/quicsec"
 )
 
 var (
@@ -167,7 +169,9 @@ func main() {
 
 	listenAddr := fmt.Sprintf(":%d", *port)
 
-	err = http.ListenAndServe(listenAddr, router)
+	bs := []string {listenAddr}
+
+	err = quicsec.ListenAndServe(bs, router)
 
 	log.Info().Msgf("Bookstore running on port %d", *port)
 
