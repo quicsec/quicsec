@@ -13,6 +13,8 @@ import (
 
 	"github.com/openservicemesh/osm/pkg/logger"
 	"github.com/openservicemesh/osm/pkg/utils"
+
+	"github.com/quicsec/quicsec"
 )
 
 // BookBuyerPurchases is all of the books that the bookbuyer has bought
@@ -243,7 +245,6 @@ func allUrlsSucceeded(urlSucceeded map[string]bool) bool {
 func fetch(url string) (responseCode int, identity string) {
 	var headersMap map[string]string
 	var err error
-	var client *http.Client
 
 	headersMap = urlHeadersMap[url]
 
@@ -260,7 +261,7 @@ func fetch(url string) (responseCode int, identity string) {
 	fmt.Printf("\nFetching %s\n", req.URL)
 	fmt.Printf("Request Headers: %v\n", req.Header)
 
-	resp, err := client.Do(req)
+	resp, err := quicsec.Do(req)
 
 	if err != nil {
 		fmt.Printf("Error fetching %s: %s\n", url, err)
