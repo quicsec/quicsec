@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/quicsec/quicsec/config"
+	"github.com/quicsec/quicsec/operations/log"
 )
 
 func VerifyIdentity(uri string) bool {
@@ -26,7 +27,7 @@ func VerifyIdentity(uri string) bool {
 	return false
 }
 
-func GetIndentityCert() (*tls.Certificate, error) {
+func GetCert() (*tls.Certificate, error) {
 	certFile := config.GetPathCertFile()
 	keyFile := config.GetPathKeyFile()
 
@@ -43,23 +44,31 @@ func GetIndentityCert() (*tls.Certificate, error) {
 	return &cert, err
 }
 
-// AddRootCA adds the root CA certificate to a cert pool
-func AddRootCA(certPool *x509.CertPool) error {
+func GetCertPool() (*x509.CertPool, error) {
+	idLogger := log.LoggerLgr.WithName(log.ConstConnManager)
+
+	pool, err := x509.SystemCertPool()
+
+	if err != nil {
+		idLogger.Error(err, "failed to get system cert pool")
+		return nil, err
+	}
+
 	caCertPath := config.GetPathCAFile()
 
 	if len(caCertPath) == 0 {
-		return errors.New("must provide CA certificate, you can configure this via environment variable: `CA_FILE`")
+		return nil, errors.New("must provide CA certificate, you can configure this via environment variable: `CA_FILE`")
 	}
 
 	caCertRaw, err := ioutil.ReadFile(caCertPath)
 
 	if err != nil {
-		return fmt.Errorf("failed to read CA certificate %v", err)
+		return nil, fmt.Errorf("failed to read CA certificate %v", err)
 	}
 
-	if ok := certPool.AppendCertsFromPEM(caCertRaw); !ok {
-		return errors.New("could not add root ceritificate to pool")
+	if ok := pool.AppendCertsFromPEM(caCertRaw); !ok {
+		return nil, errors.New("could not add root ceritificate to pool")
 	}
 
-	return err
+	return pool, nil
 }

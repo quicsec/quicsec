@@ -42,7 +42,14 @@ func IDFromCert(cert *x509.Certificate) (spiffeid.ID, error) {
 // Verify verifies an X509-SVID chain using the X.509 bundle source. It
 // returns the SPIFFE ID of the X509-SVID and one or more chains back to a root
 // in the bundle.
-func Verify(certs []*x509.Certificate, pool *x509.CertPool, opts ...VerifyOption) (spiffeid.ID, [][]*x509.Certificate, error) {
+func Verify(certs []*x509.Certificate, opts ...VerifyOption) (spiffeid.ID, [][]*x509.Certificate, error) {
+	authLogger := log.LoggerLgr.WithName(log.ConstConnManager)
+	myPool, err := identity.GetCertPool()
+
+	if err != nil {
+		authLogger.Error(err, "failed to get system cert pool")
+	}
+
 	config := &verifyConfig{}
 	for _, opt := range opts {
 		opt.apply(config)
@@ -51,7 +58,7 @@ func Verify(certs []*x509.Certificate, pool *x509.CertPool, opts ...VerifyOption
 	switch {
 	case len(certs) == 0:
 		return spiffeid.ID{}, nil, errors.New("empty certificates chain")
-	case pool == nil:
+	case myPool == nil:
 		return spiffeid.ID{}, nil, errors.New("pool is required")
 	}
 
@@ -71,7 +78,7 @@ func Verify(certs []*x509.Certificate, pool *x509.CertPool, opts ...VerifyOption
 	}
 
 	verifiedChains, err := leaf.Verify(x509.VerifyOptions{
-		Roots:         pool,
+		Roots:         myPool,
 		Intermediates: NewCertPool(certs[1:]),
 		KeyUsages:     []x509.ExtKeyUsage{x509.ExtKeyUsageAny},
 		CurrentTime:   config.now,
@@ -86,7 +93,7 @@ func Verify(certs []*x509.Certificate, pool *x509.CertPool, opts ...VerifyOption
 // ParseAndVerify parses and verifies an X509-SVID chain using the X.509
 // bundle source. It returns the SPIFFE ID of the X509-SVID and one or more
 // chains back to a root in the bundle.
-func ParseAndVerify(rawCerts [][]byte, pool *x509.CertPool) (spiffeid.ID, [][]*x509.Certificate, error) {
+func ParseAndVerify(rawCerts [][]byte) (spiffeid.ID, [][]*x509.Certificate, error) {
 	var certs []*x509.Certificate
 	for _, rawCert := range rawCerts {
 		cert, err := x509.ParseCertificate(rawCert)
@@ -96,15 +103,15 @@ func ParseAndVerify(rawCerts [][]byte, pool *x509.CertPool) (spiffeid.ID, [][]*x
 		}
 		certs = append(certs, cert)
 	}
-	return Verify(certs, pool)
+	return Verify(certs)
 }
 
 // VerifyPeerCertificate returns a VerifyPeerCertificate callback for
 // tls.Config. It uses the given bundle source and authorizer to verify and
 // authorize X509-SVIDs provided by peers during the TLS handshake.
-func VerifyPeerCertificate(pool *x509.CertPool) func([][]byte, [][]*x509.Certificate) error {
+func VerifyPeerCertificate() func([][]byte, [][]*x509.Certificate) error {
 	return func(raw [][]byte, _ [][]*x509.Certificate) error {
-		_, _, err := ParseAndVerify(raw, pool)
+		_, _, err := ParseAndVerify(raw)
 
 		return err
 	}
@@ -114,13 +121,13 @@ func VerifyPeerCertificate(pool *x509.CertPool) func([][]byte, [][]*x509.Certifi
 // SPIFFE authentication against the peer certificates using the given bundle and
 // authorizer. The wrapped callback will be passed the verified chains.
 // Note: TLS clients must set `InsecureSkipVerify` when doing SPIFFE authentication to disable hostname verification.
-func WrapVerifyPeerCertificate(wrapped func([][]byte, [][]*x509.Certificate) error, pool *x509.CertPool) func([][]byte, [][]*x509.Certificate) error {
+func WrapVerifyPeerCertificate(wrapped func([][]byte, [][]*x509.Certificate) error) func([][]byte, [][]*x509.Certificate) error {
 	if wrapped == nil {
-		return VerifyPeerCertificate(pool)
+		return VerifyPeerCertificate()
 	}
 
 	return func(raw [][]byte, _ [][]*x509.Certificate) error {
-		_, certs, err := ParseAndVerify(raw, pool)
+		_, certs, err := ParseAndVerify(raw)
 		if err != nil {
 			return err
 		}
