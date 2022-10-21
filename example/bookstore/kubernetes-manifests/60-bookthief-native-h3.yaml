@@ -68,7 +68,7 @@ spec:
         kubernetes.io/os: linux
       containers:
         - name: bookthief
-          image: ghcr.io/quicsec/bookthief:qsv0.13
+          image: ghcr.io/quicsec/bookthief:qsv0.15
           imagePullPolicy: Always
           ports:
           - containerPort: 14001
