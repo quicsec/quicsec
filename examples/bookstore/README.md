@@ -43,3 +43,21 @@ To access the bookbuyer and bookthief from your browser, create /etc/hosts entri
 dig +noall +answer +short $(kubectl get services --namespace projectcontour envoy \
   --output jsonpath='{.status.loadBalancer.ingress[0].hostname}')
 ```
+
+##  E. Demo Scenarios
+
+### 1. Automatic Migration to HTTP/3
+
+By virtue of building the bookstore app with QuicSec (quicsec.listenAndServe instead of http.listenAndServe), the application has been already transitioned to http/3 from http/1.
+
+
+### 2. Connection Authentication and Authorization.
+
+To enable mutual TLS (i.e., client authentication) instead of one-way TLS, update QUICSEC_MTLS_ENABLE to 1 in kubernetes-manifests/bookstore-manifests/41-bookstore-v3.yaml and reapply.
+
+To change the permitted client identities allowed to access the bookstore service, update the spiffe uri's or dns names that are required in the presented client certificates.
+
+
+### 3. Observability
+
+Details will be provided soon.
