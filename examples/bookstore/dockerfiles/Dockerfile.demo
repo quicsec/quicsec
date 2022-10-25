@@ -3,10 +3,10 @@ FROM --platform=$BUILDPLATFORM golang:$GO_VERSION AS builder
 ARG TARGETOS
 ARG TARGETARCH
 ARG BINARY
+ARG GH_USERNAME
+ARG GH_ACCESSTOKEN
 
-# ENV username=foo
-# ENV access_token=ghp_foobarfoobarfoobarfoobarfoobarfoobar
-RUN git config --global url."https://${username}:${access_token}@github.com".insteadOf "https://github.com"
+RUN git config --global url."https://${GH_USERNAME}:${GH_ACCESSTOKEN}@github.com".insteadOf "https://github.com"
 
 RUN go env -w GOPRIVATE=github.com/quicsec/quicsec
 
