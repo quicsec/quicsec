@@ -93,7 +93,7 @@ func ListenAndServe(addr string, handler http.Handler) error {
 	// Start the servers
 	quicServer := &http3.Server{
 		TLSConfig:  tlsConfig,
-		Handler:    handler,
+		Handler:    log.WrapHandlerWithLogging(handler),
 		QuicConfig: quicConf,
 	}
 
