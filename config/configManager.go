@@ -24,10 +24,12 @@ type Config struct {
 	MetricsEnable        int64  `mapstructure:"METRICS_ENABLE"`
 
 	// opsManager - logs
-	LogOutputFileFlag bool
-	LogDebugFlag      bool
-	LogDebug          int64  `mapstructure:"LOG_DEBUG"`
-	LogOutputFile     string `mapstructure:"LOG_FILE_PATH"`
+	LogOutputFileFlag       bool
+	LogAccessOutputFileFlag bool
+	LogDebugFlag            bool
+	LogDebug                int64  `mapstructure:"LOG_DEBUG"`
+	LogOutputFile           string `mapstructure:"LOG_FILE_PATH"`
+	LogAccessOutputFile     string `mapstructure:"LOG_ACCESS_PATH"`
 
 	// opsManager - qlog
 	QlogEnableFlag bool
@@ -58,12 +60,13 @@ var onlyOnce sync.Once
 
 // default config values
 var globalConfig = Config{
-	PrometheusEnableFlag:   false,
-	QlogEnableFlag:         true,
-	SharedSecretEnableFlag: false,
-	LogOutputFileFlag:      false,
-	InsecureSkipVerifyFlag: false,
-	MTlsEnableFlag:         true,
+	PrometheusEnableFlag:    false,
+	QlogEnableFlag:          true,
+	SharedSecretEnableFlag:  false,
+	LogOutputFileFlag:       false,
+	LogAccessOutputFileFlag: false,
+	InsecureSkipVerifyFlag:  false,
+	MTlsEnableFlag:          true,
 }
 
 func GetPathCertFile() string {
@@ -116,6 +119,7 @@ func (c Config) ShowConfig() {
 	fmt.Printf("PrometheusBind:%s\n", c.PrometheusBind)
 	fmt.Printf("LogVerbose:%d\n", c.LogDebug)
 	fmt.Printf("LogOutputFile:%s\n", c.LogOutputFile)
+	fmt.Printf("LogAccessOutputFile:%s\n", c.LogAccessOutputFile)
 	fmt.Printf("MetricsEnable:%d\n", c.MetricsEnable)
 	fmt.Printf("qlogDirPath:%s\n", c.QlogDirPath)
 	fmt.Printf("InsecureSkipVerify:%d\n", c.InsecureSkipVerify)
@@ -140,7 +144,8 @@ func LoadConfig() Config {
 		viper.SetDefault("METRICS_ENABLE", "1")
 		viper.SetDefault("PROMETHEUS_BIND", "") // example: "192.168.56.101:8080"
 		viper.SetDefault("LOG_DEBUG", "1")
-		viper.SetDefault("LOG_FILE_PATH", "") // example: output.log
+		viper.SetDefault("LOG_FILE_PATH", "")   // example: output.log
+		viper.SetDefault("LOG_ACCESS_PATH", "") // example: /var/log/access.log
 		viper.SetDefault("QLOG_DIR_PATH", "./qlog/")
 		viper.SetDefault("SECRET_FILE_PATH", "") // example: pre-shared-secret.txt
 		viper.SetDefault("AUTHZ_RULES_PATH", "config.json")
@@ -207,6 +212,13 @@ func LoadConfig() Config {
 		// prometheus metrics http
 		if globalConfig.PrometheusBind != "" {
 			globalConfig.PrometheusEnableFlag = true
+		}
+
+		// log http requests into file
+		if globalConfig.LogAccessOutputFile != "" {
+			globalConfig.LogAccessOutputFileFlag = true
+		} else {
+			globalConfig.LogAccessOutputFileFlag = false
 		}
 
 		// skip CA verify
