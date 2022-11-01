@@ -172,6 +172,7 @@ func LoadConfig() Config {
 		}
 
 		log.InitLoggerLogr(globalConfig.LogDebugFlag, globalConfig.LogOutputFile)
+		log.InitLoggerRequest(globalConfig.LogDebugFlag, globalConfig.LogAccessOutputFile)
 		confLogger := log.LoggerLgr.WithName(log.ConstConfigManager)
 		confLogger.V(log.DebugLevel).Info("all environment variables loaded")
 
