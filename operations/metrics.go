@@ -28,6 +28,7 @@ var (
 	droppedPackets   *prometheus.CounterVec
 	lostPackets      *prometheus.CounterVec
 	connErrors       *prometheus.CounterVec
+	connErrorsGlobal *prometheus.CounterVec
 	connDuration     *prometheus.CounterVec
 )
 
@@ -182,12 +183,20 @@ func metricsInit() {
 	prometheus.MustRegister(droppedPackets)
 	connErrors = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
-			Name: "quic_connection_errors_total",
-			Help: "QUIC connection errors",
+			Name: "quic_connection_errors_per_conn",
+			Help: "QUIC connection errors per connection",
 		},
 		[]string{odcid, "side", "error_code", "reason"},
 	)
 	prometheus.MustRegister(connErrors)
+	connErrorsGlobal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "quic_connection_errors_global",
+			Help: "QUIC connection errors global",
+		},
+		[]string{"side", "error_code", "reason"},
+	)
+	prometheus.MustRegister(connErrorsGlobal)
 	lostPackets = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "quic_packets_lost_total",
@@ -427,4 +436,5 @@ func (m *metricsConnTracer) ClosedConnection(e error) {
 	}
 
 	connErrors.WithLabelValues(m.connID.String(), side, desc, message).Inc()
+	connErrorsGlobal.WithLabelValues(side, desc, message).Inc()
 }
