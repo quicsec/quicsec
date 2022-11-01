@@ -51,7 +51,7 @@ type LoggingRoundTripper struct {
 	Base http.RoundTripper
 }
 
-func (lrt LoggingRoundTripper) RoundTrip(r *http.Request) (res *http.Response, e error) {
+func (lrt LoggingRoundTripper) RoundTrip(r *http.Request) (res *http.Response, err error) {
 	start := time.Now()
 	logger := LoggerRequest.Named("quicsec.log.access.http.client")
 	defer logger.Sync()
@@ -63,25 +63,33 @@ func (lrt LoggingRoundTripper) RoundTrip(r *http.Request) (res *http.Response, e
 	log := accLog.Info
 
 	// Send the request, get the response
-	res, _ = lrt.Base.RoundTrip(r)
-
-	size := 0
-	if res.ContentLength > 0 {
-		size = int(res.ContentLength)
-	}
+	res, err = lrt.Base.RoundTrip(r)
 
 	duration := time.Since(start)
-	log("handled request",
-		zap.Duration("duration", duration),
-		zap.Int("size", size),
-		zap.Int("status", res.StatusCode),
-		zap.String("resp_proto", res.Proto),
-		zap.Object("resp_headers", LoggableHTTPHeader{
-			Header: res.Header,
-		}),
-	)
 
-	return
+	if err != nil {
+		log("handled request",
+			zap.Duration("duration", duration),
+			zap.String("error", err.Error()),
+		)
+	} else {
+		size := 0
+		if res.ContentLength > 0 {
+			size = int(res.ContentLength)
+		}
+
+		log("handled request",
+			zap.Duration("duration", duration),
+			zap.Int("size", size),
+			zap.Int("status", res.StatusCode),
+			zap.String("resp_proto", res.Proto),
+			zap.Object("resp_headers", LoggableHTTPHeader{
+				Header: res.Header,
+			}),
+		)
+	}
+
+	return res, err
 }
 
 // MarshalLogObject satisfies the zapcore.ObjectMarshaler interface.
