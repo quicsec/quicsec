@@ -36,10 +36,74 @@ func NewLoggingResponseWriter(w http.ResponseWriter) *loggingResponseWriter {
 	return &loggingResponseWriter{w, http.StatusOK, 0}
 }
 
+type LoggableHTTPRequestClient struct {
+	*http.Request
+}
+
 // ref: caddyserver modules/caddyhttp/marshalers.go
 // LoggableHTTPRequest makes an HTTP request loggable with zap.Object().
 type LoggableHTTPRequest struct {
 	*http.Request
+}
+
+// This type implements the http.RoundTripper interface
+type LoggingRoundTripper struct {
+	Base http.RoundTripper
+}
+
+func (lrt LoggingRoundTripper) RoundTrip(r *http.Request) (res *http.Response, e error) {
+	start := time.Now()
+	logger := LoggerRequest.Named("quicsec.log.access.http.client")
+	defer logger.Sync()
+
+	loggableReq := zap.Object("request", LoggableHTTPRequestClient{
+		Request: r,
+	})
+	accLog := logger.With(loggableReq)
+	log := accLog.Info
+
+	// Send the request, get the response
+	res, _ = lrt.Base.RoundTrip(r)
+
+	size := 0
+	if res.ContentLength > 0 {
+		size = int(res.ContentLength)
+	}
+
+	duration := time.Since(start)
+	log("handled request",
+		zap.Duration("duration", duration),
+		zap.Int("size", size),
+		zap.Int("status", res.StatusCode),
+		zap.String("resp_proto", res.Proto),
+		zap.Object("resp_headers", LoggableHTTPHeader{
+			Header: res.Header,
+		}),
+	)
+
+	return
+}
+
+// MarshalLogObject satisfies the zapcore.ObjectMarshaler interface.
+func (r LoggableHTTPRequestClient) MarshalLogObject(enc zapcore.ObjectEncoder) error {
+	ip, port, err := net.SplitHostPort(r.Host)
+	if err != nil {
+		ip = r.Host
+		port = ""
+	}
+	enc.AddString("remote_ip", ip)
+	enc.AddString("remote_port", port)
+	enc.AddString("proto", r.Proto)
+	enc.AddString("method", r.Method)
+	enc.AddString("host", r.Host)
+	enc.AddString("uri", r.URL.RequestURI())
+	enc.AddObject("headers", LoggableHTTPHeader{
+		Header: r.Header,
+	})
+	if r.TLS != nil {
+		enc.AddObject("tls", LoggableTLSConnState(*r.TLS))
+	}
+	return nil
 }
 
 // MarshalLogObject satisfies the zapcore.ObjectMarshaler interface.
@@ -124,7 +188,7 @@ func (sa LoggableStringArray) MarshalLogArray(enc zapcore.ArrayEncoder) error {
 func WrapHandlerWithLogging(wrappedHandler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
-		logger := LoggerRequest.Named("log.access.http")
+		logger := LoggerRequest.Named("quicsec.log.access.http.server")
 		defer logger.Sync()
 
 		loggableReq := zap.Object("request", LoggableHTTPRequest{

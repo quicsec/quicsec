@@ -12,10 +12,14 @@ Optionally, an external control plane (e.g., a Kubernetes operator) can maintain
 ### General configuration
 All general configurations are done via env vars. It's possible to configure:
 
-**1. Logger (info or debug mode)**
+**1. Logger (info or debug mode) and access logger (http request/response)**
+
+Access logger is able to log both server and client side http request/respose information.
+
 ```
 QUICSEC_LOG_DEBUG="0"                                   //default: 1
 QUICSEC_LOG_FILE_PATH="/tmp/output.log"                 //default: ""
+QUICSEC_LOG_ACCESS_PATH="/var/log/access.log"           //default: ""
 ```
 If `QUICSEC_LOG_FILE_PATH` is set to "", the stdout is automatically used.
 
