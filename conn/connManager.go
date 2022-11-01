@@ -177,8 +177,9 @@ func Do(req *http.Request) (*http.Response, error) {
 	}
 
 	client = &http.Client{
-		Transport: roudTripper,
+		Transport: log.LoggingRoundTripper{Base: roudTripper},
 	}
+
 	identityLogger.V(log.DebugLevel).Info("send client request")
 	resp, err := client.Do(req)
 
