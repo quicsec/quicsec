@@ -1,3 +1,4 @@
+// ref: https://github.com/libp2p/go-libp2p/blob/master/p2p/transport/quic/tracer_metrics.go
 package operations
 
 import (
@@ -19,17 +20,16 @@ import (
 )
 
 var (
-	bytesTransferred *prometheus.CounterVec
-	newConns         *prometheus.CounterVec
-	closedConns      *prometheus.CounterVec
-	sentPackets      *prometheus.CounterVec
-	rcvdPackets      *prometheus.CounterVec
-	bufferedPackets  *prometheus.CounterVec
-	droppedPackets   *prometheus.CounterVec
-	lostPackets      *prometheus.CounterVec
-	connErrors       *prometheus.CounterVec
-	connErrorsGlobal *prometheus.CounterVec
-	connDuration     *prometheus.CounterVec
+	bytesTransferred   *prometheus.CounterVec
+	packetsTransferred *prometheus.CounterVec
+	newConns           *prometheus.CounterVec
+	closedConns        *prometheus.CounterVec
+	sentPackets        *prometheus.CounterVec
+	rcvdPackets        *prometheus.CounterVec
+	bufferedPackets    *prometheus.CounterVec
+	droppedPackets     *prometheus.CounterVec
+	lostPackets        *prometheus.CounterVec
+	connErrors         *prometheus.CounterVec
 )
 
 type aggregatingCollector struct {
@@ -120,7 +120,6 @@ func runPrometheusHTTP(address string) {
 // metricsInit start tracing the metrics using prometheus
 func metricsInit() {
 	const (
-		odcid     = "odcid"
 		direction = "direction"
 		encLevel  = "encryption_level"
 	)
@@ -130,7 +129,7 @@ func metricsInit() {
 			Name: "quic_connections_closed_total",
 			Help: "closed QUIC connection",
 		},
-		[]string{odcid, direction},
+		[]string{direction},
 	)
 	prometheus.MustRegister(closedConns)
 	newConns = prometheus.NewCounterVec(
@@ -138,7 +137,7 @@ func metricsInit() {
 			Name: "quic_connections_new_total",
 			Help: "new QUIC connection",
 		},
-		[]string{odcid, direction, "handshake_successful"},
+		[]string{direction, "handshake_successful"},
 	)
 	prometheus.MustRegister(newConns)
 	bytesTransferred = prometheus.NewCounterVec(
@@ -146,15 +145,23 @@ func metricsInit() {
 			Name: "quic_transferred_bytes",
 			Help: "QUIC bytes transferred",
 		},
-		[]string{odcid, direction},
+		[]string{direction},
 	)
 	prometheus.MustRegister(bytesTransferred)
+	packetsTransferred = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "quic_transferred_packets_total",
+			Help: "QUIC packets transferred",
+		},
+		[]string{direction},
+	)
+	prometheus.MustRegister(packetsTransferred)
 	sentPackets = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "quic_packets_sent_total",
 			Help: "QUIC packets sent",
 		},
-		[]string{odcid, encLevel},
+		[]string{encLevel},
 	)
 	prometheus.MustRegister(sentPackets)
 	rcvdPackets = prometheus.NewCounterVec(
@@ -162,7 +169,7 @@ func metricsInit() {
 			Name: "quic_packets_rcvd_total",
 			Help: "QUIC packets received",
 		},
-		[]string{odcid, encLevel},
+		[]string{encLevel},
 	)
 	prometheus.MustRegister(rcvdPackets)
 	bufferedPackets = prometheus.NewCounterVec(
@@ -170,7 +177,7 @@ func metricsInit() {
 			Name: "quic_packets_buffered_total",
 			Help: "Buffered packets",
 		},
-		[]string{odcid, "packet_type"},
+		[]string{"packet_type"},
 	)
 	prometheus.MustRegister(bufferedPackets)
 	droppedPackets = prometheus.NewCounterVec(
@@ -178,43 +185,26 @@ func metricsInit() {
 			Name: "quic_packets_dropped_total",
 			Help: "Dropped packets",
 		},
-		[]string{odcid, "packet_type", "reason"},
+		[]string{"packet_type", "reason"},
 	)
 	prometheus.MustRegister(droppedPackets)
 	connErrors = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
-			Name: "quic_connection_errors_per_conn",
-			Help: "QUIC connection errors per connection",
-		},
-		[]string{odcid, "side", "error_code", "reason"},
-	)
-	prometheus.MustRegister(connErrors)
-	connErrorsGlobal = prometheus.NewCounterVec(
-		prometheus.CounterOpts{
-			Name: "quic_connection_errors_global",
-			Help: "QUIC connection errors global",
+			Name: "quic_connection_errors_total",
+			Help: "QUIC connection errors",
 		},
 		[]string{"side", "error_code", "reason"},
 	)
-	prometheus.MustRegister(connErrorsGlobal)
+	prometheus.MustRegister(connErrors)
 	lostPackets = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "quic_packets_lost_total",
 			Help: "QUIC lost received",
 		},
-		[]string{odcid, encLevel, "reason"},
+		[]string{encLevel, "reason"},
 	)
 	prometheus.MustRegister(lostPackets)
 
-	// TODO: find better metric type for duration
-	connDuration = prometheus.NewCounterVec(
-		prometheus.CounterOpts{
-			Name: "quic_connection_duration_per_conn",
-			Help: "QUIC connection duration (per connection)",
-		},
-		[]string{odcid, "duration"},
-	)
-	prometheus.MustRegister(connDuration)
 	collector = newAggregatingCollector()
 	prometheus.MustRegister(collector)
 
@@ -298,37 +288,39 @@ func (m *metricsConnTracer) UpdatedMetrics(rttStats *logging.RTTStats, cwnd, byt
 }
 
 func (m *metricsConnTracer) SentPacket(hdr *logging.ExtendedHeader, packetSize logging.ByteCount, _ *logging.AckFrame, _ []logging.Frame) {
-	bytesTransferred.WithLabelValues(m.connID.String(), "sent").Add(float64(packetSize))
-	sentPackets.WithLabelValues(m.connID.String(), m.getEncLevel(logging.PacketTypeFromHeader(&hdr.Header))).Inc()
+	bytesTransferred.WithLabelValues("sent").Add(float64(packetSize))
+	sentPackets.WithLabelValues(m.getEncLevel(logging.PacketTypeFromHeader(&hdr.Header))).Inc()
+	packetsTransferred.WithLabelValues("sent").Inc()
 }
 
 func (m *metricsConnTracer) ReceivedVersionNegotiationPacket(dest logging.ArbitraryLenConnectionID, src logging.ArbitraryLenConnectionID, _ []logging.VersionNumber) {
 	//TODO: test the difference between libp2p to see what is hdr.ParsedLen()
 	//bytesTransferred.WithLabelValues("rcvd").Add(float64(hdr.ParsedLen() + logging.ByteCount(4*len(versions))))
-	rcvdPackets.WithLabelValues(m.connID.String(), "Version Negotiation").Inc()
+	rcvdPackets.WithLabelValues("Version Negotiation").Inc()
 }
 
 func (m *metricsConnTracer) ReceivedRetry(hdr *logging.Header) {
-	rcvdPackets.WithLabelValues(m.connID.String(), "Retry").Inc()
+	rcvdPackets.WithLabelValues("Retry").Inc()
 }
 
 func (m *metricsConnTracer) ReceivedLongHeaderPacket(hdr *logging.ExtendedHeader, packetSize logging.ByteCount, _ []logging.Frame) {
-	bytesTransferred.WithLabelValues(m.connID.String(), "rcvd").Add(float64(packetSize))
-	rcvdPackets.WithLabelValues(m.connID.String(), m.getEncLevel(logging.PacketTypeFromHeader(&hdr.Header))).Inc()
+	bytesTransferred.WithLabelValues("rcvd").Add(float64(packetSize))
+	rcvdPackets.WithLabelValues(m.getEncLevel(logging.PacketTypeFromHeader(&hdr.Header))).Inc()
+	packetsTransferred.WithLabelValues("rcvd").Inc()
 }
 
 func (m *metricsConnTracer) ReceivedShortHeaderPacket(hdr *logging.ShortHeader, packetSize logging.ByteCount, _ []logging.Frame) {
-	bytesTransferred.WithLabelValues(m.connID.String(), "rcvd").Add(float64(packetSize))
-	rcvdPackets.WithLabelValues(m.connID.String(), m.getEncLevel(logging.PacketType1RTT)).Inc()
-
+	bytesTransferred.WithLabelValues("rcvd").Add(float64(packetSize))
+	rcvdPackets.WithLabelValues(m.getEncLevel(logging.PacketType1RTT)).Inc()
+	packetsTransferred.WithLabelValues("rcvd").Inc()
 }
 
 func (m *metricsConnTracer) BufferedPacket(pt logging.PacketType) {
-	bufferedPackets.WithLabelValues(m.connID.String(), m.getEncLevel(pt)).Inc()
+	bufferedPackets.WithLabelValues(m.getEncLevel(pt)).Inc()
 }
 
 func (m *metricsConnTracer) DroppedPacket(pt logging.PacketType, size logging.ByteCount, r logging.PacketDropReason) {
-	bytesTransferred.WithLabelValues(m.connID.String(), "rcvd").Add(float64(size))
+	bytesTransferred.WithLabelValues("rcvd").Add(float64(size))
 
 	var reason string
 	switch r {
@@ -357,7 +349,7 @@ func (m *metricsConnTracer) DroppedPacket(pt logging.PacketType, size logging.By
 	default:
 		reason = "unknown packet drop reason"
 	}
-	droppedPackets.WithLabelValues(m.connID.String(), m.getEncLevel(pt), reason).Inc()
+	droppedPackets.WithLabelValues(m.getEncLevel(pt), reason).Inc()
 }
 
 func (m *metricsConnTracer) LostPacket(encLevel logging.EncryptionLevel, _ logging.PacketNumber, r logging.PacketLossReason) {
@@ -370,7 +362,7 @@ func (m *metricsConnTracer) LostPacket(encLevel logging.EncryptionLevel, _ loggi
 	default:
 		reason = "unknown loss reason"
 	}
-	lostPackets.WithLabelValues(m.connID.String(), encLevel.String(), reason).Inc()
+	lostPackets.WithLabelValues(encLevel.String(), reason).Inc()
 }
 
 func (m *metricsConnTracer) DroppedEncryptionLevel(level logging.EncryptionLevel) {
@@ -381,17 +373,16 @@ func (m *metricsConnTracer) DroppedEncryptionLevel(level logging.EncryptionLevel
 
 func (m *metricsConnTracer) handleHandshakeComplete() {
 	m.handshakeComplete = true
-	newConns.WithLabelValues(m.connID.String(), m.getDirection(), "true").Inc()
+	newConns.WithLabelValues(m.getDirection(), "true").Inc()
 }
 
 func (m *metricsConnTracer) Close() {
 	if m.handshakeComplete {
-		closedConns.WithLabelValues(m.connID.String(), m.getDirection()).Inc()
+		closedConns.WithLabelValues(m.getDirection()).Inc()
 	} else {
-		newConns.WithLabelValues(m.connID.String(), m.getDirection(), "false").Inc()
+		newConns.WithLabelValues(m.getDirection(), "false").Inc()
 	}
 
-	connDuration.WithLabelValues(m.connID.String(), time.Since(m.startTime).String()).Inc()
 	collector.RemoveConn(m.connID.String())
 }
 
@@ -435,6 +426,5 @@ func (m *metricsConnTracer) ClosedConnection(e error) {
 		side = "remote"
 	}
 
-	connErrors.WithLabelValues(m.connID.String(), side, desc, message).Inc()
-	connErrorsGlobal.WithLabelValues(side, desc, message).Inc()
+	connErrors.WithLabelValues(side, desc, message).Inc()
 }
