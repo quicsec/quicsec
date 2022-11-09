@@ -20,6 +20,25 @@ spec:
   selector:
     app: bookstore-v3
 ---
+# Headless service for prometheus telemetry
+#
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: bookstore
+  labels:
+    app: bookstore-v3
+  name: bookstore-telemetry
+spec:
+  ports:
+  - name: bookstore-telemetry-port
+    port: 9393
+    protocol: TCP
+    targetPort: 9393
+  selector:
+    app: bookstore-v3
+  clusterIP: None
+---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
@@ -66,7 +85,7 @@ spec:
         kubernetes.io/arch: amd64
         kubernetes.io/os: linux
       containers:
-        - image: ghcr.io/quicsec/bookstore:qsv0.15
+        - image: ghcr.io/quicsec/bookstore:kplog-0.0.1
           imagePullPolicy: Always
           name: bookstore-v3
           ports:
@@ -92,6 +111,8 @@ spec:
               value: "0.0.0.0:9393"
             - name: QUICSEC_QLOG_DIR_PATH
               value: ""
+            - name: QUICSEC_LOG_ACCESS_PATH
+              value: "/var/log/access.log"
             - name: QUICSEC_MTLS_ENABLE
               value: "1"
           volumeMounts:

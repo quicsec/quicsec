@@ -68,7 +68,7 @@ spec:
         kubernetes.io/os: linux
       containers:
         - name: bookthief
-          image: ghcr.io/quicsec/bookthief:qsv0.15
+          image: ghcr.io/quicsec/bookthief:kplog-0.0.1
           imagePullPolicy: Always
           ports:
           - containerPort: 14001
@@ -101,6 +101,8 @@ spec:
               value: "0.0.0.0:9393"
             - name: QUICSEC_QLOG_DIR_PATH
               value: ""
+            - name: QUICSEC_LOG_ACCESS_PATH
+              value: "/var/log/access.log"
           volumeMounts:
           - name: spiffe
             mountPath: "/var/run/secrets/spiffe.io"

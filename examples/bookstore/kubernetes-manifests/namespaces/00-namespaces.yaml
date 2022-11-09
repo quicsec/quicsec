@@ -23,5 +23,14 @@ metadata:
   name: bookstore
 
 
+---
+apiVersion: "v1"
+kind: "Namespace"
+metadata:
+  annotations: {}
+  name: "monitoring"
+
+---
+
 
 
