@@ -24,8 +24,11 @@ Workload identity (Certificate) injection and rotation using
 **Security (mTLS AuthN/Z)**
 
 AuthZ Policies
-* Simple ALLOW policy list
-* (planned) Pluggable policy frameworks
+* Transparent auto-mTLS
+* Simple ALLOW policy list based on SPIFFE URI's or DNS fqdn's in client certificate SAN
+* (planned) Wildcard policies
+* (planned) Label-based policies
+* (contributions welcome) Pluggable higher-level policy frameworks
 
 **Observability**
 
