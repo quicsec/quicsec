@@ -17,7 +17,7 @@ Workload identity (Certificate) injection and rotation using
 
 AuthZ Policies
 * Transparent auto-mTLS
-* Connection AuthZ: Simple ALLOW policy list based on SPIFFE URI's or DNS fqdn's in client certificate SAN
+* Connection AuthZ: Simple ALLOW policy list based on SPIFFE URI's in peer certificate SAN
 
 **Observability**
 
