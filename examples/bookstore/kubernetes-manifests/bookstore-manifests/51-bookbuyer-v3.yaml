@@ -67,7 +67,7 @@ spec:
       containers:
         - name: bookbuyer
           image: ghcr.io/quicsec/bookbuyer:qsv0.15
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           ports:
           - containerPort: 14001
             name: web

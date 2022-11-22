@@ -69,7 +69,7 @@ spec:
       containers:
         - name: bookthief
           image: ghcr.io/quicsec/bookthief:qsv0.15
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           ports:
           - containerPort: 14001
             name: web
