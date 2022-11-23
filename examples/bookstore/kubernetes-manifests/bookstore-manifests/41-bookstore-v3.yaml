@@ -67,7 +67,7 @@ spec:
         kubernetes.io/os: linux
       containers:
         - image: ghcr.io/quicsec/bookstore:qsv0.15
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           name: bookstore-v3
           ports:
             - containerPort: 14001
