@@ -9,10 +9,9 @@ QuicSec middleware streamlines application migration to HTTP/3 and automates the
 ## Overview
 
 Upgrading your application to HTTP/3 can be done in 3 steps
-1. Build: Upgrade your HTTP library to QuicSec
-2. Run: Install or Configure your identity management solution. 
-* Define security policies
-* Enable logs desired observability platform
+1. Build: Import QuicSec HTTP library  
+2. Run with automated identity & security policies & observability & connection management
+
 
 ## Detailed How To
 
@@ -32,11 +31,9 @@ import "github.com/quicsec/quicsec"
 
 * Install or Configure Cert-manager and cert-manager-csi-spiffe to enable workload identity certificate provisioning. [Detailed guide](https://github.com/quicsec/quicsec/blob/main/examples/bookstore/CERT-MANAGER.md)
 
-* Define security policies
- TBD
- 
-* Enable logs desired observability platform
- TBD
+* Enable identity management solution (link)
+* Enable security policies (link)
+* Enable logs desired observability platform (link)
 
 ## Sample App: Adding QuicSec to BookStore
 
