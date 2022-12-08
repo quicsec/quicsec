@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"net"
 	"net/http"
+	"sync"
 
 	"github.com/lucas-clemente/quic-go"
 	"github.com/lucas-clemente/quic-go/http3"
@@ -15,6 +16,17 @@ import (
 
 	ops "github.com/quicsec/quicsec/operations"
 )
+
+var roundTripper *http3.RoundTripper
+var once sync.Once
+
+func getRoundTripper() *http3.RoundTripper {
+	once.Do(func(){
+		roundTripper = &http3.RoundTripper{}
+	})
+
+	return roundTripper
+}
 
 func ListenAndServe(addr string, handler http.Handler) error {
 	// Load certs
@@ -171,13 +183,13 @@ func Do(req *http.Request) (*http.Response, error) {
 		Tracer: opsTracer,
 	}
 
-	roudTripper := &http3.RoundTripper{
-		TLSClientConfig: tlsConfig,
-		QuicConfig:      quicConf,
-	}
+	getRoundTripper().TLSClientConfig = tlsConfig
+	getRoundTripper().QuicConfig = quicConf
+
+	//defer roundTripper.Close()
 
 	client = &http.Client{
-		Transport: log.LoggingRoundTripper{Base: roudTripper},
+		Transport: log.LoggingRoundTripper{Base: getRoundTripper()},
 	}
 
 	identityLogger.V(log.DebugLevel).Info("send client request")
