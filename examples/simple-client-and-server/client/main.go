@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/quicsec/quicsec"
 )
@@ -83,4 +84,6 @@ func main() {
 
 		fmt.Printf("\t\t%s", body.Bytes())
 	}
+
+	time.Sleep(50 * time.Second)
 }

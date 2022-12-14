@@ -20,16 +20,32 @@ import (
 )
 
 var (
-	bytesTransferred   *prometheus.CounterVec
-	packetsTransferred *prometheus.CounterVec
-	newConns           *prometheus.CounterVec
-	closedConns        *prometheus.CounterVec
-	sentPackets        *prometheus.CounterVec
-	rcvdPackets        *prometheus.CounterVec
-	bufferedPackets    *prometheus.CounterVec
-	droppedPackets     *prometheus.CounterVec
-	lostPackets        *prometheus.CounterVec
-	connErrors         *prometheus.CounterVec
+	bytesTransferred   		*prometheus.CounterVec
+	packetsTransferred 		*prometheus.CounterVec
+	newConns           		*prometheus.CounterVec
+	closedConns        		*prometheus.CounterVec
+	sentPackets        		*prometheus.CounterVec
+	rcvdPackets        		*prometheus.CounterVec
+	bufferedPackets    		*prometheus.CounterVec
+	droppedPackets     		*prometheus.CounterVec
+	lostPackets        		*prometheus.CounterVec
+	connErrors         		*prometheus.CounterVec
+	HttpRequestsPath		*prometheus.CounterVec
+	HttpRequestsStatus		*prometheus.CounterVec
+
+	HTTPHistogramAppProcess = prometheus.NewHistogram(
+		prometheus.HistogramOpts{
+			Name:      "http_request_application_process_latency",
+			Help:      "The application latency to process a HTTP request",
+			Buckets: prometheus.ExponentialBuckets(0.001, 1.25, 40), // 1ms to ~6000ms
+		})
+
+	HTTPHistogramNetworkLatency = prometheus.NewHistogram(
+		prometheus.HistogramOpts{
+			Name:      "http_request_network_latency",
+			Help:      "The network latency between the request and the response",
+			Buckets: prometheus.ExponentialBuckets(0.001, 1.25, 40), // 1ms to ~6000ms
+		})	
 )
 
 type aggregatingCollector struct {
@@ -204,9 +220,29 @@ func metricsInit() {
 		[]string{encLevel, "reason"},
 	)
 	prometheus.MustRegister(lostPackets)
+	HttpRequestsPath = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "http_request_path_counter",
+			Help: "HTTP requests counter by group (method, path and status)",
+		},
+		[]string{"instance", "method", "path", "status"},
+	)
+	prometheus.MustRegister(HttpRequestsPath)
+	HttpRequestsStatus = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "http_request_status_counter",
+			Help: "HTTP requests counter only by status",
+		},
+		[]string{"status"},
+	)
+	prometheus.MustRegister(HttpRequestsStatus)
 
 	collector = newAggregatingCollector()
 	prometheus.MustRegister(collector)
+
+	prometheus.MustRegister(HTTPHistogramAppProcess)
+
+	prometheus.MustRegister(HTTPHistogramNetworkLatency)
 
 	pFlag, pAddr := config.GetPrometheusHTTPConfig()
 	if pFlag {
