@@ -60,4 +60,18 @@ To change the permitted client identities allowed to access the bookstore servic
 
 ### 3. Observability
 
-Details will be provided soon.
+If metrics (Prometheus, Grafana) are desired, then apply the manifests for these.
+
+```
+kubectl apply --server-side -f kubernetes-manifests/metrics/operator/
+kubectl apply -f kubernetes-manifests/metrics/
+```
+
+To view the Prometheus or Grafana Dashboards, create a kubectl port-forward to access the services for those.
+
+```
+kubectl port-forward -n qs-monitoring svc/prometheus-operated 9090:9090 &
+kubectl port-forward -n qs-monitoring svc/grafana 3000:3000 &
+```
+
+Point your browser to http://localhost:9090/ and http://localhost:3000/ respectively for Prometheus and Grafana respectively. Login to grafana initially using admin:admin credentials., and browse Dashboards under Default Dashboards.

@@ -1,0 +1,15 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: bookbuyer-v3-prom
+  namespace: bookbuyer
+  labels:
+    app: bookbuyer-v3-prom
+    qs-monitoring: enabled
+spec:
+  selector:
+    app: bookbuyer
+  ports:
+  - name: metrics
+    port: 9393
+

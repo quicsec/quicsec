@@ -1,0 +1,17 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: bookstore-servicemonitor
+  namespace: qs-monitoring
+  labels:
+    qs-monitoring: enabled
+spec:
+  namespaceSelector:
+    any: true
+    #matchNames:
+    #- bookstore
+  selector:
+    matchLabels:
+       qs-monitoring: enabled
+  endpoints:
+  - port: metrics

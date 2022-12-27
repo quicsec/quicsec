@@ -1,0 +1,15 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: bookthief-prom
+  namespace: bookthief
+  labels:
+    app: bookthief-prom
+    qs-monitoring: enabled
+spec:
+  selector:
+    app: bookthief
+  ports:
+  - name: metrics
+    port: 9393
+

@@ -1,0 +1,14 @@
+apiVersion: monitoring.coreos.com/v1
+kind: Prometheus
+metadata:
+  name: prometheus
+  namespace: qs-monitoring
+spec:
+  serviceAccountName: prometheus
+  serviceMonitorSelector:
+    matchLabels:
+      qs-monitoring: enabled
+  resources:
+    requests:
+      memory: 400Mi
+  enableAdminAPI: false

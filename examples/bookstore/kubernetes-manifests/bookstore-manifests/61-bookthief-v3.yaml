@@ -13,6 +13,7 @@ metadata:
   namespace: bookthief
   labels:
     app: bookthief
+    qs-monitoring: enabled
 spec:
   ports:
   - port: 14001
@@ -61,6 +62,7 @@ spec:
       labels:
         app: bookthief
         version: v1
+        qs-monitoring: enabled
     spec:
       serviceAccountName: bookthief
       nodeSelector:
@@ -73,6 +75,9 @@ spec:
           ports:
           - containerPort: 14001
             name: web
+          - containerPort: 9393
+            name: metrics
+            protocol: TCP
           command: ["/bookthief"]
           env:
             - name: BOOKSTORE_NAMESPACE

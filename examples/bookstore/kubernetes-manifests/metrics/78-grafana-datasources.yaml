@@ -1,0 +1,27 @@
+# Source: prometheus-operator/templates/grafana/configmaps-datasources.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: grafana-datasources-qs-monitoring
+  namespace: qs-monitoring
+  labels:
+    grafana_datasource: "1"
+    app: prometheus-operator-grafana
+type: Opaque
+stringData:
+  datasources.yaml: |-
+    {
+        "apiVersion": 1,
+        "datasources": [
+            {
+                #"access": "proxy",
+                #"isDefault": true,
+                "editable": false,
+                "name": "prometheus",
+                "orgId": 1,
+                "type": "prometheus",
+                "url": "http://prometheus-operated.qs-monitoring:9090/",
+                "version": 1
+            }
+        ]
+    }

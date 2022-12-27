@@ -60,6 +60,7 @@ spec:
       labels:
         app: bookstore-v3
         version: v3
+        qs-monitoring: enabled
     spec:
       serviceAccountName: bookstore
       nodeSelector:
@@ -73,6 +74,9 @@ spec:
             - containerPort: 14001
               name: web
               protocol: UDP
+            - containerPort: 9393
+              name: metrics
+              protocol: TCP
           command: ["/bookstore"]
           args: ["--port", "14001"]
           env:
