@@ -4,7 +4,7 @@ import (
 	"io"
 	"sync"
 
-	"github.com/lucas-clemente/quic-go/logging"
+	"github.com/quic-go/quic-go/logging"
 	"github.com/quicsec/quicsec/config"
 	"github.com/quicsec/quicsec/operations/log"
 	"github.com/quicsec/quicsec/utils"

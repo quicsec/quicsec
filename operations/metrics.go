@@ -10,8 +10,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/lucas-clemente/quic-go"
-	"github.com/lucas-clemente/quic-go/logging"
+	"github.com/quic-go/quic-go"
+	"github.com/quic-go/quic-go/logging"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/quicsec/quicsec/config"
 	"github.com/quicsec/quicsec/operations/log"
