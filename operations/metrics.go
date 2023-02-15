@@ -10,9 +10,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/quic-go/quic-go"
 	"github.com/quic-go/quic-go/logging"
-	"github.com/prometheus/client_golang/prometheus"
 	"github.com/quicsec/quicsec/config"
 	"github.com/quicsec/quicsec/operations/log"
 
@@ -315,7 +315,7 @@ func (m *metricsConnTracer) ReceivedShortHeaderPacket(hdr *logging.ShortHeader, 
 	packetsTransferred.WithLabelValues("rcvd").Inc()
 }
 
-func (m *metricsConnTracer) BufferedPacket(pt logging.PacketType) {
+func (m *metricsConnTracer) BufferedPacket(pt logging.PacketType, size logging.ByteCount) {
 	bufferedPackets.WithLabelValues(m.getEncLevel(pt)).Inc()
 }
 
