@@ -20,11 +20,10 @@ We recommend ensuring that your cluster does not already have a pre-existing cer
 
 Note that the steps below refer to a pull-secrets.yaml that provides access to the bookstore demo containers within the quicsec repository.
 
-Deploy manifests to create the namespaces for the bookstore demo (bookwarehouse, bookstore, bookbuyer and bookthief), the pull secrets to pull the relevant demo images from the quicsec repository and the bookstore demo application manifests.
+Deploy manifests to create the namespaces for the bookstore demo (bookwarehouse, bookstore, bookbuyer and bookthief), and the bookstore demo application manifests.
 
 ```
 kubectl apply -f kubernetes-manifests/namespaces/
-kubectl apply -f kubernetes-manifests/<pull-secrets.yaml>
 kubectl apply -f kubernetes-manifests/bookstore-manifests/
 ```
 
