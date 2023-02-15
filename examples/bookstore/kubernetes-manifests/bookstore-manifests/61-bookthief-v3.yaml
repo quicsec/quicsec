@@ -111,8 +111,6 @@ spec:
             mountPath: "/var/run/secrets/spiffe.io"
           - name: quicsec-config
             mountPath: "/etc/quicsec"
-      imagePullSecrets:
-      - name: quicsec-pull-secret
       volumes:
       - name: quicsec-config
         configMap:

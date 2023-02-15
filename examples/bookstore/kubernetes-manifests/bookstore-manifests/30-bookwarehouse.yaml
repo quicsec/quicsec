@@ -47,5 +47,3 @@ spec:
           env:
             - name: IDENTITY
               value: "bookwarehouse.kube"
-      imagePullSecrets:
-        - name: quicsec-pull-secret
