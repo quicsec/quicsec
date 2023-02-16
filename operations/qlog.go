@@ -7,8 +7,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/lucas-clemente/quic-go/logging"
-	"github.com/lucas-clemente/quic-go/qlog"
+	"github.com/quic-go/quic-go/logging"
+	"github.com/quic-go/quic-go/qlog"
 	"github.com/quicsec/quicsec/operations/log"
 	"github.com/quicsec/quicsec/utils"
 )
