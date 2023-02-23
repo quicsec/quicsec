@@ -12,6 +12,7 @@ import (
 	"github.com/quicsec/quicsec/auth"
 	"github.com/quicsec/quicsec/config"
 	"github.com/quicsec/quicsec/identity"
+	"github.com/quicsec/quicsec/operations/httplog"
 	"github.com/quicsec/quicsec/operations/log"
 
 	ops "github.com/quicsec/quicsec/operations"
@@ -21,7 +22,7 @@ var roundTripper *http3.RoundTripper
 var once sync.Once
 
 func getRoundTripper() *http3.RoundTripper {
-	once.Do(func(){
+	once.Do(func() {
 		roundTripper = &http3.RoundTripper{}
 	})
 
@@ -105,7 +106,7 @@ func ListenAndServe(addr string, handler http.Handler) error {
 	// Start the servers
 	quicServer := &http3.Server{
 		TLSConfig:  tlsConfig,
-		Handler:    log.WrapHandlerWithLogging(handler),
+		Handler:    httplog.WrapHandlerWithLogging(handler),
 		QuicConfig: quicConf,
 	}
 
@@ -189,7 +190,7 @@ func Do(req *http.Request) (*http.Response, error) {
 	//defer roundTripper.Close()
 
 	client = &http.Client{
-		Transport: log.LoggingRoundTripper{Base: getRoundTripper()},
+		Transport: httplog.LoggingRoundTripper{Base: getRoundTripper()},
 	}
 
 	identityLogger.V(log.DebugLevel).Info("send client request")

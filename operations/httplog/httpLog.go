@@ -1,13 +1,18 @@
 // ref: https://gist.github.com/Boerworz/b683e46ae0761056a636
-package log
+package httplog
 
 import (
 	"crypto/tls"
 	"net"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
+	//"github.com/quicsec/quicsec/operations"
+
+	"github.com/quicsec/quicsec/operations"
+	"github.com/quicsec/quicsec/operations/log"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -53,7 +58,7 @@ type LoggingRoundTripper struct {
 
 func (lrt LoggingRoundTripper) RoundTrip(r *http.Request) (res *http.Response, err error) {
 	start := time.Now()
-	logger := LoggerRequest.Named("quicsec.log.access.http.client")
+	logger := log.LoggerRequest.Named("quicsec.log.access.http.client")
 	defer logger.Sync()
 
 	loggableReq := zap.Object("request", LoggableHTTPRequestClient{
@@ -77,6 +82,11 @@ func (lrt LoggingRoundTripper) RoundTrip(r *http.Request) (res *http.Response, e
 		if res.ContentLength > 0 {
 			size = int(res.ContentLength)
 		}
+
+		// Prometheus metrics for HTTP
+		operations.HttpRequestsPath.WithLabelValues(r.Host, r.Method, r.URL.RequestURI(), strconv.Itoa(res.StatusCode)).Inc()
+		operations.HttpRequestsStatus.WithLabelValues(strconv.Itoa(res.StatusCode)).Inc()
+		operations.HTTPHistogramNetworkLatency.Observe(duration.Seconds())
 
 		log("handled request",
 			zap.Duration("duration", duration),
@@ -196,7 +206,7 @@ func (sa LoggableStringArray) MarshalLogArray(enc zapcore.ArrayEncoder) error {
 func WrapHandlerWithLogging(wrappedHandler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
-		logger := LoggerRequest.Named("quicsec.log.access.http.server")
+		logger := log.LoggerRequest.Named("quicsec.log.access.http.server")
 		defer logger.Sync()
 
 		loggableReq := zap.Object("request", LoggableHTTPRequest{
@@ -209,6 +219,11 @@ func WrapHandlerWithLogging(wrappedHandler http.Handler) http.Handler {
 		wrappedHandler.ServeHTTP(lrw, r)
 
 		duration := time.Since(start)
+
+		// Prometheus metrics for HTTP
+		operations.HttpRequestsPath.WithLabelValues(r.Host, r.Method, r.RequestURI, strconv.Itoa(lrw.statusCode)).Inc()
+		operations.HttpRequestsStatus.WithLabelValues(strconv.Itoa(lrw.statusCode)).Inc()
+		operations.HTTPHistogramAppProcess.Observe(duration.Seconds())
 
 		log("handled request",
 			zap.Duration("duration", duration),
