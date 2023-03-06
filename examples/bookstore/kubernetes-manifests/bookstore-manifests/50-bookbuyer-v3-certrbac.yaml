@@ -1,0 +1,25 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: bookbuyer
+  namespace: bookbuyer
+rules:
+- apiGroups: ["cert-manager.io"]
+  resources: ["certificaterequests"]
+  verbs: ["create"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: bookbuyer
+  namespace: bookbuyer
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: bookbuyer
+subjects:
+- kind: ServiceAccount
+  name: bookbuyer
+  namespace: bookbuyer
+---
