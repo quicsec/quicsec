@@ -10,7 +10,7 @@ data:
     {
         "quicsec": {
           "authz_rules": [
-            "spiffe://bookstore-v3.bookstore.svc.cluster.local/ns/bookstore/sa/bookstore"
+            "spiffe://cluster.local/ns/bookstore/sa/bookstore"
           ]
         }
     }

@@ -12,6 +12,7 @@ spec:
     #- bookstore
   selector:
     matchLabels:
-       qs-monitoring: enabled
+      qs-monitoring: enabled
   endpoints:
   - port: metrics
+---

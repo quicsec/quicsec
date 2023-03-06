@@ -1,10 +1,10 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: bookthief
+  name: bookthief-v3
   namespace: bookthief
   labels:
-    app: bookthief
+    app: bookthief-v3-ingress
 spec:
   rules:
   - host: "bookthief.com"
@@ -14,17 +14,17 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: bookthief
+            name: bookthief-v3
             port:
               number: 14001
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: bookbuyer
+  name: bookbuyer-v3
   namespace: bookbuyer
   labels:
-    app: bookbuyer
+    app: bookbuyer-v3-ingress
 spec:
   rules:
   - host: "bookbuyer.com"
@@ -34,7 +34,7 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: bookbuyer
+            name: bookbuyer-v3
             port:
               number: 14001
 

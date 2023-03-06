@@ -11,5 +11,5 @@ spec:
     app: bookstore-v3
   ports:
   - name: metrics
-    port: 9393
+    port: 9090
 

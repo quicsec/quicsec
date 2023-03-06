@@ -1,84 +1,37 @@
 ---
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: bookthief
-  namespace: bookthief
-
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: bookthief
-  namespace: bookthief
-  labels:
-    app: bookthief
-    qs-monitoring: enabled
-spec:
-  ports:
-  - port: 14001
-    name: bookthief
-  selector:
-    app: bookthief
-
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  name: bookthief
-  namespace: bookthief
-rules:
-- apiGroups: ["cert-manager.io"]
-  resources: ["certificaterequests"]
-  verbs: ["create"]
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: bookthief
-  namespace: bookthief
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: bookthief
-subjects:
-- kind: ServiceAccount
-  name: bookthief
-  namespace: bookthief
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: bookthief
-  namespace: bookthief
+  name: bookbuyer-v3
+  namespace: bookbuyer
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: bookthief
-      version: v1
+      app: bookbuyer-v3
+      version: v3
   template:
     metadata:
       labels:
-        app: bookthief
-        version: v1
+        app: bookbuyer-v3
+        version: v3
         qs-monitoring: enabled
     spec:
-      serviceAccountName: bookthief
+      serviceAccountName: bookbuyer
       nodeSelector:
         kubernetes.io/arch: amd64
         kubernetes.io/os: linux
       containers:
-        - name: bookthief
-          image: ghcr.io/quicsec/bookthief:qsv0.15
+        - name: bookbuyer
+          image: ghcr.io/quicsec/bookbuyer:qsv0.15
           imagePullPolicy: IfNotPresent
           ports:
           - containerPort: 14001
-            name: web
-          - containerPort: 9393
+            name: bookbuyer-v3
+          - containerPort: 9090
             name: metrics
             protocol: TCP
-          command: ["/bookthief"]
+          command: ["/bookbuyer"]
           env:
             - name: BOOKSTORE_NAMESPACE
               value: bookstore
@@ -86,12 +39,16 @@ spec:
               value: bookstore-v3
             - name: BOOKSTORE_SVC_PORT
               value: "14001"
-            - name: "BOOKTHIEF_EXPECTED_RESPONSE_CODE"
-              value: "0"
-            - name: "CI_MAX_ITERATIONS_THRESHOLD"
+            - name: WAREHOUSE_SVC
+              value: bookwarehouse
+            - name: CI_MAX_ITERATIONS_THRESHOLD
               value: "60"
             - name: ENABLE_EGRESS
               value: "true"
+            - name: CI_CLIENT_CONCURRENT_CONNECTIONS
+              value: "1"
+            - name: CI_SLEEP_BETWEEN_REQUESTS_SECONDS
+              value: "5"
             - name: QUICSEC_CERT_FILE
               value: "/var/run/secrets/spiffe.io/tls.crt"
             - name: QUICSEC_KEY_FILE
@@ -103,7 +60,7 @@ spec:
             - name: QUICSEC_INSEC_SKIP_VERIFY
               value: "1"
             - name: QUICSEC_PROMETHEUS_BIND
-              value: "0.0.0.0:9393"
+              value: "0.0.0.0:9090"
             - name: QUICSEC_QLOG_DIR_PATH
               value: ""
           volumeMounts:
@@ -114,8 +71,9 @@ spec:
       volumes:
       - name: quicsec-config
         configMap:
-          name: bookthief-v3-quicsec-configmap
+          name: bookbuyer-v3-quicsec-configmap
       - name: spiffe
         csi:
           driver: spiffe.csi.cert-manager.io
           readOnly: true
+---
