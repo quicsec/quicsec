@@ -10,29 +10,26 @@ import (
 
 type binds []string
 
-func ListenAndServe(bs []string, handler http.Handler) error {
+func ListenAndServe(addr string, handler http.Handler) error {
 
-	if len(bs) == 0 {
-		bs = binds{"localhost:8443"}
+	if len(addr) == 0 {
+		addr = "localhost:8443"
 	}
 
 	var err error
 	var wg sync.WaitGroup
 
-	wg.Add(len(bs))
-	for _, b := range bs {
-		bCap := b
-		go func() {
-			fmt.Printf("Starting QUIC listener on %s...\n", bs)
+	wg.Add(1)
+	go func() {
+		fmt.Printf("Starting QUIC listener on %s...\n", addr)
 
-			err = conn.ListenAndServe(bCap, handler)
+		err = conn.ListenAndServe(addr, handler)
 
-			if err != nil {
-				fmt.Println(err)
-			}
-			wg.Done()
-		}()
-	}
+		if err != nil {
+			fmt.Println(err)
+		}
+		wg.Done()
+	}()
 	wg.Wait()
 
 	return err

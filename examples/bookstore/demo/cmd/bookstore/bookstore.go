@@ -169,9 +169,7 @@ func main() {
 
 	listenAddr := fmt.Sprintf(":%d", *port)
 
-	bs := []string {listenAddr}
-
-	err = quicsec.ListenAndServe(bs, router)
+	err = quicsec.ListenAndServe(listenAddr, router)
 
 	log.Info().Msgf("Bookstore running on port %d", *port)
 
