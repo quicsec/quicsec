@@ -125,10 +125,9 @@ func setupHandler(www string) http.Handler {
 }
 
 func main() {
-	verbose := flag.Bool("v", false, "verbose")
-	bs := binds{}
-	flag.Var(&bs, "bind", "bind to")
-	www := flag.String("www", "", "www data")
+	verbose	:= flag.Bool("v", false, "verbose")
+	addr 	:= flag.String("bind", "localhost:8443", "bind to (e.g localhost:8443)")
+	www 	:= flag.String("www", "", "www data")
 
 	flag.Parse()
 
@@ -141,11 +140,7 @@ func main() {
 	}
 	logger.SetLogTimeFormat("")
 
-	if len(bs) == 0 {
-		bs = binds{"localhost:8443"}
-	}
-
 	handler := setupHandler(*www)
 
-	quicsec.ListenAndServe(bs, handler)
+	quicsec.ListenAndServe(*addr, handler)
 }
