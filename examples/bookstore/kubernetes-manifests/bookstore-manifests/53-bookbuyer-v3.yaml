@@ -22,7 +22,7 @@ spec:
         kubernetes.io/arch: amd64
         kubernetes.io/os: linux
       containers:
-        - name: bookbuyer
+        - name: bookbuyer-v3
           image: ghcr.io/quicsec/bookbuyer:qsv0.15
           imagePullPolicy: IfNotPresent
           ports:
