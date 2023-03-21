@@ -3,8 +3,9 @@
 TARGETS      := darwin/amd64 darwin/arm64 linux/amd64 linux/arm64 windows/amd64
 BINNAME      ?= osm
 DIST_DIRS    := find * -type d -exec
-CTR_REGISTRY ?= ghcr.io/quicsec
-CTR_TAG      ?= qsv0.15
+# Uncomment two lines below and specify registry and tag before building, to prevent accidental pushes that overwrite existing images with the same tag
+#CTR_REGISTRY ?= ghcr.io/quicsec
+#CTR_TAG      ?= qsv0.15
 VERIFY_TAGS  ?= false
 
 GOPATH = $(shell go env GOPATH)
