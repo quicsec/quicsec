@@ -64,7 +64,7 @@ spec:
             - name: QUICSEC_LOG_ACCESS_PATH
               value: ""
             - name: QUICSEC_LOG_DEBUG
-              value: "1"
+              value: "0"
           volumeMounts:
           - name: spiffe
             mountPath: "/var/run/secrets/spiffe.io"
