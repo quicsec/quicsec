@@ -14,7 +14,7 @@ helm upgrade -i -n cert-manager cert-manager jetstack/cert-manager \
 
 2. Deploy clusterIssuer to issue certificates via cert-manager-csi-spiffe, and approve 
 
-Install cert-manager-csi-spiffe clusterIssuer and approve. If you haven't previously integrated cert-manager with kubectl, you might need to [add](https://cert-manager.io/v1.0-docs/usage/kubectl-plugin/#installation) the cert-manager plugin to kubectl.
+Install cert-manager-csi-spiffe clusterIssuer and approve. If you haven't previously integrated cert-manager with kubectl, you might need to [add](https://cert-manager.io/v1.5-docs/usage/kubectl-plugin/#installation) the cert-manager plugin to kubectl. Alternatively, install _cmctl_ according to cert-manager docs.
 ```
 kubectl apply -f kubernetes-manifests/cert-manager/10-csi-spiffe-cluster-issuer.yaml
 kubectl cert-manager approve -n cert-manager $(kubectl get cr -n cert-manager -ojsonpath='{.items[0].metadata.name}')
