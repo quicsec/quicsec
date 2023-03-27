@@ -62,11 +62,11 @@ spec:
           emptyDir: {}
           #      imagePullSecrets:
           #- name: $CTR_REGISTRY_CREDS_NAME
-  volumeClaimTemplates:
-  - metadata:
-      name: data
-    spec:
-      accessModes: [ "ReadWriteOnce" ]
-      resources:
-        requests:
-          storage: 250M
+  #volumeClaimTemplates:
+  #- metadata:
+  #    name: data
+  #  spec:
+  #    accessModes: [ "ReadWriteOnce" ]
+  #    resources:
+  #      requests:
+  #        storage: 250M

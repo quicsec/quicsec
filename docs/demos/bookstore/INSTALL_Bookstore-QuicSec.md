@@ -68,7 +68,9 @@ By virtue of building the bookstore app with QuicSec (quicsec.listenAndServe ins
 
 ### 2. Connection Authentication and Authorization.
 
-To enable mutual TLS (i.e., client authentication) instead of one-way TLS, update QUICSEC_MTLS_ENABLE to 1 in kubernetes-manifests/bookstore-manifests/41-bookstore-v3.yaml and reapply.
+To enable mutual TLS (i.e., client authentication) instead of one-way TLS, update QUICSEC_MTLS_ENABLE to 1 in kubernetes-manifests/bookstore-manifests/43-bookstore-v3.yaml and reapply.
+
+After reapplying, you will observe that the count of books in the bookthief UI will stop. Looking at the logs of the bookstore pod, you will observe that the auth errors are logged.
 
 To change the permitted client identities allowed to access the bookstore service, update the spiffe uri's or dns names that are required in the presented client certificates.
 
