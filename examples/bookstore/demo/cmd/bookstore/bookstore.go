@@ -120,12 +120,13 @@ func sellBook(w http.ResponseWriter, r *http.Request) {
 	go common.RestockBooks(1, tracingHeaders) // make this async for a smoother demo
 
 	// Slow down the responses artificially.
-	maxNoiseMilliseconds := 750
-	minNoiseMilliseconds := 150
-	intNoise := rand.Intn(maxNoiseMilliseconds-minNoiseMilliseconds) + minNoiseMilliseconds // #nosec G404
-	pretendToBeBusy := time.Duration(intNoise) * time.Millisecond
-	log.Info().Msgf("Sleeping %+v", pretendToBeBusy)
-	time.Sleep(pretendToBeBusy)
+	// Disable synthetic sleep
+	//maxNoiseMilliseconds := 750
+	//minNoiseMilliseconds := 150
+	//intNoise := rand.Intn(maxNoiseMilliseconds-minNoiseMilliseconds) + minNoiseMilliseconds // #nosec G404
+	//pretendToBeBusy := time.Duration(intNoise) * time.Millisecond
+	//log.Info().Msgf("Sleeping %+v", pretendToBeBusy)
+	//time.Sleep(pretendToBeBusy)
 }
 
 func getHandlers() []handler {
