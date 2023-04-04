@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"net/http"
 	"sync"
+	"time"
 
 	"github.com/quicsec/quicsec/conn"
+	"github.com/quicsec/quicsec/operations/log"
 )
 
 type binds []string
@@ -36,5 +38,14 @@ func ListenAndServe(addr string, handler http.Handler) error {
 }
 
 func Do(req *http.Request) (*http.Response, error) {
-	return conn.Do(req)
+	start := time.Now()
+
+	resp, err := conn.Do(req)
+
+	quicSecLogger := log.LoggerLgr.WithName(log.ConstQuicSecGeneral)
+	elapsed := time.Since(start).Seconds()
+
+	quicSecLogger.Info("Request total time:", "total_req_time", elapsed)
+
+	return resp, err
 }

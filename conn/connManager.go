@@ -1,10 +1,13 @@
 package conn
 
 import (
+	"context"
 	"crypto/tls"
+	"fmt"
 	"net"
 	"net/http"
 	"sync"
+	"time"
 
 	"github.com/quic-go/quic-go"
 	"github.com/quic-go/quic-go/http3"
@@ -137,6 +140,7 @@ func ListenAndServe(addr string, handler http.Handler) error {
 }
 
 func Do(req *http.Request) (*http.Response, error) {
+	start :=  time.Now()
 	var err error
 	var client *http.Client
 
@@ -164,6 +168,7 @@ func Do(req *http.Request) (*http.Response, error) {
 		Certificates:       certs,
 		InsecureSkipVerify: config.GetInsecureSkipVerify(),
 		KeyLogWriter:       keyLog,
+		NextProtos:         []string{http3.NextProtoH3},
 	}
 
 	if config.GetMtlsEnable() {
@@ -182,22 +187,66 @@ func Do(req *http.Request) (*http.Response, error) {
 
 	quicConf := &quic.Config{
 		Tracer: opsTracer,
+		MaxIdleTimeout: 500 *time.Millisecond,
 	}
 
 	getRoundTripper().TLSClientConfig = tlsConfig
 	getRoundTripper().QuicConfig = quicConf
 
-	//defer roundTripper.Close()
+	elapsed := time.Since(start).Seconds()
+	connLogger.Info("Connection setup time for requesting:", "setup_time", elapsed)
 
-	client = &http.Client{
-		Transport: httplog.LoggingRoundTripper{Base: getRoundTripper()},
+	start =  time.Now()
+	epAddrs, err := GetAllEpAddresses(req.URL.Hostname())
+	elapsed = time.Since(start).Seconds()
+	connLogger.Info("DNS lookup time for requesting:", "dns_lookup_time", elapsed)
+
+	if err !=  nil {
+		// HTTPS lookup failed doing an A lookup instead
+		connLogger.V(log.DebugLevel).Info("HTTPS lookup failed... Doing an A lookup instead...")
+		hostAddr, err := GetEpAddress(req.URL.Hostname())
+
+		if err != nil {
+			return nil, fmt.Errorf("DNS resolution failed")
+		}
+
+		epAddrs = append(epAddrs, hostAddr + ":" + req.URL.Port())
 	}
 
-	identityLogger.V(log.DebugLevel).Info("send client request")
-	resp, err := client.Do(req)
+	var resp *http.Response
 
-	if err != nil {
-		connLogger.Error(err, "failed client.Do()")
+	for _, ep := range epAddrs {
+		start =  time.Now()
+
+		getRoundTripper().Dial = func(ctx context.Context, addr string, tlsCfg *tls.Config, cfg *quic.Config) (quic.EarlyConnection, error) {
+			conn, err := quic.DialAddrEarlyContext(context.Background(), ep, tlsConfig, quicConf)
+
+			if err != nil {
+				return nil, err
+			}
+			// return the QUIC connection
+			return conn, nil
+		}
+		client = &http.Client{
+			Transport: httplog.LoggingRoundTripper{Base: getRoundTripper()},
+		}
+
+		identityLogger.V(log.DebugLevel).Info("send client request")
+		resp, err = client.Do(req.WithContext(context.Background()))
+
+		if err != nil {
+			elapsed = time.Since(start).Seconds()
+			connLogger.Info("Trying address failed:", "address", ep, "failed_req_time", elapsed)
+
+			continue
+		}
+		elapsed = time.Since(start).Seconds()
+		connLogger.Info("Trying address succeed:", "address", ep, "success_req_time", elapsed)
+		break
+	}
+
+	if resp == nil {
+		return nil, fmt.Errorf("failed to connect to any IP address")
 	}
 
 	return resp, err

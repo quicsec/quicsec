@@ -16,6 +16,7 @@ const (
 	ConstConfigManager     = "configuration_manager"
 	ConstConnManager       = "connection_manager"
 	ConstAuthManager       = "authentication_manager"
+	ConstQuicSecGeneral    = "quicsec_general"
 )
 
 const (
