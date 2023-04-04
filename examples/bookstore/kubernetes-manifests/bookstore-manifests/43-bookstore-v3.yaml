@@ -51,7 +51,7 @@ spec:
             - name: QUICSEC_QLOG_DIR_PATH
               value: ""
             - name: QUICSEC_MTLS_ENABLE
-              value: "1"
+              value: "0"
           volumeMounts:
           - name: spiffe
             mountPath: "/var/run/secrets/spiffe.io"
