@@ -1,0 +1,3319 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-quicmeshmap
+  namespace: qm-monitoring
+data:
+  quicmeshmap.json: |-
+    {
+      "annotations": {
+        "list": [
+          {
+            "builtIn": 1,
+            "datasource": {
+              "type": "grafana",
+              "uid": "-- Grafana --"
+            },
+            "enable": true,
+            "hide": true,
+            "iconColor": "rgba(0, 211, 255, 1)",
+            "name": "Annotations & Alerts",
+            "target": {
+              "limit": 100,
+              "matchAny": false,
+              "tags": [],
+              "type": "dashboard"
+            },
+            "type": "dashboard"
+          }
+        ]
+      },
+      "description": "QuicMesh Service Map",
+      "editable": true,
+      "fiscalYearStartMonth": 0,
+      "graphTooltip": 0,
+      "links": [],
+      "liveNow": false,
+      "panels": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P1809F7CD0C75ACF3"
+          },
+          "description": "Map of QuicMesh Services",
+          "gridPos": {
+            "h": 12,
+            "w": 24,
+            "x": 0,
+            "y": 0
+          },
+          "id": 2,
+          "options": {
+            "weathermap": {
+              "id": "7621306a-e856-4cff-954a-baea35000550",
+              "links": [
+                {
+                  "arrows": {
+                    "height": 10,
+                    "offset": 2,
+                    "width": 8
+                  },
+                  "id": "34dd8685-27f6-473d-b025-6060f18b4f03",
+                  "nodes": [
+                    {
+                      "anchors": {
+                        "0": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        },
+                        "1": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        },
+                        "2": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        },
+                        "3": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        },
+                        "4": {
+                          "numFilledLinks": 0,
+                          "numLinks": 1
+                        }
+                      },
+                      "colors": {
+                        "background": "rgba(204, 204, 220, 0.16)",
+                        "border": "rgba(204, 204, 220, 0.25)",
+                        "font": "rgb(204, 204, 220)",
+                        "statusDown": "#ff0000"
+                      },
+                      "compactVerticalLinks": false,
+                      "id": "65e190c5-cc11-4ef2-b2c8-028688f46fb1",
+                      "isConnection": false,
+                      "label": "Bookbuyer-v1",
+                      "nodeIcon": {
+                        "drawInside": true,
+                        "name": "cisco/androgenous-person",
+                        "padding": {
+                          "horizontal": 4,
+                          "vertical": 3
+                        },
+                        "size": {
+                          "height": 20,
+                          "width": 20
+                        },
+                        "src": "public/plugins/knightss27-weathermap-panel/icons/cisco/androgenous-person.svg"
+                      },
+                      "padding": {
+                        "horizontal": 10,
+                        "vertical": 4
+                      },
+                      "position": [
+                        89,
+                        278
+                      ],
+                      "useConstantSpacing": false
+                    },
+                    {
+                      "anchors": {
+                        "0": {
+                          "numFilledLinks": 0,
+                          "numLinks": 1
+                        },
+                        "1": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        },
+                        "2": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        },
+                        "3": {
+                          "numFilledLinks": 0,
+                          "numLinks": 1
+                        },
+                        "4": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        }
+                      },
+                      "colors": {
+                        "background": "rgba(204, 204, 220, 0.16)",
+                        "border": "rgba(204, 204, 220, 0.25)",
+                        "font": "rgb(204, 204, 220)",
+                        "statusDown": "#ff0000"
+                      },
+                      "compactVerticalLinks": false,
+                      "id": "2015a4b3-8290-4d08-8903-92b8551e297b",
+                      "isConnection": false,
+                      "label": "Bookstore-v1",
+                      "nodeIcon": {
+                        "drawInside": true,
+                        "name": "cisco/callmanager",
+                        "padding": {
+                          "horizontal": 0,
+                          "vertical": 0
+                        },
+                        "size": {
+                          "height": 20,
+                          "width": 20
+                        },
+                        "src": "public/plugins/knightss27-weathermap-panel/icons/cisco/callmanager.svg"
+                      },
+                      "padding": {
+                        "horizontal": 10,
+                        "vertical": 4
+                      },
+                      "position": [
+                        442,
+                        281
+                      ],
+                      "useConstantSpacing": false
+                    }
+                  ],
+                  "showThroughputPercentage": false,
+                  "sides": {
+                    "A": {
+                      "anchor": 2,
+                      "bandwidth": 10,
+                      "currentBandwidthText": "n/a",
+                      "currentPercentageText": "n/a%",
+                      "currentText": "n/a",
+                      "currentValue": 0,
+                      "currentValueText": "n/a",
+                      "dashboardLink": "",
+                      "labelOffset": 80,
+                      "query": "bookbuyer"
+                    },
+                    "Z": {
+                      "anchor": 0,
+                      "bandwidth": 0,
+                      "currentBandwidthText": "0  req/s",
+                      "currentPercentageText": "n/a%",
+                      "currentText": "n/a",
+                      "currentValue": 0,
+                      "currentValueText": "n/a",
+                      "dashboardLink": "",
+                      "labelOffset": 0
+                    }
+                  },
+                  "stroke": 8,
+                  "units": "reqps"
+                },
+                {
+                  "arrows": {
+                    "height": 10,
+                    "offset": 0,
+                    "width": 8
+                  },
+                  "id": "cb07f1ed-bb7f-4bff-90a5-4f8f2b5df1ff",
+                  "nodes": [
+                    {
+                      "anchors": {
+                        "0": {
+                          "numFilledLinks": 0,
+                          "numLinks": 1
+                        },
+                        "1": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        },
+                        "2": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        },
+                        "3": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        },
+                        "4": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        }
+                      },
+                      "colors": {
+                        "background": "rgba(204, 204, 220, 0.16)",
+                        "border": "rgba(204, 204, 220, 0.25)",
+                        "font": "rgb(204, 204, 220)",
+                        "statusDown": "#ff0000"
+                      },
+                      "compactVerticalLinks": false,
+                      "id": "68352ae2-36a9-45af-a881-da731ad8f6e2",
+                      "isConnection": false,
+                      "label": "Bookthief-v1",
+                      "nodeIcon": {
+                        "drawInside": true,
+                        "name": "networking/micro-webserver",
+                        "padding": {
+                          "horizontal": 0,
+                          "vertical": 0
+                        },
+                        "size": {
+                          "height": 20,
+                          "width": 20
+                        },
+                        "src": "public/plugins/knightss27-weathermap-panel/icons/networking/micro-webserver.svg"
+                      },
+                      "padding": {
+                        "horizontal": 10,
+                        "vertical": 4
+                      },
+                      "position": [
+                        98,
+                        346
+                      ],
+                      "useConstantSpacing": false
+                    },
+                    {
+                      "anchors": {
+                        "0": {
+                          "numFilledLinks": 0,
+                          "numLinks": 1
+                        },
+                        "1": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        },
+                        "2": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        },
+                        "3": {
+                          "numFilledLinks": 0,
+                          "numLinks": 1
+                        },
+                        "4": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        }
+                      },
+                      "colors": {
+                        "background": "rgba(204, 204, 220, 0.16)",
+                        "border": "rgba(204, 204, 220, 0.25)",
+                        "font": "rgb(204, 204, 220)",
+                        "statusDown": "#ff0000"
+                      },
+                      "compactVerticalLinks": false,
+                      "id": "2015a4b3-8290-4d08-8903-92b8551e297b",
+                      "isConnection": false,
+                      "label": "Bookstore-v1",
+                      "nodeIcon": {
+                        "drawInside": true,
+                        "name": "cisco/callmanager",
+                        "padding": {
+                          "horizontal": 0,
+                          "vertical": 0
+                        },
+                        "size": {
+                          "height": 20,
+                          "width": 20
+                        },
+                        "src": "public/plugins/knightss27-weathermap-panel/icons/cisco/callmanager.svg"
+                      },
+                      "padding": {
+                        "horizontal": 10,
+                        "vertical": 4
+                      },
+                      "position": [
+                        442,
+                        281
+                      ],
+                      "useConstantSpacing": false
+                    }
+                  ],
+                  "showThroughputPercentage": false,
+                  "sides": {
+                    "A": {
+                      "anchor": 2,
+                      "bandwidth": 10,
+                      "currentBandwidthText": "n/a",
+                      "currentPercentageText": "n/a%",
+                      "currentText": "n/a",
+                      "currentValue": 0,
+                      "currentValueText": "n/a",
+                      "dashboardLink": "",
+                      "labelOffset": 54,
+                      "query": "bookthief"
+                    },
+                    "Z": {
+                      "anchor": 2,
+                      "bandwidth": 0,
+                      "currentBandwidthText": "0  req/s",
+                      "currentPercentageText": "n/a%",
+                      "currentText": "n/a",
+                      "currentValue": 0,
+                      "currentValueText": "n/a",
+                      "dashboardLink": "",
+                      "labelOffset": 0
+                    }
+                  },
+                  "stroke": 8,
+                  "units": "reqps"
+                },
+                {
+                  "arrows": {
+                    "height": 10,
+                    "offset": 2,
+                    "width": 8
+                  },
+                  "id": "e84f1706-8f5a-448a-84ae-1213ca0a0c39",
+                  "nodes": [
+                    {
+                      "anchors": {
+                        "0": {
+                          "numFilledLinks": 0,
+                          "numLinks": 2
+                        },
+                        "1": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        },
+                        "2": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        },
+                        "3": {
+                          "numFilledLinks": 0,
+                          "numLinks": 1
+                        },
+                        "4": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        }
+                      },
+                      "colors": {
+                        "background": "rgba(204, 204, 220, 0.16)",
+                        "border": "rgba(204, 204, 220, 0.25)",
+                        "font": "rgb(204, 204, 220)",
+                        "statusDown": "#ff0000"
+                      },
+                      "compactVerticalLinks": false,
+                      "id": "2015a4b3-8290-4d08-8903-92b8551e297b",
+                      "isConnection": false,
+                      "label": "Bookstore-v1",
+                      "nodeIcon": {
+                        "drawInside": true,
+                        "name": "cisco/callmanager",
+                        "padding": {
+                          "horizontal": 0,
+                          "vertical": 0
+                        },
+                        "size": {
+                          "height": 20,
+                          "width": 20
+                        },
+                        "src": "public/plugins/knightss27-weathermap-panel/icons/cisco/callmanager.svg"
+                      },
+                      "padding": {
+                        "horizontal": 10,
+                        "vertical": 4
+                      },
+                      "position": [
+                        379,
+                        364
+                      ],
+                      "useConstantSpacing": false
+                    },
+                    {
+                      "anchors": {
+                        "0": {
+                          "numFilledLinks": 0,
+                          "numLinks": 2
+                        },
+                        "1": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        },
+                        "2": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        },
+                        "3": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        },
+                        "4": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        }
+                      },
+                      "colors": {
+                        "background": "rgba(204, 204, 220, 0.16)",
+                        "border": "rgba(204, 204, 220, 0.25)",
+                        "font": "rgb(204, 204, 220)",
+                        "statusDown": "#ff0000"
+                      },
+                      "compactVerticalLinks": false,
+                      "id": "225947bd-a496-424c-928e-cfd891afadfd",
+                      "isConnection": false,
+                      "label": "Book-warehouse",
+                      "nodeIcon": {
+                        "drawInside": true,
+                        "name": "cisco/contact-center",
+                        "padding": {
+                          "horizontal": 0,
+                          "vertical": 1
+                        },
+                        "size": {
+                          "height": 20,
+                          "width": 20
+                        },
+                        "src": "public/plugins/knightss27-weathermap-panel/icons/cisco/contact-center.svg"
+                      },
+                      "padding": {
+                        "horizontal": 10,
+                        "vertical": 0
+                      },
+                      "position": [
+                        550,
+                        290
+                      ],
+                      "useConstantSpacing": false
+                    }
+                  ],
+                  "showThroughputPercentage": false,
+                  "sides": {
+                    "A": {
+                      "anchor": 0,
+                      "bandwidth": 0,
+                      "currentBandwidthText": "0  req/s",
+                      "currentPercentageText": "n/a%",
+                      "currentText": "n/a",
+                      "currentValue": 0,
+                      "currentValueText": "n/a",
+                      "dashboardLink": "",
+                      "labelOffset": 15
+                    },
+                    "Z": {
+                      "anchor": 0,
+                      "bandwidth": 0,
+                      "currentBandwidthText": "0  req/s",
+                      "currentPercentageText": "n/a%",
+                      "currentText": "n/a",
+                      "currentValue": 0,
+                      "currentValueText": "n/a",
+                      "dashboardLink": "",
+                      "labelOffset": 16
+                    }
+                  },
+                  "stroke": 8
+                },
+                {
+                  "arrows": {
+                    "height": 10,
+                    "offset": 2,
+                    "width": 8
+                  },
+                  "id": "1f30f908-4344-4aad-9c6f-794e12e76054",
+                  "nodes": [
+                    {
+                      "anchors": {
+                        "0": {
+                          "numFilledLinks": 0,
+                          "numLinks": 2
+                        },
+                        "1": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        },
+                        "2": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        },
+                        "3": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        },
+                        "4": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        }
+                      },
+                      "colors": {
+                        "background": "rgba(204, 204, 220, 0.16)",
+                        "border": "rgba(204, 204, 220, 0.25)",
+                        "font": "rgb(204, 204, 220)",
+                        "statusDown": "#ff0000"
+                      },
+                      "compactVerticalLinks": false,
+                      "id": "225947bd-a496-424c-928e-cfd891afadfd",
+                      "isConnection": false,
+                      "label": "Book-warehouse",
+                      "nodeIcon": {
+                        "drawInside": true,
+                        "name": "cisco/contact-center",
+                        "padding": {
+                          "horizontal": 0,
+                          "vertical": 1
+                        },
+                        "size": {
+                          "height": 20,
+                          "width": 20
+                        },
+                        "src": "public/plugins/knightss27-weathermap-panel/icons/cisco/contact-center.svg"
+                      },
+                      "padding": {
+                        "horizontal": 10,
+                        "vertical": 0
+                      },
+                      "position": [
+                        550,
+                        290
+                      ],
+                      "useConstantSpacing": false
+                    },
+                    {
+                      "anchors": {
+                        "0": {
+                          "numFilledLinks": 0,
+                          "numLinks": 1
+                        },
+                        "1": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        },
+                        "2": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        },
+                        "3": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        },
+                        "4": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        }
+                      },
+                      "colors": {
+                        "background": "rgba(204, 204, 220, 0.16)",
+                        "border": "rgba(204, 204, 220, 0.25)",
+                        "font": "rgb(204, 204, 220)",
+                        "statusDown": "#ff0000"
+                      },
+                      "compactVerticalLinks": false,
+                      "id": "8f72434d-194c-4c37-b46e-7e202a0e0557",
+                      "isConnection": false,
+                      "label": "MySQL",
+                      "nodeIcon": {
+                        "drawInside": true,
+                        "name": "networking/relational-database",
+                        "padding": {
+                          "horizontal": 0,
+                          "vertical": 3
+                        },
+                        "size": {
+                          "height": 20,
+                          "width": 20
+                        },
+                        "src": "public/plugins/knightss27-weathermap-panel/icons/networking/relational-database.svg"
+                      },
+                      "padding": {
+                        "horizontal": 10,
+                        "vertical": 4
+                      },
+                      "position": [
+                        703,
+                        358
+                      ],
+                      "useConstantSpacing": false
+                    }
+                  ],
+                  "showThroughputPercentage": false,
+                  "sides": {
+                    "A": {
+                      "anchor": 0,
+                      "bandwidth": 0,
+                      "currentBandwidthText": "0  req/s",
+                      "currentPercentageText": "n/a%",
+                      "currentText": "n/a",
+                      "currentValue": 0,
+                      "currentValueText": "n/a",
+                      "dashboardLink": "",
+                      "labelOffset": 0
+                    },
+                    "Z": {
+                      "anchor": 0,
+                      "bandwidth": 0,
+                      "currentBandwidthText": "0  req/s",
+                      "currentPercentageText": "n/a%",
+                      "currentText": "n/a",
+                      "currentValue": 0,
+                      "currentValueText": "n/a",
+                      "dashboardLink": "",
+                      "labelOffset": 9
+                    }
+                  },
+                  "stroke": 8
+                },
+                {
+                  "arrows": {
+                    "height": 10,
+                    "offset": 2,
+                    "width": 8
+                  },
+                  "id": "76645e53-2301-4b22-bfa2-8abc290714d5",
+                  "nodes": [
+                    {
+                      "anchors": {
+                        "0": {
+                          "numFilledLinks": 0,
+                          "numLinks": 1
+                        },
+                        "1": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        },
+                        "2": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        },
+                        "3": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        },
+                        "4": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        }
+                      },
+                      "colors": {
+                        "background": "#072a6b",
+                        "border": "#1F60C4",
+                        "font": "#FFF899",
+                        "statusDown": "#ff0000"
+                      },
+                      "compactVerticalLinks": false,
+                      "id": "230032e0-2fcd-4c7e-ac0b-be06818b32ca",
+                      "isConnection": false,
+                      "label": "Bookbuyer-v3",
+                      "nodeIcon": {
+                        "drawInside": true,
+                        "name": "cisco/androgenous-person",
+                        "padding": {
+                          "horizontal": 0,
+                          "vertical": 0
+                        },
+                        "size": {
+                          "height": 15,
+                          "width": 15
+                        },
+                        "src": "public/plugins/knightss27-weathermap-panel/icons/cisco/androgenous-person.svg"
+                      },
+                      "padding": {
+                        "horizontal": 3,
+                        "vertical": 4
+                      },
+                      "position": [
+                        126,
+                        256
+                      ],
+                      "useConstantSpacing": false
+                    },
+                    {
+                      "anchors": {
+                        "0": {
+                          "numFilledLinks": 0,
+                          "numLinks": 3
+                        },
+                        "1": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        },
+                        "2": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        },
+                        "3": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        },
+                        "4": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        }
+                      },
+                      "colors": {
+                        "background": "#072a6b",
+                        "border": "#1F60C4",
+                        "font": "#FFF899",
+                        "statusDown": "#ff0000"
+                      },
+                      "compactVerticalLinks": false,
+                      "id": "3339f256-995f-4724-8b04-4b1c992b16d7",
+                      "isConnection": false,
+                      "label": "Bookstore-v3",
+                      "nodeIcon": {
+                        "drawInside": true,
+                        "name": "cisco/callmanager",
+                        "padding": {
+                          "horizontal": 0,
+                          "vertical": 0
+                        },
+                        "size": {
+                          "height": 15,
+                          "width": 15
+                        },
+                        "src": "public/plugins/knightss27-weathermap-panel/icons/cisco/callmanager.svg"
+                      },
+                      "padding": {
+                        "horizontal": 10,
+                        "vertical": 4
+                      },
+                      "position": [
+                        317,
+                        222
+                      ],
+                      "useConstantSpacing": false
+                    }
+                  ],
+                  "showThroughputPercentage": false,
+                  "sides": {
+                    "A": {
+                      "anchor": 0,
+                      "bandwidth": 10,
+                      "currentBandwidthText": "10  req/s",
+                      "currentPercentageText": "4.00%",
+                      "currentText": "0.400  req/s",
+                      "currentValue": 0.4,
+                      "currentValueText": "0.400  req/s",
+                      "dashboardLink": "",
+                      "labelOffset": 66,
+                      "query": "bookbuyer-v3"
+                    },
+                    "Z": {
+                      "anchor": 1,
+                      "bandwidth": 0,
+                      "currentBandwidthText": "0  req/s",
+                      "currentPercentageText": "n/a%",
+                      "currentText": "n/a",
+                      "currentValue": 0,
+                      "currentValueText": "n/a",
+                      "dashboardLink": "",
+                      "labelOffset": 3
+                    }
+                  },
+                  "stroke": 8,
+                  "units": "reqps"
+                },
+                {
+                  "arrows": {
+                    "height": 10,
+                    "offset": 2,
+                    "width": 8
+                  },
+                  "id": "fbb741a7-757f-49ad-b6cc-152f02f4293f",
+                  "nodes": [
+                    {
+                      "anchors": {
+                        "0": {
+                          "numFilledLinks": 0,
+                          "numLinks": 3
+                        },
+                        "1": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        },
+                        "2": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        },
+                        "3": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        },
+                        "4": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        }
+                      },
+                      "colors": {
+                        "background": "#072a6b",
+                        "border": "#1F60C4",
+                        "font": "#FFF899",
+                        "statusDown": "#ff0000"
+                      },
+                      "compactVerticalLinks": false,
+                      "id": "3339f256-995f-4724-8b04-4b1c992b16d7",
+                      "isConnection": false,
+                      "label": "Bookstore-v3",
+                      "nodeIcon": {
+                        "drawInside": true,
+                        "name": "cisco/callmanager",
+                        "padding": {
+                          "horizontal": 0,
+                          "vertical": 0
+                        },
+                        "size": {
+                          "height": 15,
+                          "width": 15
+                        },
+                        "src": "public/plugins/knightss27-weathermap-panel/icons/cisco/callmanager.svg"
+                      },
+                      "padding": {
+                        "horizontal": 10,
+                        "vertical": 4
+                      },
+                      "position": [
+                        317,
+                        222
+                      ],
+                      "useConstantSpacing": false
+                    },
+                    {
+                      "anchors": {
+                        "0": {
+                          "numFilledLinks": 0,
+                          "numLinks": 3
+                        },
+                        "1": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        },
+                        "2": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        },
+                        "3": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        },
+                        "4": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        }
+                      },
+                      "colors": {
+                        "background": "rgba(204, 204, 220, 0.16)",
+                        "border": "rgba(204, 204, 220, 0.25)",
+                        "font": "rgb(204, 204, 220)",
+                        "statusDown": "#ff0000"
+                      },
+                      "compactVerticalLinks": false,
+                      "id": "225947bd-a496-424c-928e-cfd891afadfd",
+                      "isConnection": false,
+                      "label": "Book-warehouse",
+                      "nodeIcon": {
+                        "drawInside": true,
+                        "name": "cisco/contact-center",
+                        "padding": {
+                          "horizontal": 0,
+                          "vertical": 1
+                        },
+                        "size": {
+                          "height": 20,
+                          "width": 20
+                        },
+                        "src": "public/plugins/knightss27-weathermap-panel/icons/cisco/contact-center.svg"
+                      },
+                      "padding": {
+                        "horizontal": 10,
+                        "vertical": 0
+                      },
+                      "position": [
+                        460,
+                        292
+                      ],
+                      "useConstantSpacing": false
+                    }
+                  ],
+                  "showThroughputPercentage": false,
+                  "sides": {
+                    "A": {
+                      "anchor": 1,
+                      "bandwidth": 0,
+                      "currentBandwidthText": "0  req/s",
+                      "currentPercentageText": "n/a%",
+                      "currentText": "n/a",
+                      "currentValue": 0,
+                      "currentValueText": "n/a",
+                      "dashboardLink": "",
+                      "labelOffset": 0
+                    },
+                    "Z": {
+                      "anchor": 2,
+                      "bandwidth": 0,
+                      "currentBandwidthText": "0  req/s",
+                      "currentPercentageText": "n/a%",
+                      "currentText": "n/a",
+                      "currentValue": 0,
+                      "currentValueText": "n/a",
+                      "dashboardLink": "",
+                      "labelOffset": 0
+                    }
+                  },
+                  "stroke": 8
+                },
+                {
+                  "arrows": {
+                    "height": 10,
+                    "offset": 2,
+                    "width": 8
+                  },
+                  "id": "5c5a83a2-6dce-4756-ae72-c76daea394f7",
+                  "nodes": [
+                    {
+                      "anchors": {
+                        "0": {
+                          "numFilledLinks": 0,
+                          "numLinks": 1
+                        },
+                        "1": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        },
+                        "2": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        },
+                        "3": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        },
+                        "4": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        }
+                      },
+                      "colors": {
+                        "background": "#072a6b",
+                        "border": "#1F60C4",
+                        "font": "#FFF899",
+                        "statusDown": "#ff0000"
+                      },
+                      "compactVerticalLinks": false,
+                      "id": "4917c3b6-ae78-421c-bf4f-8d860f154b0e",
+                      "isConnection": false,
+                      "label": "Bookthief-v3",
+                      "nodeIcon": {
+                        "drawInside": true,
+                        "name": "networking/micro-webserver",
+                        "padding": {
+                          "horizontal": 0,
+                          "vertical": 1
+                        },
+                        "size": {
+                          "height": 15,
+                          "width": 15
+                        },
+                        "src": "public/plugins/knightss27-weathermap-panel/icons/networking/micro-webserver.svg"
+                      },
+                      "padding": {
+                        "horizontal": 4,
+                        "vertical": 0
+                      },
+                      "position": [
+                        125,
+                        216
+                      ],
+                      "useConstantSpacing": false
+                    },
+                    {
+                      "anchors": {
+                        "0": {
+                          "numFilledLinks": 0,
+                          "numLinks": 3
+                        },
+                        "1": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        },
+                        "2": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        },
+                        "3": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        },
+                        "4": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        }
+                      },
+                      "colors": {
+                        "background": "#072a6b",
+                        "border": "#1F60C4",
+                        "font": "#FFF899",
+                        "statusDown": "#ff0000"
+                      },
+                      "compactVerticalLinks": false,
+                      "id": "3339f256-995f-4724-8b04-4b1c992b16d7",
+                      "isConnection": false,
+                      "label": "Bookstore-v3",
+                      "nodeIcon": {
+                        "drawInside": true,
+                        "name": "cisco/callmanager",
+                        "padding": {
+                          "horizontal": 0,
+                          "vertical": 0
+                        },
+                        "size": {
+                          "height": 15,
+                          "width": 15
+                        },
+                        "src": "public/plugins/knightss27-weathermap-panel/icons/cisco/callmanager.svg"
+                      },
+                      "padding": {
+                        "horizontal": 10,
+                        "vertical": 4
+                      },
+                      "position": [
+                        317,
+                        222
+                      ],
+                      "useConstantSpacing": false
+                    }
+                  ],
+                  "showThroughputPercentage": false,
+                  "sides": {
+                    "A": {
+                      "anchor": 0,
+                      "bandwidth": 10,
+                      "currentBandwidthText": "n/a",
+                      "currentPercentageText": "n/a%",
+                      "currentText": "n/a",
+                      "currentValue": 0,
+                      "currentValueText": "n/a",
+                      "dashboardLink": "",
+                      "labelOffset": 60,
+                      "query": "bookthief-v3"
+                    },
+                    "Z": {
+                      "anchor": 1,
+                      "bandwidth": 0,
+                      "currentBandwidthText": "0  req/s",
+                      "currentPercentageText": "n/a%",
+                      "currentText": "n/a",
+                      "currentValue": 0,
+                      "currentValueText": "n/a",
+                      "dashboardLink": "",
+                      "labelOffset": 0
+                    }
+                  },
+                  "stroke": 8,
+                  "units": "reqps"
+                },
+                {
+                  "arrows": {
+                    "height": 10,
+                    "offset": 2,
+                    "width": 8
+                  },
+                  "id": "76a8ad44-ab46-41f6-ba75-87333eda6b53",
+                  "nodes": [
+                    {
+                      "anchors": {
+                        "0": {
+                          "numFilledLinks": 0,
+                          "numLinks": 2
+                        },
+                        "1": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        },
+                        "2": {
+                          "numFilledLinks": 0,
+                          "numLinks": 1
+                        },
+                        "3": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        },
+                        "4": {
+                          "numFilledLinks": 0,
+                          "numLinks": 1
+                        }
+                      },
+                      "colors": {
+                        "background": "#275189fa",
+                        "border": "#FFF899",
+                        "font": "#8AB8FF",
+                        "statusDown": "#ff0000"
+                      },
+                      "compactVerticalLinks": false,
+                      "id": "65e190c5-cc11-4ef2-b2c8-028688f46fb1",
+                      "isConnection": false,
+                      "label": "Bookbuyer-v1",
+                      "nodeIcon": {
+                        "drawInside": true,
+                        "name": "cisco/androgenous-person",
+                        "padding": {
+                          "horizontal": 8,
+                          "vertical": 3
+                        },
+                        "size": {
+                          "height": 20,
+                          "width": 20
+                        },
+                        "src": "public/plugins/knightss27-weathermap-panel/icons/cisco/androgenous-person.svg"
+                      },
+                      "padding": {
+                        "horizontal": 8,
+                        "vertical": 0
+                      },
+                      "position": [
+                        -20,
+                        306
+                      ],
+                      "useConstantSpacing": false
+                    },
+                    {
+                      "anchors": {
+                        "0": {
+                          "numFilledLinks": 0,
+                          "numLinks": 1
+                        },
+                        "1": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        },
+                        "2": {
+                          "numFilledLinks": 0,
+                          "numLinks": 2
+                        },
+                        "3": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        },
+                        "4": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        }
+                      },
+                      "colors": {
+                        "background": "#275189fa",
+                        "border": "#FFF899",
+                        "font": "#8AB8FF",
+                        "statusDown": "#ff0000"
+                      },
+                      "compactVerticalLinks": false,
+                      "id": "4d0a0885-6d07-45d7-9d1f-f92cbee1e4e5",
+                      "isConnection": false,
+                      "label": "Bookstore-v2",
+                      "nodeIcon": {
+                        "drawInside": true,
+                        "name": "cisco/callmanager",
+                        "padding": {
+                          "horizontal": 4,
+                          "vertical": 2
+                        },
+                        "size": {
+                          "height": 20,
+                          "width": 20
+                        },
+                        "src": "public/plugins/knightss27-weathermap-panel/icons/cisco/callmanager.svg"
+                      },
+                      "padding": {
+                        "horizontal": 10,
+                        "vertical": 4
+                      },
+                      "position": [
+                        516,
+                        307
+                      ],
+                      "useConstantSpacing": false
+                    }
+                  ],
+                  "showThroughputPercentage": false,
+                  "sides": {
+                    "A": {
+                      "anchor": 0,
+                      "bandwidth": 0,
+                      "currentBandwidthText": "0  req/s",
+                      "currentPercentageText": "n/a%",
+                      "currentText": "n/a",
+                      "currentValue": 0,
+                      "currentValueText": "n/a",
+                      "dashboardLink": "",
+                      "labelOffset": 0
+                    },
+                    "Z": {
+                      "anchor": 2,
+                      "bandwidth": 0,
+                      "currentBandwidthText": "0  req/s",
+                      "currentPercentageText": "n/a%",
+                      "currentText": "n/a",
+                      "currentValue": 0,
+                      "currentValueText": "n/a",
+                      "dashboardLink": "",
+                      "labelOffset": 0
+                    }
+                  },
+                  "stroke": 8,
+                  "units": "reqps"
+                },
+                {
+                  "arrows": {
+                    "height": 10,
+                    "offset": 2,
+                    "width": 8
+                  },
+                  "id": "1368024b-27e1-4a70-996d-f18b89d900c8",
+                  "nodes": [
+                    {
+                      "anchors": {
+                        "0": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        },
+                        "1": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        },
+                        "2": {
+                          "numFilledLinks": 0,
+                          "numLinks": 1
+                        },
+                        "3": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        },
+                        "4": {
+                          "numFilledLinks": 0,
+                          "numLinks": 2
+                        }
+                      },
+                      "colors": {
+                        "background": "#121215",
+                        "border": "#8F3BB8",
+                        "font": "#B877D9",
+                        "statusDown": "#ff0000"
+                      },
+                      "compactVerticalLinks": false,
+                      "id": "68352ae2-36a9-45af-a881-da731ad8f6e2",
+                      "isConnection": false,
+                      "label": "Bookthief-v1",
+                      "nodeIcon": {
+                        "drawInside": true,
+                        "name": "networking/micro-webserver",
+                        "padding": {
+                          "horizontal": 0,
+                          "vertical": 2
+                        },
+                        "size": {
+                          "height": 20,
+                          "width": 20
+                        },
+                        "src": "public/plugins/knightss27-weathermap-panel/icons/networking/micro-webserver.svg"
+                      },
+                      "padding": {
+                        "horizontal": 8,
+                        "vertical": 0
+                      },
+                      "position": [
+                        121,
+                        376
+                      ],
+                      "useConstantSpacing": false
+                    },
+                    {
+                      "anchors": {
+                        "0": {
+                          "numFilledLinks": 0,
+                          "numLinks": 1
+                        },
+                        "1": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        },
+                        "2": {
+                          "numFilledLinks": 0,
+                          "numLinks": 2
+                        },
+                        "3": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        },
+                        "4": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        }
+                      },
+                      "colors": {
+                        "background": "#275189fa",
+                        "border": "#FFF899",
+                        "font": "#8AB8FF",
+                        "statusDown": "#ff0000"
+                      },
+                      "compactVerticalLinks": false,
+                      "id": "4d0a0885-6d07-45d7-9d1f-f92cbee1e4e5",
+                      "isConnection": false,
+                      "label": "Bookstore-v2",
+                      "nodeIcon": {
+                        "drawInside": true,
+                        "name": "cisco/callmanager",
+                        "padding": {
+                          "horizontal": 4,
+                          "vertical": 2
+                        },
+                        "size": {
+                          "height": 20,
+                          "width": 20
+                        },
+                        "src": "public/plugins/knightss27-weathermap-panel/icons/cisco/callmanager.svg"
+                      },
+                      "padding": {
+                        "horizontal": 10,
+                        "vertical": 4
+                      },
+                      "position": [
+                        516,
+                        307
+                      ],
+                      "useConstantSpacing": false
+                    }
+                  ],
+                  "showThroughputPercentage": false,
+                  "sides": {
+                    "A": {
+                      "anchor": 3,
+                      "bandwidth": 10,
+                      "currentBandwidthText": "10  req/s",
+                      "currentPercentageText": "n/a%",
+                      "currentText": "n/a",
+                      "currentValue": 0,
+                      "currentValueText": "n/a",
+                      "dashboardLink": "",
+                      "labelOffset": 6
+                    },
+                    "Z": {
+                      "anchor": 2,
+                      "bandwidth": 10,
+                      "currentBandwidthText": "10  req/s",
+                      "currentPercentageText": "n/a%",
+                      "currentText": "n/a",
+                      "currentValue": 0,
+                      "currentValueText": "n/a",
+                      "dashboardLink": "",
+                      "labelOffset": 0
+                    }
+                  },
+                  "stroke": 8
+                },
+                {
+                  "arrows": {
+                    "height": 10,
+                    "offset": 2,
+                    "width": 8
+                  },
+                  "id": "229b9790-ae0a-47e4-b17d-ea2738066fa9",
+                  "nodes": [
+                    {
+                      "anchors": {
+                        "0": {
+                          "numFilledLinks": 0,
+                          "numLinks": 2
+                        },
+                        "1": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        },
+                        "2": {
+                          "numFilledLinks": 0,
+                          "numLinks": 1
+                        },
+                        "3": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        },
+                        "4": {
+                          "numFilledLinks": 0,
+                          "numLinks": 1
+                        }
+                      },
+                      "colors": {
+                        "background": "#275189fa",
+                        "border": "#FFF899",
+                        "font": "#8AB8FF",
+                        "statusDown": "#ff0000"
+                      },
+                      "compactVerticalLinks": false,
+                      "id": "65e190c5-cc11-4ef2-b2c8-028688f46fb1",
+                      "isConnection": false,
+                      "label": "Bookbuyer-v1",
+                      "nodeIcon": {
+                        "drawInside": true,
+                        "name": "cisco/androgenous-person",
+                        "padding": {
+                          "horizontal": 8,
+                          "vertical": 3
+                        },
+                        "size": {
+                          "height": 20,
+                          "width": 20
+                        },
+                        "src": "public/plugins/knightss27-weathermap-panel/icons/cisco/androgenous-person.svg"
+                      },
+                      "padding": {
+                        "horizontal": 8,
+                        "vertical": 0
+                      },
+                      "position": [
+                        -20,
+                        306
+                      ],
+                      "useConstantSpacing": false
+                    },
+                    {
+                      "anchors": {
+                        "0": {
+                          "numFilledLinks": 0,
+                          "numLinks": 2
+                        },
+                        "1": {
+                          "numFilledLinks": 0,
+                          "numLinks": 2
+                        },
+                        "2": {
+                          "numFilledLinks": 0,
+                          "numLinks": 1
+                        },
+                        "3": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        },
+                        "4": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        }
+                      },
+                      "colors": {
+                        "background": "#275189eb",
+                        "border": "#FFF899",
+                        "font": "#FFF899",
+                        "statusDown": "#ff0000"
+                      },
+                      "compactVerticalLinks": false,
+                      "id": "3339f256-995f-4724-8b04-4b1c992b16d7",
+                      "isConnection": false,
+                      "label": "Bookstore-v3",
+                      "nodeIcon": {
+                        "drawInside": true,
+                        "name": "cisco/callmanager",
+                        "padding": {
+                          "horizontal": 0,
+                          "vertical": 0
+                        },
+                        "size": {
+                          "height": 15,
+                          "width": 15
+                        },
+                        "src": "public/plugins/knightss27-weathermap-panel/icons/cisco/callmanager.svg"
+                      },
+                      "padding": {
+                        "horizontal": 10,
+                        "vertical": 4
+                      },
+                      "position": [
+                        516,
+                        223
+                      ],
+                      "useConstantSpacing": false
+                    }
+                  ],
+                  "showThroughputPercentage": false,
+                  "sides": {
+                    "A": {
+                      "anchor": 3,
+                      "bandwidth": 0,
+                      "currentBandwidthText": "0  req/s",
+                      "currentPercentageText": "n/a%",
+                      "currentText": "n/a",
+                      "currentValue": 0,
+                      "currentValueText": "n/a",
+                      "dashboardLink": "",
+                      "labelOffset": 8
+                    },
+                    "Z": {
+                      "anchor": 1,
+                      "bandwidth": 0,
+                      "currentBandwidthText": "0  req/s",
+                      "currentPercentageText": "n/a%",
+                      "currentText": "n/a",
+                      "currentValue": 0,
+                      "currentValueText": "n/a",
+                      "dashboardLink": "",
+                      "labelOffset": 0
+                    }
+                  },
+                  "stroke": 8,
+                  "units": "reqps"
+                },
+                {
+                  "arrows": {
+                    "height": 10,
+                    "offset": 2,
+                    "width": 8
+                  },
+                  "id": "19197468-7517-49ec-9cf1-a9cd448b2b9c",
+                  "nodes": [
+                    {
+                      "anchors": {
+                        "0": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        },
+                        "1": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        },
+                        "2": {
+                          "numFilledLinks": 0,
+                          "numLinks": 1
+                        },
+                        "3": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        },
+                        "4": {
+                          "numFilledLinks": 0,
+                          "numLinks": 2
+                        }
+                      },
+                      "colors": {
+                        "background": "#121215",
+                        "border": "#8F3BB8",
+                        "font": "#B877D9",
+                        "statusDown": "#ff0000"
+                      },
+                      "compactVerticalLinks": false,
+                      "id": "68352ae2-36a9-45af-a881-da731ad8f6e2",
+                      "isConnection": false,
+                      "label": "Bookthief-v1",
+                      "nodeIcon": {
+                        "drawInside": true,
+                        "name": "networking/micro-webserver",
+                        "padding": {
+                          "horizontal": 0,
+                          "vertical": 2
+                        },
+                        "size": {
+                          "height": 20,
+                          "width": 20
+                        },
+                        "src": "public/plugins/knightss27-weathermap-panel/icons/networking/micro-webserver.svg"
+                      },
+                      "padding": {
+                        "horizontal": 8,
+                        "vertical": 0
+                      },
+                      "position": [
+                        121,
+                        376
+                      ],
+                      "useConstantSpacing": false
+                    },
+                    {
+                      "anchors": {
+                        "0": {
+                          "numFilledLinks": 0,
+                          "numLinks": 2
+                        },
+                        "1": {
+                          "numFilledLinks": 0,
+                          "numLinks": 2
+                        },
+                        "2": {
+                          "numFilledLinks": 0,
+                          "numLinks": 1
+                        },
+                        "3": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        },
+                        "4": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        }
+                      },
+                      "colors": {
+                        "background": "#275189eb",
+                        "border": "#FFF899",
+                        "font": "#FFF899",
+                        "statusDown": "#ff0000"
+                      },
+                      "compactVerticalLinks": false,
+                      "id": "3339f256-995f-4724-8b04-4b1c992b16d7",
+                      "isConnection": false,
+                      "label": "Bookstore-v3",
+                      "nodeIcon": {
+                        "drawInside": true,
+                        "name": "cisco/callmanager",
+                        "padding": {
+                          "horizontal": 0,
+                          "vertical": 0
+                        },
+                        "size": {
+                          "height": 15,
+                          "width": 15
+                        },
+                        "src": "public/plugins/knightss27-weathermap-panel/icons/cisco/callmanager.svg"
+                      },
+                      "padding": {
+                        "horizontal": 10,
+                        "vertical": 4
+                      },
+                      "position": [
+                        516,
+                        223
+                      ],
+                      "useConstantSpacing": false
+                    }
+                  ],
+                  "showThroughputPercentage": false,
+                  "sides": {
+                    "A": {
+                      "anchor": 3,
+                      "bandwidth": 10,
+                      "currentBandwidthText": "10  req/s",
+                      "currentPercentageText": "n/a%",
+                      "currentText": "n/a",
+                      "currentValue": 0,
+                      "currentValueText": "n/a",
+                      "dashboardLink": "",
+                      "labelOffset": 18
+                    },
+                    "Z": {
+                      "anchor": 0,
+                      "currentBandwidthText": " undefined",
+                      "currentPercentageText": "n/a%",
+                      "currentText": "n/a",
+                      "currentValue": 0,
+                      "currentValueText": "n/a",
+                      "dashboardLink": "",
+                      "labelOffset": 5
+                    }
+                  },
+                  "stroke": 8
+                },
+                {
+                  "arrows": {
+                    "height": 10,
+                    "offset": 2,
+                    "width": 8
+                  },
+                  "id": "8324a9f6-1cf1-4ab1-bbe2-5c8398544c7a",
+                  "nodes": [
+                    {
+                      "anchors": {
+                        "0": {
+                          "numFilledLinks": 0,
+                          "numLinks": 1
+                        },
+                        "1": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        },
+                        "2": {
+                          "numFilledLinks": 0,
+                          "numLinks": 2
+                        },
+                        "3": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        },
+                        "4": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        }
+                      },
+                      "colors": {
+                        "background": "#275189fa",
+                        "border": "#FFF899",
+                        "font": "#8AB8FF",
+                        "statusDown": "#ff0000"
+                      },
+                      "compactVerticalLinks": false,
+                      "id": "4d0a0885-6d07-45d7-9d1f-f92cbee1e4e5",
+                      "isConnection": false,
+                      "label": "Bookstore-v2",
+                      "nodeIcon": {
+                        "drawInside": true,
+                        "name": "cisco/callmanager",
+                        "padding": {
+                          "horizontal": 4,
+                          "vertical": 2
+                        },
+                        "size": {
+                          "height": 20,
+                          "width": 20
+                        },
+                        "src": "public/plugins/knightss27-weathermap-panel/icons/cisco/callmanager.svg"
+                      },
+                      "padding": {
+                        "horizontal": 10,
+                        "vertical": 4
+                      },
+                      "position": [
+                        516,
+                        307
+                      ],
+                      "useConstantSpacing": false
+                    },
+                    {
+                      "anchors": {
+                        "0": {
+                          "numFilledLinks": 0,
+                          "numLinks": 2
+                        },
+                        "1": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        },
+                        "2": {
+                          "numFilledLinks": 0,
+                          "numLinks": 2
+                        },
+                        "3": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        },
+                        "4": {
+                          "numFilledLinks": 0,
+                          "numLinks": 0
+                        }
+                      },
+                      "colors": {
+                        "background": "rgba(204, 204, 220, 0.16)",
+                        "border": "rgba(204, 204, 220, 0.25)",
+                        "font": "rgb(204, 204, 220)",
+                        "statusDown": "#ff0000"
+                      },
+                      "compactVerticalLinks": false,
+                      "id": "225947bd-a496-424c-928e-cfd891afadfd",
+                      "isConnection": false,
+                      "label": "Book-warehouse",
+                      "nodeIcon": {
+                        "drawInside": true,
+                        "name": "cisco/contact-center",
+                        "padding": {
+                          "horizontal": 0,
+                          "vertical": 1
+                        },
+                        "size": {
+                          "height": 20,
+                          "width": 20
+                        },
+                        "src": "public/plugins/knightss27-weathermap-panel/icons/cisco/contact-center.svg"
+                      },
+                      "padding": {
+                        "horizontal": 10,
+                        "vertical": 0
+                      },
+                      "position": [
+                        642,
+                        334
+                      ],
+                      "useConstantSpacing": false
+                    }
+                  ],
+                  "showThroughputPercentage": false,
+                  "sides": {
+                    "A": {
+                      "anchor": 0,
+                      "bandwidth": 0,
+                      "currentBandwidthText": "0  req/s",
+                      "currentPercentageText": "n/a%",
+                      "currentText": "n/a",
+                      "currentValue": 0,
+                      "currentValueText": "n/a",
+                      "dashboardLink": "",
+                      "labelOffset": 27
+                    },
+                    "Z": {
+                      "anchor": 2,
+                      "bandwidth": 0,
+                      "currentBandwidthText": "0  req/s",
+                      "currentPercentageText": "n/a%",
+                      "currentText": "n/a",
+                      "currentValue": 0,
+                      "currentValueText": "n/a",
+                      "dashboardLink": "",
+                      "labelOffset": 24
+                    }
+                  },
+                  "stroke": 8
+                }
+              ],
+              "nodes": [
+                {
+                  "anchors": {
+                    "0": {
+                      "numFilledLinks": 0,
+                      "numLinks": 2
+                    },
+                    "1": {
+                      "numFilledLinks": 0,
+                      "numLinks": 0
+                    },
+                    "2": {
+                      "numFilledLinks": 0,
+                      "numLinks": 1
+                    },
+                    "3": {
+                      "numFilledLinks": 0,
+                      "numLinks": 1
+                    },
+                    "4": {
+                      "numFilledLinks": 0,
+                      "numLinks": 0
+                    }
+                  },
+                  "colors": {
+                    "background": "#275189fa",
+                    "border": "#FFF899",
+                    "font": "#8AB8FF",
+                    "statusDown": "#ff0000"
+                  },
+                  "compactVerticalLinks": false,
+                  "id": "65e190c5-cc11-4ef2-b2c8-028688f46fb1",
+                  "isConnection": false,
+                  "label": "Bookbuyer-v1",
+                  "nodeIcon": {
+                    "drawInside": true,
+                    "name": "cisco/androgenous-person",
+                    "padding": {
+                      "horizontal": 8,
+                      "vertical": 3
+                    },
+                    "size": {
+                      "height": 20,
+                      "width": 20
+                    },
+                    "src": "public/plugins/knightss27-weathermap-panel/icons/cisco/androgenous-person.svg"
+                  },
+                  "padding": {
+                    "horizontal": 8,
+                    "vertical": 0
+                  },
+                  "position": [
+                    -25,
+                    327
+                  ],
+                  "useConstantSpacing": false
+                },
+                {
+                  "anchors": {
+                    "0": {
+                      "numFilledLinks": 0,
+                      "numLinks": 2
+                    },
+                    "1": {
+                      "numFilledLinks": 0,
+                      "numLinks": 0
+                    },
+                    "2": {
+                      "numFilledLinks": 0,
+                      "numLinks": 1
+                    },
+                    "3": {
+                      "numFilledLinks": 0,
+                      "numLinks": 0
+                    },
+                    "4": {
+                      "numFilledLinks": 0,
+                      "numLinks": 0
+                    }
+                  },
+                  "colors": {
+                    "background": "#275189fa",
+                    "border": "#FFF899",
+                    "font": "#FFF899",
+                    "statusDown": "#ff0000"
+                  },
+                  "compactVerticalLinks": false,
+                  "id": "2015a4b3-8290-4d08-8903-92b8551e297b",
+                  "isConnection": false,
+                  "label": "Bookstore-v1",
+                  "nodeIcon": {
+                    "drawInside": true,
+                    "name": "cisco/callmanager",
+                    "padding": {
+                      "horizontal": 0,
+                      "vertical": 0
+                    },
+                    "size": {
+                      "height": 20,
+                      "width": 20
+                    },
+                    "src": "public/plugins/knightss27-weathermap-panel/icons/cisco/callmanager.svg"
+                  },
+                  "padding": {
+                    "horizontal": 10,
+                    "vertical": 4
+                  },
+                  "position": [
+                    516,
+                    376
+                  ],
+                  "useConstantSpacing": false
+                },
+                {
+                  "anchors": {
+                    "0": {
+                      "numFilledLinks": 0,
+                      "numLinks": 0
+                    },
+                    "1": {
+                      "numFilledLinks": 0,
+                      "numLinks": 0
+                    },
+                    "2": {
+                      "numFilledLinks": 0,
+                      "numLinks": 1
+                    },
+                    "3": {
+                      "numFilledLinks": 0,
+                      "numLinks": 2
+                    },
+                    "4": {
+                      "numFilledLinks": 0,
+                      "numLinks": 0
+                    }
+                  },
+                  "colors": {
+                    "background": "#121215",
+                    "border": "#8F3BB8",
+                    "font": "#B877D9",
+                    "statusDown": "#ff0000"
+                  },
+                  "compactVerticalLinks": false,
+                  "id": "68352ae2-36a9-45af-a881-da731ad8f6e2",
+                  "isConnection": false,
+                  "label": "Bookthief-v1",
+                  "nodeIcon": {
+                    "drawInside": true,
+                    "name": "networking/micro-webserver",
+                    "padding": {
+                      "horizontal": 0,
+                      "vertical": 2
+                    },
+                    "size": {
+                      "height": 20,
+                      "width": 20
+                    },
+                    "src": "public/plugins/knightss27-weathermap-panel/icons/networking/micro-webserver.svg"
+                  },
+                  "padding": {
+                    "horizontal": 8,
+                    "vertical": 0
+                  },
+                  "position": [
+                    121,
+                    376
+                  ],
+                  "useConstantSpacing": false
+                },
+                {
+                  "anchors": {
+                    "0": {
+                      "numFilledLinks": 0,
+                      "numLinks": 2
+                    },
+                    "1": {
+                      "numFilledLinks": 0,
+                      "numLinks": 0
+                    },
+                    "2": {
+                      "numFilledLinks": 0,
+                      "numLinks": 2
+                    },
+                    "3": {
+                      "numFilledLinks": 0,
+                      "numLinks": 0
+                    },
+                    "4": {
+                      "numFilledLinks": 0,
+                      "numLinks": 0
+                    }
+                  },
+                  "colors": {
+                    "background": "rgba(204, 204, 220, 0.16)",
+                    "border": "rgba(204, 204, 220, 0.25)",
+                    "font": "rgb(204, 204, 220)",
+                    "statusDown": "#ff0000"
+                  },
+                  "compactVerticalLinks": false,
+                  "id": "225947bd-a496-424c-928e-cfd891afadfd",
+                  "isConnection": false,
+                  "label": "Book-warehouse",
+                  "nodeIcon": {
+                    "drawInside": true,
+                    "name": "cisco/contact-center",
+                    "padding": {
+                      "horizontal": 0,
+                      "vertical": 1
+                    },
+                    "size": {
+                      "height": 20,
+                      "width": 20
+                    },
+                    "src": "public/plugins/knightss27-weathermap-panel/icons/cisco/contact-center.svg"
+                  },
+                  "padding": {
+                    "horizontal": 10,
+                    "vertical": 0
+                  },
+                  "position": [
+                    657,
+                    317
+                  ],
+                  "useConstantSpacing": false
+                },
+                {
+                  "anchors": {
+                    "0": {
+                      "numFilledLinks": 0,
+                      "numLinks": 1
+                    },
+                    "1": {
+                      "numFilledLinks": 0,
+                      "numLinks": 0
+                    },
+                    "2": {
+                      "numFilledLinks": 0,
+                      "numLinks": 0
+                    },
+                    "3": {
+                      "numFilledLinks": 0,
+                      "numLinks": 0
+                    },
+                    "4": {
+                      "numFilledLinks": 0,
+                      "numLinks": 0
+                    }
+                  },
+                  "colors": {
+                    "background": "rgba(204, 204, 220, 0.16)",
+                    "border": "rgba(204, 204, 220, 0.25)",
+                    "font": "rgb(204, 204, 220)",
+                    "statusDown": "#ff0000"
+                  },
+                  "compactVerticalLinks": false,
+                  "id": "8f72434d-194c-4c37-b46e-7e202a0e0557",
+                  "isConnection": false,
+                  "label": "MySQL",
+                  "nodeIcon": {
+                    "drawInside": true,
+                    "name": "networking/relational-database",
+                    "padding": {
+                      "horizontal": 0,
+                      "vertical": 3
+                    },
+                    "size": {
+                      "height": 20,
+                      "width": 20
+                    },
+                    "src": "public/plugins/knightss27-weathermap-panel/icons/networking/relational-database.svg"
+                  },
+                  "padding": {
+                    "horizontal": 10,
+                    "vertical": 4
+                  },
+                  "position": [
+                    710,
+                    226
+                  ],
+                  "useConstantSpacing": false
+                },
+                {
+                  "anchors": {
+                    "0": {
+                      "numFilledLinks": 0,
+                      "numLinks": 1
+                    },
+                    "1": {
+                      "numFilledLinks": 0,
+                      "numLinks": 4
+                    },
+                    "2": {
+                      "numFilledLinks": 0,
+                      "numLinks": 0
+                    },
+                    "3": {
+                      "numFilledLinks": 0,
+                      "numLinks": 0
+                    },
+                    "4": {
+                      "numFilledLinks": 0,
+                      "numLinks": 0
+                    }
+                  },
+                  "colors": {
+                    "background": "#275189eb",
+                    "border": "#FFF899",
+                    "font": "#FFF899",
+                    "statusDown": "#ff0000"
+                  },
+                  "compactVerticalLinks": false,
+                  "id": "3339f256-995f-4724-8b04-4b1c992b16d7",
+                  "isConnection": false,
+                  "label": "Bookstore-v3",
+                  "nodeIcon": {
+                    "drawInside": true,
+                    "name": "cisco/callmanager",
+                    "padding": {
+                      "horizontal": 0,
+                      "vertical": 0
+                    },
+                    "size": {
+                      "height": 15,
+                      "width": 15
+                    },
+                    "src": "public/plugins/knightss27-weathermap-panel/icons/cisco/callmanager.svg"
+                  },
+                  "padding": {
+                    "horizontal": 10,
+                    "vertical": 4
+                  },
+                  "position": [
+                    517,
+                    226
+                  ],
+                  "useConstantSpacing": false
+                },
+                {
+                  "anchors": {
+                    "0": {
+                      "numFilledLinks": 0,
+                      "numLinks": 1
+                    },
+                    "1": {
+                      "numFilledLinks": 0,
+                      "numLinks": 0
+                    },
+                    "2": {
+                      "numFilledLinks": 0,
+                      "numLinks": 0
+                    },
+                    "3": {
+                      "numFilledLinks": 0,
+                      "numLinks": 0
+                    },
+                    "4": {
+                      "numFilledLinks": 0,
+                      "numLinks": 0
+                    }
+                  },
+                  "colors": {
+                    "background": "#072a6b",
+                    "border": "#1F60C4",
+                    "font": "#8AB8FF",
+                    "statusDown": "#ff0000"
+                  },
+                  "compactVerticalLinks": false,
+                  "id": "230032e0-2fcd-4c7e-ac0b-be06818b32ca",
+                  "isConnection": false,
+                  "label": "Bookbuyer-v3",
+                  "nodeIcon": {
+                    "drawInside": true,
+                    "name": "cisco/androgenous-person",
+                    "padding": {
+                      "horizontal": 0,
+                      "vertical": 0
+                    },
+                    "size": {
+                      "height": 15,
+                      "width": 15
+                    },
+                    "src": "public/plugins/knightss27-weathermap-panel/icons/cisco/androgenous-person.svg"
+                  },
+                  "padding": {
+                    "horizontal": 8,
+                    "vertical": 0
+                  },
+                  "position": [
+                    -27,
+                    214
+                  ],
+                  "useConstantSpacing": false
+                },
+                {
+                  "anchors": {
+                    "0": {
+                      "numFilledLinks": 0,
+                      "numLinks": 1
+                    },
+                    "1": {
+                      "numFilledLinks": 0,
+                      "numLinks": 0
+                    },
+                    "2": {
+                      "numFilledLinks": 0,
+                      "numLinks": 0
+                    },
+                    "3": {
+                      "numFilledLinks": 0,
+                      "numLinks": 0
+                    },
+                    "4": {
+                      "numFilledLinks": 0,
+                      "numLinks": 0
+                    }
+                  },
+                  "colors": {
+                    "background": "#121215",
+                    "border": "#8F3BB8",
+                    "font": "#DEB6F2",
+                    "statusDown": "#ff0000"
+                  },
+                  "compactVerticalLinks": false,
+                  "id": "4917c3b6-ae78-421c-bf4f-8d860f154b0e",
+                  "isConnection": false,
+                  "label": "Bookthief-v3",
+                  "nodeIcon": {
+                    "drawInside": true,
+                    "name": "networking/micro-webserver",
+                    "padding": {
+                      "horizontal": 0,
+                      "vertical": 1
+                    },
+                    "size": {
+                      "height": 15,
+                      "width": 15
+                    },
+                    "src": "public/plugins/knightss27-weathermap-panel/icons/networking/micro-webserver.svg"
+                  },
+                  "padding": {
+                    "horizontal": 8,
+                    "vertical": 0
+                  },
+                  "position": [
+                    114,
+                    241
+                  ],
+                  "useConstantSpacing": false
+                },
+                {
+                  "anchors": {
+                    "0": {
+                      "numFilledLinks": 0,
+                      "numLinks": 1
+                    },
+                    "1": {
+                      "numFilledLinks": 0,
+                      "numLinks": 0
+                    },
+                    "2": {
+                      "numFilledLinks": 0,
+                      "numLinks": 2
+                    },
+                    "3": {
+                      "numFilledLinks": 0,
+                      "numLinks": 0
+                    },
+                    "4": {
+                      "numFilledLinks": 0,
+                      "numLinks": 0
+                    }
+                  },
+                  "colors": {
+                    "background": "#275189fa",
+                    "border": "#FFF899",
+                    "font": "#8AB8FF",
+                    "statusDown": "#ff0000"
+                  },
+                  "compactVerticalLinks": false,
+                  "id": "4d0a0885-6d07-45d7-9d1f-f92cbee1e4e5",
+                  "isConnection": false,
+                  "label": "Bookstore-v2",
+                  "nodeIcon": {
+                    "drawInside": true,
+                    "name": "cisco/callmanager",
+                    "padding": {
+                      "horizontal": 4,
+                      "vertical": 2
+                    },
+                    "size": {
+                      "height": 20,
+                      "width": 20
+                    },
+                    "src": "public/plugins/knightss27-weathermap-panel/icons/cisco/callmanager.svg"
+                  },
+                  "padding": {
+                    "horizontal": 10,
+                    "vertical": 4
+                  },
+                  "position": [
+                    516,
+                    307
+                  ],
+                  "useConstantSpacing": false
+                }
+              ],
+              "scale": [
+                {
+                  "color": "#00000000",
+                  "percent": 0
+                },
+                {
+                  "color": "#C8F2C2",
+                  "percent": 1
+                },
+                {
+                  "color": "#96D98D",
+                  "percent": 10
+                },
+                {
+                  "color": "#73BF69",
+                  "percent": 20
+                },
+                {
+                  "color": "#56A64B",
+                  "percent": 30
+                },
+                {
+                  "color": "#37872D",
+                  "percent": 40
+                },
+                {
+                  "color": "#FFF899",
+                  "percent": 50
+                },
+                {
+                  "color": "#FFEE52",
+                  "percent": 60
+                },
+                {
+                  "color": "#FFB357",
+                  "percent": 70
+                },
+                {
+                  "color": "#FF780A",
+                  "percent": 80
+                },
+                {
+                  "color": "#F2495C",
+                  "percent": 90
+                },
+                {
+                  "color": "#C4162A",
+                  "percent": 100
+                }
+              ],
+              "settings": {
+                "fontSizing": {
+                  "link": 7,
+                  "node": 10
+                },
+                "link": {
+                  "defaultUnits": "reqps",
+                  "label": {
+                    "background": "rgba(204, 204, 220, 0.16)",
+                    "border": "rgba(204, 204, 220, 0.25)",
+                    "font": "#7d7d94"
+                  },
+                  "showAllWithPercentage": false,
+                  "spacing": {
+                    "horizontal": 10,
+                    "vertical": 5
+                  },
+                  "stroke": {
+                    "color": "rgba(204, 204, 220, 0.16)"
+                  }
+                },
+                "panel": {
+                  "backgroundColor": "#181b1f",
+                  "grid": {
+                    "enabled": false,
+                    "guidesEnabled": false,
+                    "size": 10
+                  },
+                  "offset": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "panelSize": {
+                    "height": 600,
+                    "width": 600
+                  },
+                  "showTimestamp": true,
+                  "zoomScale": -6
+                },
+                "scale": {
+                  "fontSizing": {
+                    "threshold": 9,
+                    "title": 11
+                  },
+                  "position": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "size": {
+                    "height": 280,
+                    "width": 19
+                  },
+                  "title": "Traffic Load"
+                },
+                "tooltip": {
+                  "backgroundColor": "black",
+                  "fontSize": 8,
+                  "inboundColor": "#00cf00",
+                  "outboundColor": "#fade2a",
+                  "textColor": "white"
+                }
+              },
+              "version": 12
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "P1809F7CD0C75ACF3"
+              },
+              "editorMode": "code",
+              "expr": "sum(rate(envoy_cluster_upstream_rq_xx{envoy_cluster_name=\"dynamic_forward_proxy_cluster\", envoy_response_code_class=\"2\"}[$__rate_interval])) by (namespace)",
+              "hide": false,
+              "legendFormat": "__auto",
+              "range": true,
+              "refId": "B"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "P1809F7CD0C75ACF3"
+              },
+              "editorMode": "code",
+              "expr": "sum(rate(http_request_status_counter{status=\"200\"}[$__rate_interval])) by (container)",
+              "hide": false,
+              "legendFormat": "__auto",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "QuicMesh Service Map",
+          "type": "knightss27-weathermap-panel"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P1809F7CD0C75ACF3"
+          },
+          "description": "HTTP Requests by Service Version",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "fillOpacity": 50,
+                "gradientMode": "opacity",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "lineWidth": 2,
+                "scaleDistribution": {
+                  "type": "linear"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "reqps"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 6,
+            "w": 14,
+            "x": 0,
+            "y": 12
+          },
+          "id": 7,
+          "options": {
+            "barRadius": 0.2,
+            "barWidth": 0.43,
+            "groupWidth": 0.7,
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "orientation": "vertical",
+            "showValue": "always",
+            "stacking": "percent",
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            },
+            "xField": "Time",
+            "xTickLabelRotation": 0,
+            "xTickLabelSpacing": 200
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "P1809F7CD0C75ACF3"
+              },
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "sum by (version) (rate(envoy_cluster_upstream_rq_total{envoy_cluster_name=\"dynamic_forward_proxy_cluster\"}[$__rate_interval])  )",
+              "format": "time_series",
+              "instant": false,
+              "legendFormat": "{{version}}",
+              "range": true,
+              "refId": "A"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "P1809F7CD0C75ACF3"
+              },
+              "editorMode": "code",
+              "expr": "sum by (version) (rate(http_request_network_latency_count{container=\"bookbuyer-v3\"}[$__rate_interval]) )",
+              "hide": false,
+              "legendFormat": "__auto",
+              "range": true,
+              "refId": "B"
+            }
+          ],
+          "title": "Bookbuyer -> Bookstore Requests by Service Version",
+          "type": "barchart"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P1809F7CD0C75ACF3"
+          },
+          "description": "HTTP Requests by Service Version",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "continuous-BlYlRd"
+              },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "fillOpacity": 50,
+                "gradientMode": "opacity",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "lineWidth": 2,
+                "scaleDistribution": {
+                  "type": "linear"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "reqps"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 6,
+            "w": 10,
+            "x": 14,
+            "y": 12
+          },
+          "id": 8,
+          "options": {
+            "barRadius": 0.2,
+            "barWidth": 0.43,
+            "groupWidth": 0.7,
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "orientation": "vertical",
+            "showValue": "always",
+            "stacking": "percent",
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            },
+            "xTickLabelRotation": 0,
+            "xTickLabelSpacing": 200
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "P1809F7CD0C75ACF3"
+              },
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "sum by (version) (rate(envoy_cluster_upstream_rq_total{envoy_cluster_name=\"dynamic_forward_proxy_cluster\"}[$__rate_interval])  )",
+              "format": "time_series",
+              "instant": false,
+              "legendFormat": "{{version}}",
+              "range": true,
+              "refId": "A"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "P1809F7CD0C75ACF3"
+              },
+              "editorMode": "code",
+              "expr": "sum by (version) (rate(http_request_network_latency_count{container=\"bookthief-v3\"}[$__rate_interval]) )",
+              "hide": false,
+              "legendFormat": "__auto",
+              "range": true,
+              "refId": "B"
+            }
+          ],
+          "title": "Bookthief -> Bookstore Requests by Service Version",
+          "type": "barchart"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P1809F7CD0C75ACF3"
+          },
+          "description": "Bookthief - Bookstore access by Version and Latency, Error-rate",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "lineInterpolation": "linear",
+                "lineWidth": 2,
+                "pointSize": 8,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "B"
+                },
+                "properties": [
+                  {
+                    "id": "custom.drawStyle",
+                    "value": "bars"
+                  },
+                  {
+                    "id": "custom.lineWidth",
+                    "value": 2
+                  },
+                  {
+                    "id": "custom.fillOpacity",
+                    "value": 25
+                  },
+                  {
+                    "id": "custom.gradientMode",
+                    "value": "opacity"
+                  },
+                  {
+                    "id": "custom.stacking",
+                    "value": {
+                      "group": "A",
+                      "mode": "percent"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "C"
+                },
+                "properties": [
+                  {
+                    "id": "custom.drawStyle",
+                    "value": "bars"
+                  },
+                  {
+                    "id": "custom.lineWidth",
+                    "value": 2
+                  },
+                  {
+                    "id": "custom.fillOpacity",
+                    "value": 25
+                  },
+                  {
+                    "id": "custom.stacking",
+                    "value": {
+                      "group": "A",
+                      "mode": "percent"
+                    }
+                  },
+                  {
+                    "id": "custom.gradientMode",
+                    "value": "opacity"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "E"
+                },
+                "properties": [
+                  {
+                    "id": "custom.drawStyle",
+                    "value": "line"
+                  },
+                  {
+                    "id": "color",
+                    "value": {
+                      "mode": "continuous-GrYlRd",
+                      "seriesBy": "last"
+                    }
+                  },
+                  {
+                    "id": "thresholds",
+                    "value": {
+                      "mode": "percentage",
+                      "steps": [
+                        {
+                          "color": "green",
+                          "value": null
+                        },
+                        {
+                          "color": "yellow",
+                          "value": 5
+                        },
+                        {
+                          "color": "red",
+                          "value": 10
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "F"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "mode": "continuous-BlPu"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 14,
+            "x": 0,
+            "y": 18
+          },
+          "id": 11,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "P1809F7CD0C75ACF3"
+              },
+              "editorMode": "code",
+              "expr": "sum by (version) (rate(envoy_cluster_upstream_rq_xx{envoy_cluster_name=\"dynamic_forward_proxy_cluster\", envoy_response_code_class=\"5\"}[$__rate_interval]))",
+              "interval": "",
+              "legendFormat": "{{version}} Error Rate ",
+              "range": true,
+              "refId": "A"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "P1809F7CD0C75ACF3"
+              },
+              "editorMode": "code",
+              "expr": "sum by (version) (rate(envoy_cluster_upstream_rq_total{envoy_cluster_name=\"dynamic_forward_proxy_cluster\"}[$__rate_interval]) )",
+              "hide": false,
+              "legendFormat": "__auto",
+              "range": true,
+              "refId": "B"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "P1809F7CD0C75ACF3"
+              },
+              "editorMode": "code",
+              "expr": "sum by (version) (rate(http_request_network_latency_count{container=\"bookbuyer-v3\"}[$__rate_interval]) )",
+              "format": "time_series",
+              "hide": false,
+              "instant": false,
+              "interval": "",
+              "legendFormat": "{{label_name}}",
+              "range": true,
+              "refId": "C"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "P1809F7CD0C75ACF3"
+              },
+              "editorMode": "code",
+              "expr": "sum by (version) (rate(http_request_status_counter{container=\"bookthief-v3\", status!=\"200\"}[$__rate_interval]) )",
+              "format": "time_series",
+              "hide": false,
+              "interval": "",
+              "legendFormat": "{{version}} Error Rate",
+              "range": true,
+              "refId": "D"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "P1809F7CD0C75ACF3"
+              },
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "rate(quic_connection_errors_total{namespace=\"bookbuyer\"}[$__rate_interval]) ",
+              "format": "time_series",
+              "hide": false,
+              "instant": false,
+              "interval": "",
+              "legendFormat": "{{container}}  Error rate",
+              "range": true,
+              "refId": "E"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "P1809F7CD0C75ACF3"
+              },
+              "editorMode": "code",
+              "expr": "histogram_quantile(0.75, sum by(le) (rate(http_request_network_latency_bucket{namespace=\"bookbuyer\"}[$__rate_interval])))",
+              "hide": false,
+              "legendFormat": "__auto",
+              "range": true,
+              "refId": "F"
+            }
+          ],
+          "title": "Bookbuyer - Bookstore access by Version and Error Rate",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P1809F7CD0C75ACF3"
+          },
+          "description": "Bookthief - Bookstore access by Version and Latency, Error-rate",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "continuous-BlYlRd"
+              },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "lineInterpolation": "linear",
+                "lineWidth": 2,
+                "pointSize": 8,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "B"
+                },
+                "properties": [
+                  {
+                    "id": "custom.drawStyle",
+                    "value": "bars"
+                  },
+                  {
+                    "id": "custom.lineWidth",
+                    "value": 2
+                  },
+                  {
+                    "id": "custom.fillOpacity",
+                    "value": 25
+                  },
+                  {
+                    "id": "custom.gradientMode",
+                    "value": "opacity"
+                  },
+                  {
+                    "id": "custom.stacking",
+                    "value": {
+                      "group": "A",
+                      "mode": "percent"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "C"
+                },
+                "properties": [
+                  {
+                    "id": "custom.drawStyle",
+                    "value": "bars"
+                  },
+                  {
+                    "id": "custom.lineWidth",
+                    "value": 2
+                  },
+                  {
+                    "id": "custom.fillOpacity",
+                    "value": 25
+                  },
+                  {
+                    "id": "custom.stacking",
+                    "value": {
+                      "group": "A",
+                      "mode": "percent"
+                    }
+                  },
+                  {
+                    "id": "custom.gradientMode",
+                    "value": "opacity"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "E"
+                },
+                "properties": [
+                  {
+                    "id": "custom.drawStyle",
+                    "value": "line"
+                  },
+                  {
+                    "id": "color",
+                    "value": {
+                      "mode": "continuous-BlYlRd"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 10,
+            "x": 14,
+            "y": 18
+          },
+          "id": 10,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "P1809F7CD0C75ACF3"
+              },
+              "editorMode": "code",
+              "expr": "sum by (version) (rate(envoy_cluster_upstream_rq_xx{envoy_cluster_name=\"dynamic_forward_proxy_cluster\", envoy_response_code_class=\"5\"}[$__rate_interval]))",
+              "interval": "",
+              "legendFormat": "{{version}} Error Rate ",
+              "range": true,
+              "refId": "A"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "P1809F7CD0C75ACF3"
+              },
+              "editorMode": "code",
+              "expr": "sum by (version) (rate(envoy_cluster_upstream_rq_total{envoy_cluster_name=\"dynamic_forward_proxy_cluster\"}[$__rate_interval]) )",
+              "hide": false,
+              "legendFormat": "__auto",
+              "range": true,
+              "refId": "B"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "P1809F7CD0C75ACF3"
+              },
+              "editorMode": "code",
+              "expr": "sum by (version) (rate(http_request_network_latency_count{container=\"bookbuyer-v3\"}[$__rate_interval]) )",
+              "format": "time_series",
+              "hide": false,
+              "instant": false,
+              "interval": "",
+              "legendFormat": "{{label_name}}",
+              "range": true,
+              "refId": "C"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "P1809F7CD0C75ACF3"
+              },
+              "editorMode": "code",
+              "expr": "sum by (version) (rate(http_request_status_counter{container=\"bookthief-v3\", status!=\"200\"}[$__rate_interval]) )",
+              "format": "time_series",
+              "hide": false,
+              "interval": "",
+              "legendFormat": "{{version}} Error Rate",
+              "range": true,
+              "refId": "D"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "P1809F7CD0C75ACF3"
+              },
+              "editorMode": "code",
+              "expr": "rate(quic_connection_errors_total[$__rate_interval]) ",
+              "hide": false,
+              "legendFormat": "{{container}} Error rate",
+              "range": true,
+              "refId": "E"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "P1809F7CD0C75ACF3"
+              },
+              "editorMode": "code",
+              "expr": "histogram_quantile(0.75, sum by(le) (rate(http_request_network_latency_bucket{namespace=\"bookbuyer\"}[$__rate_interval])))",
+              "hide": false,
+              "interval": "",
+              "legendFormat": "{{container}} P75",
+              "range": true,
+              "refId": "F"
+            }
+          ],
+          "title": "Bookthief - Bookstore access by Version and Error Rate",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P1809F7CD0C75ACF3"
+          },
+          "description": "QuicSec Blog Stream",
+          "gridPos": {
+            "h": 7,
+            "w": 5,
+            "x": 14,
+            "y": 25
+          },
+          "id": 4,
+          "options": {
+            "feedUrl": "https://quicsecio-devel.pages.dev/api/rss.xml",
+            "showImage": true
+          },
+          "pluginVersion": "9.2.5",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "P1809F7CD0C75ACF3"
+              },
+              "editorMode": "code",
+              "expr": "",
+              "legendFormat": "__auto",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "QuicSec Blog",
+          "type": "news"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P1809F7CD0C75ACF3"
+          },
+          "description": "Pod8 Blog Stream",
+          "gridPos": {
+            "h": 7,
+            "w": 5,
+            "x": 19,
+            "y": 25
+          },
+          "id": 5,
+          "options": {
+            "feedUrl": "https://pod8.dev/api/rss.xml",
+            "showImage": true
+          },
+          "pluginVersion": "9.2.5",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "P1809F7CD0C75ACF3"
+              },
+              "editorMode": "code",
+              "expr": "",
+              "legendFormat": "__auto",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Pod8 Blog",
+          "type": "news"
+        }
+      ],
+      "refresh": "5s",
+      "schemaVersion": 37,
+      "style": "dark",
+      "tags": [],
+      "templating": {
+        "list": []
+      },
+      "time": {
+        "from": "2023-04-12T00:07:17.745Z",
+        "to": "2023-04-12T00:17:17.745Z"
+      },
+      "timepicker": {
+        "refresh_intervals": [
+          "5s",
+          "10s",
+          "30s",
+          "1m",
+          "5m",
+          "15m",
+          "30m",
+          "1h",
+          "2h",
+          "1d"
+        ]
+      },
+      "timezone": "",
+      "title": "QuicMesh Map",
+      "uid": "fJPNsQa4z",
+      "version": 1,
+      "weekStart": ""
+    }

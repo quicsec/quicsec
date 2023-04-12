@@ -1,15 +1,15 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: bookstore-v3-prom
+  name: bookstore-prom
   namespace: bookstore
   labels:
-    app: bookstore-v3-prom
-    qs-monitoring: enabled
+    app: bookstore-prom
+    qm-monitoring: enabled
 spec:
   selector:
-    app: bookstore-v3
+    app: bookstore
   ports:
-  - name: metrics
-    port: 9090
+  - name: qm-fproxy-metrics
+    port: 9901
 

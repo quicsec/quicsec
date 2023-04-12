@@ -1,18 +1,106 @@
+#apiVersion: monitoring.coreos.com/v1
+#kind: ServiceMonitor
+#metadata:
+#  name: bookstore-servicemonitor
+#  namespace: qm-monitoring
+#  labels:
+#    qm-monitoring: enabled
+#spec:
+#  namespaceSelector:
+#    any: true
+#    #matchNames:
+#    #- bookstore
+#  selector:
+#    matchLabels:
+#      qm-monitoring: enabled
+#  endpoints:
+#  - port: qm-fproxy-metrics
+#    path: /stats/prometheus
+#    interval: 30s
+---
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: bookstore-servicemonitor
-  namespace: qs-monitoring
+  name: bookbuyer-qm-servicemonitor
+  namespace: qm-monitoring
   labels:
-    qs-monitoring: enabled
+    qm-monitoring: enabled
+    serviceMonitorSelector: prometheus
 spec:
+  endpoints:
+  - interval: 30s
+    #targetPort: 9901
+    port: qm-fproxy-metrics
+    path: /stats/prometheus
+    honorLabels: true
+    relabelings:
+    - sourceLabels: [__meta_kubernetes_pod_label_version]
+      targetLabel: version
   namespaceSelector:
-    any: true
-    #matchNames:
-    #- bookstore
+    matchNames:
+    - bookbuyer
   selector:
     matchLabels:
-      qs-monitoring: enabled
-  endpoints:
-  - port: metrics
+      #operated-prometheus: "true"
+      qm-monitoring: enabled
+#    matchExpressions:
+#    - key: kubernetes.io/metadata.name
+#      operator: In
+#      values:   
+#        - bookbuyer
+#        - bookthief
+
 ---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: bookthief-qm-servicemonitor
+  namespace: qm-monitoring
+  labels:
+    qm-monitoring: enabled
+    serviceMonitorSelector: prometheus
+spec:
+  endpoints:
+  - interval: 30s
+    #targetPort: 9901
+    port: qm-fproxy-metrics
+    path: /stats/prometheus
+    honorLabels: true
+    relabelings:
+    - sourceLabels: [__meta_kubernetes_pod_label_version]
+      targetLabel: version
+  namespaceSelector:
+    matchNames:
+    - bookthief
+  selector:
+    matchLabels:
+      #operated-prometheus: "true"
+      qm-monitoring: enabled
+---
+# kube-state-metrics monitoring
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: kubestatemetrics-qm-servicemonitor
+  namespace: qm-monitoring
+  labels:
+    qm-monitoring: enabled
+    serviceMonitorSelector: prometheus
+spec:
+  endpoints:
+  - interval: 30s
+    #targetPort: 9901
+    port: http-metrics
+    path: /metrics
+    honorLabels: true
+    relabelings:
+    - sourceLabels: [__meta_kubernetes_pod_label_version]
+      targetLabel: version
+  namespaceSelector:
+    matchNames:
+    - kube-system
+  selector:
+    matchLabels:
+      #operated-prometheus: "true"
+      qm-monitoring: enabled
+

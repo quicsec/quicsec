@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: prometheus
-  namespace: qm-monitoring
+  namespace: qs-monitoring
 ---
 
 apiVersion: rbac.authorization.k8s.io/v1
@@ -14,7 +14,7 @@ metadata:
     app.kubernetes.io/name: prometheus
     app.kubernetes.io/part-of: kube-prometheus
     app.kubernetes.io/version: 2.40.1
-  name: prometheus-qm-monitoring
+  name: prometheus-qs-monitoring
 rules:
 - apiGroups:
   - ""
@@ -29,7 +29,6 @@ rules:
 - apiGroups:
   - ""
   resources:
-  - nodes
   - services
   - pods
   - endpoints
@@ -41,13 +40,13 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: prometheus-qm-monitoring
+  name: prometheus-qs-monitoring
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: prometheus-qm-monitoring
+  name: prometheus-qs-monitoring
 subjects:
 - kind: ServiceAccount
   name: prometheus
-  namespace: qm-monitoring
+  namespace: qs-monitoring
 

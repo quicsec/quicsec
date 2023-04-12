@@ -1,0 +1,15 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: bookstore-v3-prom
+  namespace: bookstore
+  labels:
+    app: bookstore-v3-prom
+    qs-monitoring: enabled
+spec:
+  selector:
+    app: bookstore-v3
+  ports:
+  - name: metrics
+    port: 9090
+

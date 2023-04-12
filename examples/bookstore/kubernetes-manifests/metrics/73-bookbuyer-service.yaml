@@ -1,15 +1,15 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: bookbuyer-v3-prom
+  name: bookbuyer-prom
   namespace: bookbuyer
   labels:
-    app: bookbuyer-v3-prom
-    qs-monitoring: enabled
+    app: bookbuyer-prom
+    qm-monitoring: enabled
 spec:
   selector:
-    app: bookbuyer-v3
+    app: bookbuyer
   ports:
-  - name: metrics
-    port: 9090
+  - name: qm-fproxy-metrics
+    port: 9901
 

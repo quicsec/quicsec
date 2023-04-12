@@ -1,0 +1,7 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: qs-monitoring
+  labels:
+    bookstore-demo: "true"

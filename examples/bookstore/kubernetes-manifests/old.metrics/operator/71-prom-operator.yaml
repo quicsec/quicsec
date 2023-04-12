@@ -28829,7 +28829,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: prometheus-operator
-  namespace: qm-monitoring
+  namespace: qs-monitoring
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -28920,7 +28920,7 @@ metadata:
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/version: 0.61.1
   name: prometheus-operator
-  namespace: qm-monitoring
+  namespace: qs-monitoring
 spec:
   replicas: 1
   selector:
@@ -28975,7 +28975,7 @@ metadata:
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/version: 0.61.1
   name: prometheus-operator
-  namespace: qm-monitoring
+  namespace: qs-monitoring
 ---
 apiVersion: v1
 kind: Service
@@ -28985,7 +28985,7 @@ metadata:
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/version: 0.61.1
   name: prometheus-operator
-  namespace: qm-monitoring
+  namespace: qs-monitoring
 spec:
   clusterIP: None
   ports:

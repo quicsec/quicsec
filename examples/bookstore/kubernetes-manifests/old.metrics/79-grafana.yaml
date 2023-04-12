@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: grafana
-  namespace: qm-monitoring
+  namespace: qs-monitoring
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -11,7 +11,7 @@ metadata:
     app.kubernetes.io/component: grafana
     app.kubernetes.io/name: grafana
   name: grafana
-  namespace: qm-monitoring
+  namespace: qs-monitoring
 spec:
   replicas: 1
   selector:
@@ -33,12 +33,6 @@ spec:
         ports:
         - containerPort: 3000
           name: http
-        envFrom:
-          - configMapRef:
-              name: grafana-config
-        #env:
-        #  - name: GF_INSTALL_PLUGINS
-        #    value: "https://github.com/knightss27/grafana-network-weathermap/releases/download/v0.3.5/knightss27-weathermap-panel-0.3.5.zip;custom-plugin"
         readinessProbe:
           httpGet:
             path: /api/health
@@ -60,20 +54,14 @@ spec:
         - mountPath: /var/lib/grafana
           name: grafana-storage
           readOnly: false
-        - mountPath: /tmp
-          name: grafana-tmp
-          readOnly: false
         - mountPath: /etc/grafana/provisioning/datasources
           name: grafana-datasources
           readOnly: false
         - mountPath: /etc/grafana/provisioning/dashboards
-          name: grafana-dashboards-qm-monitoring
+          name: grafana-dashboards-qs-monitoring
           readOnly: false
         - mountPath: /grafana-dashboard-definitions/0/grafana-dashboard-quicstats
           name: grafana-dashboard-quicstats
-          readOnly: false
-        - mountPath: /grafana-dashboard-definitions/0/grafana-dashboard-quicmeshmap
-          name: grafana-dashboard-quicmeshmap
           readOnly: false
       nodeSelector:
         kubernetes.io/os: linux
@@ -85,20 +73,15 @@ spec:
       volumes:
       - emptyDir: {}
         name: grafana-storage
-      - emptyDir: {}
-        name: grafana-tmp
       - name: grafana-datasources
         secret:
-          secretName: grafana-datasources-qm-monitoring
+          secretName: grafana-datasources-qs-monitoring
       - configMap:
           name: grafana-dashboard-quicstats
         name: grafana-dashboard-quicstats
       - configMap:
-          name: grafana-dashboard-quicmeshmap
-        name: grafana-dashboard-quicmeshmap
-      - configMap:
-          name: grafana-dashboards-qm-monitoring
-        name: grafana-dashboards-qm-monitoring
+          name: grafana-dashboards-qs-monitoring
+        name: grafana-dashboards-qs-monitoring
 ---
 apiVersion: v1
 kind: Service
@@ -107,7 +90,7 @@ metadata:
     app.kubernetes.io/component: grafana
     app.kubernetes.io/name: grafana
   name: grafana
-  namespace: qm-monitoring
+  namespace: qs-monitoring
 spec:
   ports:
   - name: http
