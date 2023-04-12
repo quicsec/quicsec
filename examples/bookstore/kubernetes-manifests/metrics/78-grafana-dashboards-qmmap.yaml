@@ -42,7 +42,7 @@ data:
           },
           "description": "Map of QuicMesh Services",
           "gridPos": {
-            "h": 12,
+            "h": 10,
             "w": 24,
             "x": 0,
             "y": 0
@@ -774,11 +774,11 @@ data:
                     "A": {
                       "anchor": 0,
                       "bandwidth": 10,
-                      "currentBandwidthText": "10  req/s",
-                      "currentPercentageText": "4.00%",
-                      "currentText": "0.400  req/s",
-                      "currentValue": 0.4,
-                      "currentValueText": "0.400  req/s",
+                      "currentBandwidthText": "n/a",
+                      "currentPercentageText": "n/a%",
+                      "currentText": "n/a",
+                      "currentValue": 0,
+                      "currentValueText": "n/a",
                       "dashboardLink": "",
                       "labelOffset": 66,
                       "query": "bookbuyer-v3"
@@ -2535,10 +2535,10 @@ data:
             "overrides": []
           },
           "gridPos": {
-            "h": 6,
+            "h": 8,
             "w": 14,
             "x": 0,
-            "y": 12
+            "y": 10
           },
           "id": 7,
           "options": {
@@ -2640,10 +2640,10 @@ data:
             "overrides": []
           },
           "gridPos": {
-            "h": 6,
+            "h": 8,
             "w": 10,
             "x": 14,
-            "y": 12
+            "y": 10
           },
           "id": 8,
           "options": {
@@ -2743,8 +2743,7 @@ data:
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -2839,8 +2838,7 @@ data:
                       "mode": "percentage",
                       "steps": [
                         {
-                          "color": "green",
-                          "value": null
+                          "color": "green"
                         },
                         {
                           "color": "yellow",
@@ -2872,7 +2870,7 @@ data:
             ]
           },
           "gridPos": {
-            "h": 7,
+            "h": 6,
             "w": 14,
             "x": 0,
             "y": 18
@@ -3022,8 +3020,7 @@ data:
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -3116,7 +3113,7 @@ data:
             ]
           },
           "gridPos": {
-            "h": 7,
+            "h": 6,
             "w": 10,
             "x": 14,
             "y": 18
@@ -3227,7 +3224,7 @@ data:
             "h": 7,
             "w": 5,
             "x": 14,
-            "y": 25
+            "y": 24
           },
           "id": 4,
           "options": {
@@ -3261,7 +3258,7 @@ data:
             "h": 7,
             "w": 5,
             "x": 19,
-            "y": 25
+            "y": 24
           },
           "id": 5,
           "options": {
@@ -3294,8 +3291,8 @@ data:
         "list": []
       },
       "time": {
-        "from": "2023-04-12T00:07:17.745Z",
-        "to": "2023-04-12T00:17:17.745Z"
+        "from": "now-5m",
+        "to": "now"
       },
       "timepicker": {
         "refresh_intervals": [
