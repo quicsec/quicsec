@@ -7,5 +7,5 @@ metadata:
   name: grafana-config
   namespace: qm-monitoring
 data:
-  GF_INSTALL_PLUGINS: "https://github.com/knightss27/grafana-network-weathermap/releases/download/v0.3.5/knightss27-weathermap-panel-0.3.5.zip;custom-plugin"
+  GF_INSTALL_PLUGINS: "https://github.com/knightss27/grafana-network-weathermap/releases/download/v0.3.6/knightss27-weathermap-panel-0.3.6.zip;custom-plugin"
 

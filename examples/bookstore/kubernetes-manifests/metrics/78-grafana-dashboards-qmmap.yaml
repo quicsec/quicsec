@@ -1678,7 +1678,8 @@ data:
                     },
                     "Z": {
                       "anchor": 0,
-                      "currentBandwidthText": " undefined",
+                      "bandwidth": 10,
+                      "currentBandwidthText": "10  req/s",
                       "currentPercentageText": "n/a%",
                       "currentText": "n/a",
                       "currentValue": 0,
@@ -2743,8 +2744,7 @@ data:
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -2839,8 +2839,7 @@ data:
                       "mode": "percentage",
                       "steps": [
                         {
-                          "color": "green",
-                          "value": null
+                          "color": "green"
                         },
                         {
                           "color": "yellow",
@@ -3022,8 +3021,7 @@ data:
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
