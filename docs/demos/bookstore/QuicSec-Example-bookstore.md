@@ -17,7 +17,7 @@ Deploy a Kubernetes cluster for the demo.
 
 We recommend ensuring that your cluster does not already have a pre-existing cert-manager installed, since we will install it now with the auto-approver disabled (as specified in the cert-manager documentation for cert-manager-csi-spiffe).
 
-1. [Install Cert-manager and cert-manager-csi-spiffe](https://quicsec.io/docs/cert-manager) to enable workload identity certificate provisioning via QuicSec to the bookstore demo components.
+1. [Install Cert-manager and cert-manager-csi-spiffe](https://quicsec.io/docs/use-cases/cert-manager) to enable workload identity certificate provisioning via QuicSec to the bookstore demo components.
 
 ## C.  Install Bookstore application (with quicsec integration)
 
