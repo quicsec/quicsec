@@ -32,24 +32,24 @@ func OperationsInit() (io.Writer, logging.Tracer) {
 
 		opsLogger.Info("module initialization")
 
-		if conf.SharedSecretEnableFlag {
-			opsLogger.V(log.DebugLevel).Info("pre shared key dump enabled", "path", conf.SharedSecretFilePath)
+		if conf.Quic.Debug.SecretFilePathEnableFlag {
+			opsLogger.V(log.DebugLevel).Info("pre shared key dump enabled", "path", conf.Quic.Debug.SecretFilePath)
 
-			keyLog = utils.CreateFileRotate(conf.SharedSecretFilePath, 2)
+			keyLog = utils.CreateFileRotate(conf.Quic.Debug.SecretFilePath, 2)
 		} else {
 			opsLogger.V(log.DebugLevel).Info("pre shared key dump disabled")
 		}
 
-		if conf.QlogEnableFlag {
-			opsLogger.V(log.DebugLevel).Info("qlog enabled", "path", conf.QlogDirPath)
+		if conf.Quic.Debug.QlogEnableFlag {
+			opsLogger.V(log.DebugLevel).Info("qlog enabled", "path", conf.Quic.Debug.QlogDirPath)
 
-			qlogTracer := qlogInit(conf.QlogDirPath)
+			qlogTracer := qlogInit(conf.Quic.Debug.QlogDirPath)
 			tracers = append(tracers, qlogTracer)
 		} else {
 			opsLogger.V(log.DebugLevel).Info("qlog disabled")
 		}
 
-		if conf.MetricsEnableFlag {
+		if conf.Metrics.Enable {
 			opsLogger.V(log.DebugLevel).Info("trace metrics enabled")
 			metricsInit()
 			tracers = append(tracers, &MetricsTracer{})

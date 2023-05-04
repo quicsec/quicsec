@@ -48,13 +48,13 @@ func ListenAndServe(addr string, handler http.Handler) error {
 	}
 
 	if config.GetMtlsEnable() {
-		connLogger.V(log.DebugLevel).Info("mTLS enabled by configuration")
-		tlsConfig.VerifyPeerCertificate = auth.WrapVerifyPeerCertificate(auth.CustomVerifyPeerCertificate)
-		tlsConfig.ClientAuth = tls.RequireAnyClientCert
+		connLogger.V(log.DebugLevel).Info("mTLS enabled by configuration during start")
 	} else {
-		connLogger.V(log.DebugLevel).Info("mTLS disabled by configuration")
-		tlsConfig.ClientAuth = tls.NoClientCert
+		connLogger.V(log.DebugLevel).Info("mTLS disabled by configuration during start")
 	}
+
+	tlsConfig.ClientAuth = tls.RequestClientCert
+	tlsConfig.VerifyPeerCertificate = auth.WrapVerifyPeerCertificate(auth.CustomVerifyPeerCertificate)
 
 	connLogger.V(log.DebugLevel).Info("try to bind address for tcp/udp", "addr", addr)
 
@@ -172,11 +172,11 @@ func Do(req *http.Request) (*http.Response, error) {
 	}
 
 	if config.GetMtlsEnable() {
-		connLogger.V(log.DebugLevel).Info("mTLS enabled by configuration")
+		connLogger.V(log.DebugLevel).Info("mTLS enabled by configuration during start")
 		tlsConfig.InsecureSkipVerify = true
 		tlsConfig.VerifyPeerCertificate = auth.WrapVerifyPeerCertificate(auth.CustomVerifyPeerCertificate)
 	} else {
-
+		connLogger.V(log.DebugLevel).Info("mTLS disabled by configuration during start")
 		if !config.GetInsecureSkipVerify() {
 			// even if mTLS is disable, we need to validate if the
 			// cert from the server cert is valid agains the CA pool
