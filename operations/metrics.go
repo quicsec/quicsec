@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"strconv"
 	"sync"
 	"time"
 
@@ -20,32 +21,32 @@ import (
 )
 
 var (
-	bytesTransferred   		*prometheus.CounterVec
-	packetsTransferred 		*prometheus.CounterVec
-	newConns           		*prometheus.CounterVec
-	closedConns        		*prometheus.CounterVec
-	sentPackets        		*prometheus.CounterVec
-	rcvdPackets        		*prometheus.CounterVec
-	bufferedPackets    		*prometheus.CounterVec
-	droppedPackets     		*prometheus.CounterVec
-	lostPackets        		*prometheus.CounterVec
-	connErrors         		*prometheus.CounterVec
-	HttpRequestsPath		*prometheus.CounterVec
-	HttpRequestsStatus		*prometheus.CounterVec
+	bytesTransferred   *prometheus.CounterVec
+	packetsTransferred *prometheus.CounterVec
+	newConns           *prometheus.CounterVec
+	closedConns        *prometheus.CounterVec
+	sentPackets        *prometheus.CounterVec
+	rcvdPackets        *prometheus.CounterVec
+	bufferedPackets    *prometheus.CounterVec
+	droppedPackets     *prometheus.CounterVec
+	lostPackets        *prometheus.CounterVec
+	connErrors         *prometheus.CounterVec
+	HttpRequestsPath   *prometheus.CounterVec
+	HttpRequestsStatus *prometheus.CounterVec
 
 	HTTPHistogramAppProcess = prometheus.NewHistogram(
 		prometheus.HistogramOpts{
-			Name:      "http_request_application_process_latency",
-			Help:      "The application latency to process a HTTP request",
+			Name:    "http_request_application_process_latency",
+			Help:    "The application latency to process a HTTP request",
 			Buckets: prometheus.ExponentialBuckets(0.001, 1.25, 40), // 1ms to ~6000ms
 		})
 
 	HTTPHistogramNetworkLatency = prometheus.NewHistogram(
 		prometheus.HistogramOpts{
-			Name:      "http_request_network_latency",
-			Help:      "The network latency between the request and the response",
+			Name:    "http_request_network_latency",
+			Help:    "The network latency between the request and the response",
 			Buckets: prometheus.ExponentialBuckets(0.001, 1.25, 40), // 1ms to ~6000ms
-		})	
+		})
 )
 
 type aggregatingCollector struct {
@@ -246,9 +247,9 @@ func metricsInit() {
 
 	pFlag, pAddr := config.GetPrometheusHTTPConfig()
 	if pFlag {
-		go runPrometheusHTTP(pAddr)
+		go runPrometheusHTTP("0.0.0.0:" + strconv.Itoa(pAddr))
 	} else {
-		log.LoggerLgr.WithName(log.ConstOperationsManager).V(log.DebugLevel).Info("configure QUICSEC_PROMETHEUS_BIND to access Prometheus metrics")
+		log.LoggerLgr.WithName(log.ConstOperationsManager).V(log.DebugLevel).Info("configure QUICSEC_METRICS_BIND_PORT to access Prometheus metrics")
 	}
 }
 func (m *MetricsTracer) TracerForConnection(_ context.Context, p logging.Perspective, connID logging.ConnectionID) logging.ConnectionTracer {
