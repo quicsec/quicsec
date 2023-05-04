@@ -1,239 +1,340 @@
 package config
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"strings"
 	"sync"
 
 	"github.com/fsnotify/fsnotify"
+	"github.com/go-logr/logr"
 	"github.com/quicsec/quicsec/operations/log"
 	"github.com/spf13/viper"
 )
 
+var onlyOnce sync.Once
+
+const envVarPrefix string = "QUICSEC_"
+
 type Config struct {
-	// Identity Manager
-	// identityManager - certificates
-	CertFile string `mapstructure:"CERT_FILE"`
-	KeyFile  string `mapstructure:"KEY_FILE"`
-	CAFile   string `mapstructure:"CA_FILE"`
-
-	// Operations Manager
-	// opsManager - metrics
-	PrometheusEnableFlag bool
-	MetricsEnableFlag    bool
-	PrometheusBind       string `mapstructure:"PROMETHEUS_BIND"`
-	MetricsEnable        int64  `mapstructure:"METRICS_ENABLE"`
-
-	// opsManager - logs
-	LogOutputFileFlag       bool
-	LogAccessOutputFileFlag bool
-	LogDebugFlag            bool
-	LogDebug                int64  `mapstructure:"LOG_DEBUG"`
-	LogOutputFile           string `mapstructure:"LOG_FILE_PATH"`
-	LogAccessOutputFile     string `mapstructure:"LOG_ACCESS_PATH"`
-
-	// opsManager - qlog
-	QlogEnableFlag bool
-	QlogDirPath    string `mapstructure:"QLOG_DIR_PATH"`
-
-	// opsManager - shared secret dump
-	SharedSecretEnableFlag bool
-	SharedSecretFilePath   string `mapstructure:"SECRET_FILE_PATH"`
-
-	// Authentication Manager
-	// authManager - authz rules
-	AuthzRulesPath string `mapstructure:"AUTHZ_RULES_PATH"`
-	SpiffeID       []string
-
-	//mTLS
-	//Skip CA certificate verification
-	InsecureSkipVerifyFlag bool
-	InsecureSkipVerify     uint64 `mapstructure:"INSEC_SKIP_VERIFY"`
-	//[TODO] After implementing CABundle custom verify, this flag should
-	// configure the custom verification and not that one from cypto/tls
-
-	// mTLS enable
-	MTlsEnableFlag bool
-	MTlsEnable     uint64 `mapstructure:"MTLS_ENABLE"`
+	Log      LogConfigs
+	HTTP     HttpConfigs
+	Quic     QuicConfigs
+	Metrics  MetricsConfigs
+	Certs    CertificatesConfigs
+	Security SecurityConfigs
 }
 
-var onlyOnce sync.Once
+// opsManager - logs
+type LogConfigs struct {
+	LogOutputFileFlag       bool
+	LogAccessOutputFileFlag bool
+	Debug                   bool   `mapstructure:"debug"`
+	Path                    string `mapstructure:"path"`
+}
+
+type HttpConfigs struct {
+	Access AccessConfigs `mapstructure:"access"`
+}
+
+type AccessConfigs struct {
+	Path string `mapstructure:"path"`
+}
+
+// opsManager - shared secret dump
+type QuicConfigs struct {
+	Debug QuicDebugConfigs `mapstructure:"debug"`
+}
+
+// opsManager - shared secret dump
+type QuicDebugConfigs struct {
+	SecretFilePathEnableFlag bool
+	QlogEnableFlag           bool
+	SecretFilePath           string `mapstructure:"secret_path"`
+	QlogDirPath              string `mapstructure:"qlog_path"`
+}
+
+// Operations Manager
+// opsManager - metrics
+type MetricsConfigs struct {
+	BindEnableFlag bool
+	Enable         bool `mapstructure:"enable"`
+	BindPort       int  `mapstructure:"bind_port"`
+}
+
+// Identity Manager
+// identityManager - certificates
+type CertificatesConfigs struct {
+	CaPath   string `mapstructure:"ca_path"`
+	KeyPath  string `mapstructure:"key_path"`
+	CertPath string `mapstructure:"cert_path"`
+}
+
+type SecurityConfigs struct {
+	Mtls MtlsConfig `mapstructure:"mtls"`
+}
+
+type MtlsConfig struct {
+	Enable          bool         `mapstructure:"enable"`
+	InsecSkipVerify bool         `mapstructure:"insec_skip_verify"`
+	Authz           AuthzConfigs `mapstructure:"authz"`
+}
+
+type AuthzConfigs struct {
+	RulesPath string `mapstructure:"rules_path"`
+	SpiffeID  []string
+}
 
 // default config values
 var globalConfig = Config{
-	PrometheusEnableFlag:    false,
-	QlogEnableFlag:          true,
-	SharedSecretEnableFlag:  false,
-	LogOutputFileFlag:       false,
-	LogAccessOutputFileFlag: false,
-	InsecureSkipVerifyFlag:  false,
-	MTlsEnableFlag:          true,
+	Log: LogConfigs{
+		LogOutputFileFlag:       false,
+		LogAccessOutputFileFlag: false,
+	},
+	Quic: QuicConfigs{
+		Debug: QuicDebugConfigs{
+			SecretFilePathEnableFlag: false,
+			QlogEnableFlag:           false,
+		},
+	},
+	Metrics: MetricsConfigs{
+		BindEnableFlag: false,
+	},
 }
 
 func GetPathCertFile() string {
-	return globalConfig.CertFile
+	return globalConfig.Certs.CertPath
 }
 
 func GetPathKeyFile() string {
-	return globalConfig.KeyFile
+	return globalConfig.Certs.KeyPath
 }
 
 func GetPathCAFile() string {
-	return globalConfig.CAFile
+	return globalConfig.Certs.CaPath
 }
 
 func GetLastAuthRules() []string {
-	return globalConfig.SpiffeID
+	return globalConfig.Security.Mtls.Authz.SpiffeID
 }
 
-func GetPrometheusHTTPConfig() (bool, string) {
-	return globalConfig.PrometheusEnableFlag, globalConfig.PrometheusBind
+func GetPrometheusHTTPConfig() (bool, int) {
+	return globalConfig.Metrics.BindEnableFlag, globalConfig.Metrics.BindPort
 }
 
 func GetLogFileConfig() (bool, string) {
-	return globalConfig.LogOutputFileFlag, globalConfig.LogOutputFile
+	return globalConfig.Log.LogOutputFileFlag, globalConfig.Log.Path
 }
 
 func GetEnableDebug() bool {
-	return globalConfig.LogDebugFlag
+	return globalConfig.Log.Debug
 }
 
 func GetInsecureSkipVerify() bool {
-	return globalConfig.InsecureSkipVerifyFlag
+	return globalConfig.Security.Mtls.InsecSkipVerify
 }
 
 func GetMtlsEnable() bool {
-	return globalConfig.MTlsEnableFlag
+	return globalConfig.Security.Mtls.Enable
 }
 
-func (c Config) showAuthzRules() {
-	for _, id := range c.SpiffeID {
-		fmt.Printf("URI:%s\n", id)
-	}
+func SetMtlsEnable(flag bool) {
+	globalConfig.Security.Mtls.Enable = flag
+}
+
+func SetLastAuthRules(spiffeURI []string) {
+	globalConfig.Security.Mtls.Authz.SpiffeID = spiffeURI
 }
 
 func (c Config) ShowConfig() {
 	fmt.Printf("Init configuration\n")
-	fmt.Printf("CertFile:%s\n", c.CertFile)
-	fmt.Printf("KeyFile:%s\n", c.KeyFile)
-	fmt.Printf("CAFile:%s\n", c.CAFile)
-	fmt.Printf("PrometheusBind:%s\n", c.PrometheusBind)
-	fmt.Printf("LogVerbose:%d\n", c.LogDebug)
-	fmt.Printf("LogOutputFile:%s\n", c.LogOutputFile)
-	fmt.Printf("LogAccessOutputFile:%s\n", c.LogAccessOutputFile)
-	fmt.Printf("MetricsEnable:%d\n", c.MetricsEnable)
-	fmt.Printf("qlogDirPath:%s\n", c.QlogDirPath)
-	fmt.Printf("InsecureSkipVerify:%d\n", c.InsecureSkipVerify)
-	fmt.Printf("MtlsEnable:%d\n", c.MTlsEnable)
-	fmt.Printf("sharedSecretFilePath:%s\n", c.SharedSecretFilePath)
-	fmt.Printf("Authz rules:\n")
-	c.showAuthzRules()
+
+	fmt.Printf("LogVerbose:%t\n", c.Log.Debug)
+	fmt.Printf("LogOutputFile:%s\n", c.Log.Path)
+	fmt.Printf("LogAccessOutputFile:%s\n", c.HTTP.Access.Path)
+
+	fmt.Printf("sharedSecretFilePath:%s\n", c.Quic.Debug.SecretFilePath)
+	fmt.Printf("qlogDirPath:%s\n", c.Quic.Debug.QlogDirPath)
+
+	fmt.Printf("MetricsEnable:%t\n", c.Metrics.Enable)
+	fmt.Printf("BindPort:%d\n", c.Metrics.BindPort)
+
+	fmt.Printf("CAPath:%s\n", c.Certs.CaPath)
+	fmt.Printf("KeyPath:%s\n", c.Certs.KeyPath)
+	fmt.Printf("CertPath:%s\n", c.Certs.CertPath)
+
+	fmt.Printf("MtlsEnable:%t\n", c.Security.Mtls.Enable)
+	fmt.Printf("InsecureSkipVerify:%t\n", c.Security.Mtls.InsecSkipVerify)
+	fmt.Printf("AuthzRulesPath:%s\n", c.Security.Mtls.Authz.RulesPath)
+
+}
+
+// AuthzConfig struct to parse the authz json file
+type AuthzConfig struct {
+	Quicsec AuthzQuicsecConfig `json:"quicsec"`
+}
+
+type AuthzQuicsecConfig struct {
+	AuthzRules []string `json:"authz_rules"`
+}
+
+func readAuthzRulesFile(path string, confLog logr.Logger) {
+	var config AuthzConfig
+	jsonFile, err := os.Open(path)
+	if err != nil {
+		confLog.V(log.DebugLevel).Error(err, "failed to os.Open()")
+	}
+	defer jsonFile.Close()
+
+	byteValue, _ := ioutil.ReadAll(jsonFile)
+
+	json.Unmarshal(byteValue, &config)
+	SetLastAuthRules(config.Quicsec.AuthzRules)
+}
+
+func watchAuthzRules(rulesPath string, confLog logr.Logger) {
+	watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		confLog.V(log.DebugLevel).Error(err, "failed to fsnotify.NewWatcher()")
+	}
+	defer watcher.Close()
+	err = watcher.Add(rulesPath)
+	if err != nil {
+		confLog.V(log.DebugLevel).Error(err, "failed to watcher.Add():", "path", rulesPath)
+		return
+	}
+
+	for {
+		select {
+		case event, ok := <-watcher.Events:
+			if !ok {
+				return
+			}
+			if event.Op&fsnotify.Write == fsnotify.Write {
+				readAuthzRulesFile(rulesPath, confLog)
+			}
+		case err, ok := <-watcher.Errors:
+			if !ok {
+				return
+			}
+			confLog.V(log.DebugLevel).Error(err, "watcher errors:")
+		}
+	}
+}
+
+func readCoreConfig() (string, string, string) {
+	var dir string
+	var file string
+	var coreConfigFull string
+
+	coreConfig := os.Getenv(envVarPrefix + "CORE_CONFIG")
+	if coreConfig != "" {
+		coreConfigFull = coreConfig
+		// Check if file already exists
+		dir, file = filepath.Split(coreConfig)
+		// remove "json" from the file
+		file = strings.Split(file, ".")[0]
+	} else {
+		// default value ./config
+		coreConfigFull = "./config.json"
+		dir = "./"
+		file = "config"
+	}
+	return dir, file, coreConfigFull
 }
 
 func LoadConfig() Config {
 	onlyOnce.Do(func() {
-		viper.AutomaticEnv()
-		viper.SetEnvPrefix("QUICSEC")
-		viper.AddConfigPath("/")
-		viper.SetConfigType("json")
-		viper.AllowEmptyEnv(true)
+		var confLogger logr.Logger
+		// read QUICSEC_CORE_CONFIG before viper init
+		path, configFile, configCorePath := readCoreConfig()
 
-		//defaults
-		viper.SetDefault("CERT_FILE", "certs/cert.pem")
-		viper.SetDefault("KEY_FILE", "certs/cert.key")
-		viper.SetDefault("CA_FILE", "certs/ca.pem")
-		viper.SetDefault("METRICS_ENABLE", "1")
-		viper.SetDefault("PROMETHEUS_BIND", "") // example: "192.168.56.101:8080"
-		viper.SetDefault("LOG_DEBUG", "1")
-		viper.SetDefault("LOG_FILE_PATH", "")   // example: output.log
-		viper.SetDefault("LOG_ACCESS_PATH", "") // example: /var/log/access.log
-		viper.SetDefault("QLOG_DIR_PATH", "./qlog/")
-		viper.SetDefault("SECRET_FILE_PATH", "") // example: pre-shared-secret.txt
-		viper.SetDefault("AUTHZ_RULES_PATH", "config.json")
-		viper.SetDefault("INSEC_SKIP_VERIFY", "0")
-		viper.SetDefault("MTLS_ENABLE", "1")
+		viper.AddConfigPath(path)
+		viper.SetConfigName(configFile) // Register config file name (no extension)
+		viper.SetConfigType("json")     // Look for specific type
 
-		err := viper.Unmarshal(&globalConfig)
-		if err != nil {
-			fmt.Printf("environment cant be loaded: %s\n", err)
-		}
+		// defaults
+		viper.SetDefault("log.debug", true)                                      // QUICSEC_LOG_DEBUG
+		viper.SetDefault("log.path", "")                                         // QUICSEC_LOG_PATH
+		viper.SetDefault("http.access.path", "")                                 // QUICSEC_HTTP_ACCESS_PATH
+		viper.SetDefault("quic.debug.secret_path", "")                           // QUICSEC_QUIC_DEBUG_SECRET_PATH
+		viper.SetDefault("quic.debug.qlog_path", "./qlog/")                      // QUICSEC_QUIC_DEBUG_QLOG_PATH
+		viper.SetDefault("metrics.enable", true)                                 // QUICSEC_METRICS_ENABLE
+		viper.SetDefault("metrics.bind_port", 8080)                              // QUICSEC_METRICS_BIND_PORT
+		viper.SetDefault("certs.ca_path", "certs/ca.pem")                        // QUICSEC_CERTS_CA_PATH
+		viper.SetDefault("certs.key_path", "certs/cert.key")                     // QUICSEC_CERTS_KEY_PATH
+		viper.SetDefault("certs.cert_path", "certs/cert.pem")                    // QUICSEC_CERTS_CERT_PATH
+		viper.SetDefault("security.mtls.enable", false)                          // QUICSEC_SECURITY_MTLS_ENABLE
+		viper.SetDefault("security.mtls.insec_skip_verify", false)               // QUICSEC_SECURITY_MTLS_INSEC_SKIP_VERIFY
+		viper.SetDefault("security.mtls.authz.rules_path", "./authzconfig.json") // QUICSEC_SECURITY_MTLS_AUTHZ_RULES_PATH
 
-		// log debug
-		if globalConfig.LogDebug == 1 {
-			globalConfig.LogDebugFlag = true
-		} else {
-			globalConfig.LogDebugFlag = false
-		}
-
-		// log into file
-		if globalConfig.LogOutputFile != "" {
-			globalConfig.LogOutputFileFlag = true
-		} else {
-			globalConfig.LogOutputFileFlag = false
-		}
-
-		log.InitLoggerLogr(globalConfig.LogDebugFlag, globalConfig.LogOutputFile)
-		log.InitLoggerRequest(globalConfig.LogDebugFlag, globalConfig.LogAccessOutputFile)
-		confLogger := log.LoggerLgr.WithName(log.ConstConfigManager)
-		confLogger.V(log.DebugLevel).Info("all environment variables loaded")
-
-		if globalConfig.AuthzRulesPath != "" {
-			confLogger.V(log.DebugLevel).Info("Read authz rules", "path", globalConfig.AuthzRulesPath)
-			viper.SetConfigName(globalConfig.AuthzRulesPath)
-		}
-
-		err = viper.ReadInConfig()
-		if err != nil {
-			confLogger.V(log.DebugLevel).Info("cannot read authz cofiguration. Skip this error.", "skip_error", err)
+		if err := viper.ReadInConfig(); err != nil {
+			fmt.Println("config: error reading config file: " + err.Error())
 		} else {
 			// watch authz json file for changes
 			viper.WatchConfig()
 			viper.OnConfigChange(func(e fsnotify.Event) {
-				globalConfig.SpiffeID = viper.GetStringSlice("quicsec.authz_rules")
+				enableFlag := viper.GetBool("security.mtls.enable")
+				SetMtlsEnable(enableFlag)
+				confLogger.V(log.DebugLevel).Info("mTLS config change", "enable", enableFlag)
 			})
 		}
 
-		globalConfig.SpiffeID = viper.GetStringSlice("quicsec.authz_rules")
+		for _, key := range viper.AllKeys() {
+			envKey := strings.ToUpper(envVarPrefix + strings.ReplaceAll(key, ".", "_"))
+			err := viper.BindEnv(key, envKey)
+			if err != nil {
+				fmt.Println("config: unable to bind env: " + err.Error())
+			}
+		}
+
+		if err := viper.Unmarshal(&globalConfig); err != nil {
+			fmt.Println("config: unable to decode into struct: " + err.Error())
+		}
+
+		// log into file
+		if globalConfig.Log.Path != "" {
+			globalConfig.Log.LogOutputFileFlag = true
+		} else {
+			globalConfig.Log.LogOutputFileFlag = false
+		}
+
+		log.InitLoggerLogr(globalConfig.Log.Debug, globalConfig.Log.Path)
+
+		log.InitLoggerRequest(globalConfig.Log.Debug, globalConfig.HTTP.Access.Path)
+
+		confLogger = log.LoggerLgr.WithName(log.ConstConfigManager)
+		confLogger.V(log.DebugLevel).Info("all environment variables loaded")
+		confLogger.V(log.DebugLevel).Info("core config", "path", configCorePath)
+		rulesPath := globalConfig.Security.Mtls.Authz.RulesPath
+		if rulesPath != "" {
+			confLogger.V(log.DebugLevel).Info("authz rules config", "path", rulesPath)
+			readAuthzRulesFile(rulesPath, confLogger)
+			go watchAuthzRules(rulesPath, confLogger)
+		}
 
 		// pre shared secret
-		if globalConfig.SharedSecretFilePath != "" {
-			globalConfig.SharedSecretEnableFlag = true
+		if globalConfig.Quic.Debug.SecretFilePath != "" {
+			globalConfig.Quic.Debug.SecretFilePathEnableFlag = true
 		}
 		// qlog dir
-		if globalConfig.QlogDirPath == "" {
-			globalConfig.QlogEnableFlag = false
-		}
-
-		// prometheus metrics
-		if globalConfig.MetricsEnable == 1 {
-			globalConfig.MetricsEnableFlag = true
-		} else {
-			globalConfig.MetricsEnableFlag = false
+		if globalConfig.Quic.Debug.QlogDirPath == "" {
+			globalConfig.Quic.Debug.QlogEnableFlag = false
 		}
 
 		// prometheus metrics http
-		if globalConfig.PrometheusBind != "" {
-			globalConfig.PrometheusEnableFlag = true
+		if globalConfig.Metrics.BindPort != 0 {
+			globalConfig.Metrics.BindEnableFlag = true
 		}
 
 		// log http requests into file
-		if globalConfig.LogAccessOutputFile != "" {
-			globalConfig.LogAccessOutputFileFlag = true
+		if globalConfig.HTTP.Access.Path != "" {
+			globalConfig.Log.LogAccessOutputFileFlag = true
 		} else {
-			globalConfig.LogAccessOutputFileFlag = false
-		}
-
-		// skip CA verify
-		if globalConfig.InsecureSkipVerify == 1 {
-			globalConfig.InsecureSkipVerifyFlag = true
-		} else {
-			globalConfig.InsecureSkipVerifyFlag = false
-		}
-
-		// mTLS
-		if globalConfig.MTlsEnable == 1 {
-			globalConfig.MTlsEnableFlag = true
-		} else {
-			globalConfig.MTlsEnableFlag = false
+			globalConfig.Log.LogAccessOutputFileFlag = false
 		}
 
 		confLogger.V(log.DebugLevel).Info("all configuration loaded")

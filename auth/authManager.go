@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/quicsec/quicsec/config"
 	"github.com/quicsec/quicsec/identity"
 	"github.com/quicsec/quicsec/operations/log"
 	"github.com/quicsec/quicsec/spiffeid"
@@ -46,6 +47,17 @@ func Verify(certs []*x509.Certificate, opts ...VerifyOption) (spiffeid.ID, [][]*
 	authLogger := log.LoggerLgr.WithName(log.ConstConnManager)
 	myPool, err := identity.GetCertPool()
 
+	authLogger.V(log.DebugLevel).Info("verify X509-SVID chain using the X.509 bundle source")
+
+	if !config.GetMtlsEnable() {
+		if len(certs) == 0 {
+			authLogger.V(log.DebugLevel).Info("mtls disabled, skip X509-SVID verification. Certificate not supplied by peer")
+		} else {
+			authLogger.V(log.DebugLevel).Info("mtls disabled, skip X509-SVID verification. Certificate supplied by peer")
+		}
+		return spiffeid.ID{}, nil, nil
+	}
+
 	if err != nil {
 		authLogger.Error(err, "failed to get system cert pool")
 	}
@@ -57,12 +69,14 @@ func Verify(certs []*x509.Certificate, opts ...VerifyOption) (spiffeid.ID, [][]*
 
 	switch {
 	case len(certs) == 0:
+		authLogger.V(log.DebugLevel).Info("certificate not supplied by peer")
 		return spiffeid.ID{}, nil, errors.New("empty certificates chain")
 	case myPool == nil:
 		return spiffeid.ID{}, nil, errors.New("pool is required")
 	}
 
 	leaf := certs[0]
+
 	id, err := IDFromCert(leaf)
 	if err != nil {
 		return spiffeid.ID{}, nil, fmt.Errorf("could not get leaf SPIFFE ID: %s", err)
@@ -138,7 +152,20 @@ func WrapVerifyPeerCertificate(wrapped func([][]byte, [][]*x509.Certificate) err
 
 func CustomVerifyPeerCertificate(rawCerts [][]byte, verifiedChains [][]*x509.Certificate) error {
 	authLogger := log.LoggerLgr.WithName(log.ConstAuthManager)
-	authLogger.V(log.DebugLevel).Info("verify peer certificate function called")
+	authLogger.V(log.DebugLevel).Info("verify identity of peer certificate")
+
+	if !config.GetMtlsEnable() {
+		authLogger.V(log.DebugLevel).Info("mtls disabled, skip identity verification")
+		if len(rawCerts) > 0 {
+			certLog, err := x509.ParseCertificate(rawCerts[0])
+			if err == nil {
+				for _, uri := range certLog.URIs {
+					authLogger.V(log.DebugLevel).Info("peer certificate", "URI:", uri.String())
+				}
+			}
+		}
+		return nil
+	}
 
 	if len(rawCerts) != 1 {
 		return fmt.Errorf("auth: required exactly one peer certificate")
