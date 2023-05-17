@@ -194,12 +194,12 @@ func Do(req *http.Request) (*http.Response, error) {
 	getRoundTripper().QuicConfig = quicConf
 
 	elapsed := time.Since(start).Seconds()
-	connLogger.Info("Connection setup time for requesting:", "setup_time", elapsed)
+	connLogger.Info("Connection setup time for requesting", "setup_time", elapsed)
 
 	start =  time.Now()
 	epAddrs, err := GetAllEpAddresses(req.URL.Hostname())
 	elapsed = time.Since(start).Seconds()
-	connLogger.Info("DNS lookup time for requesting:", "dns_lookup_time", elapsed)
+	connLogger.Info("DNS lookup time for requesting", "dns_lookup_time", elapsed)
 
 	if err !=  nil {
 		// HTTPS lookup failed doing an A lookup instead
@@ -236,12 +236,12 @@ func Do(req *http.Request) (*http.Response, error) {
 
 		if err != nil {
 			elapsed = time.Since(start).Seconds()
-			connLogger.Info("Trying address failed:", "address", ep, "failed_req_time", elapsed)
+			connLogger.Info("Trying address failed", "address", ep, "failed_req_time", elapsed)
 
 			continue
 		}
 		elapsed = time.Since(start).Seconds()
-		connLogger.Info("Trying address succeed:", "address", ep, "success_req_time", elapsed)
+		connLogger.Info("Trying address succeed", "address", ep, "success_req_time", elapsed)
 		break
 	}
 
