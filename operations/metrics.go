@@ -37,14 +37,14 @@ var (
 		prometheus.HistogramOpts{
 			Name:      "http_request_application_process_latency",
 			Help:      "The application latency to process a HTTP request",
-			Buckets: prometheus.ExponentialBuckets(0.001, 1.25, 40), // 1ms to ~6000ms
+			Buckets: prometheus.ExponentialBuckets(0.001, 1.25, 20), // starts at 1ms
 		})
 
 	HTTPHistogramNetworkLatency = prometheus.NewHistogram(
 		prometheus.HistogramOpts{
 			Name:      "http_request_network_latency",
 			Help:      "The network latency between the request and the response",
-			Buckets: prometheus.ExponentialBuckets(0.001, 1.25, 40), // 1ms to ~6000ms
+			Buckets: prometheus.ExponentialBuckets(0.001, 1.25, 20), // starts at 1ms
 		})	
 )
 
@@ -63,7 +63,7 @@ func newAggregatingCollector() *aggregatingCollector {
 		connDurations: prometheus.NewHistogram(prometheus.HistogramOpts{
 			Name:    "quic_connection_duration",
 			Help:    "Connection Duration",
-			Buckets: prometheus.ExponentialBuckets(1, 1.5, 40), // 1s to ~12 weeks
+			Buckets: prometheus.ExponentialBuckets(1, 1.5, 20), // starts at 1s
 		}),
 	}
 }
