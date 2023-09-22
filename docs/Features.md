@@ -35,6 +35,7 @@ Metrics
 * Transaction round trip time (rtt)
 * Transaction errors and error rates
 * Prometheus endpoint
+  * Automatic rtt collection into buckets
 * (in development) Opentelemetry collector
 
 
