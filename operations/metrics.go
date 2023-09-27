@@ -20,32 +20,34 @@ import (
 )
 
 var (
-	bytesTransferred   		*prometheus.CounterVec
-	packetsTransferred 		*prometheus.CounterVec
-	newConns           		*prometheus.CounterVec
-	closedConns        		*prometheus.CounterVec
-	sentPackets        		*prometheus.CounterVec
-	rcvdPackets        		*prometheus.CounterVec
-	bufferedPackets    		*prometheus.CounterVec
-	droppedPackets     		*prometheus.CounterVec
-	lostPackets        		*prometheus.CounterVec
-	connErrors         		*prometheus.CounterVec
-	HttpRequestsPath		*prometheus.CounterVec
-	HttpRequestsStatus		*prometheus.CounterVec
+	bytesTransferred         *prometheus.CounterVec
+	packetsTransferred       *prometheus.CounterVec
+	newConns                 *prometheus.CounterVec
+	closedConns              *prometheus.CounterVec
+	sentPackets              *prometheus.CounterVec
+	rcvdPackets              *prometheus.CounterVec
+	bufferedPackets          *prometheus.CounterVec
+	droppedPackets           *prometheus.CounterVec
+	lostPackets              *prometheus.CounterVec
+	connErrors               *prometheus.CounterVec
+	HttpRequestsPathIdClient *prometheus.CounterVec
+	HttpRequestsPathIdServer *prometheus.CounterVec
+	AuthzConnectiontClientId *prometheus.CounterVec
+	AuthzConnectiontServerId *prometheus.CounterVec
 
-	HTTPHistogramAppProcess = prometheus.NewHistogram(
+	HTTPHistogramAppProcessId = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
-			Name:      "http_request_application_process_latency",
-			Help:      "The application latency to process a HTTP request",
+			Name:    "appedge_inbound_rq_latency",
+			Help:    "The application latency to process a HTTP request by tuple of identity",
 			Buckets: prometheus.ExponentialBuckets(0.001, 1.25, 40), // 1ms to ~6000ms
-		})
+		}, []string{"myId", "downstreamId"})
 
-	HTTPHistogramNetworkLatency = prometheus.NewHistogram(
+	HTTPHistogramNetworkLatencyId = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
-			Name:      "http_request_network_latency",
-			Help:      "The network latency between the request and the response",
+			Name:    "appedge_outbound_rq_latency",
+			Help:    "The network latency between the request and the response by tuple of identity",
 			Buckets: prometheus.ExponentialBuckets(0.001, 1.25, 40), // 1ms to ~6000ms
-		})	
+		}, []string{"myId", "upstreamId"})
 )
 
 type aggregatingCollector struct {
@@ -220,29 +222,49 @@ func metricsInit() {
 		[]string{encLevel, "reason"},
 	)
 	prometheus.MustRegister(lostPackets)
-	HttpRequestsPath = prometheus.NewCounterVec(
+
+	HttpRequestsPathIdClient = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
-			Name: "http_request_path_counter",
+			Name: "appedge_outbound_rq_total",
 			Help: "HTTP requests counter by group (method, path and status)",
 		},
-		[]string{"instance", "method", "path", "status"},
+		[]string{"myId", "upstreamId", "instance", "method", "path", "status"},
 	)
-	prometheus.MustRegister(HttpRequestsPath)
-	HttpRequestsStatus = prometheus.NewCounterVec(
+	prometheus.MustRegister(HttpRequestsPathIdClient)
+
+	HttpRequestsPathIdServer = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
-			Name: "http_request_status_counter",
-			Help: "HTTP requests counter only by status",
+			Name: "appedge_inbound_rq_total",
+			Help: "HTTP requests counter by group (method, path and status)",
 		},
-		[]string{"status"},
+		[]string{"myId", "downstreamId", "instance", "method", "path", "status"},
 	)
-	prometheus.MustRegister(HttpRequestsStatus)
+	prometheus.MustRegister(HttpRequestsPathIdServer)
+
+	AuthzConnectiontServerId = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "appedge_inbound_cx_total",
+			Help: "Authorization counter by tuple of identity (server side)",
+		},
+		[]string{"myId", "downstreamId", "status"},
+	)
+	prometheus.MustRegister(AuthzConnectiontServerId)
+
+	AuthzConnectiontClientId = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "appedge_outbound_cx_total",
+			Help: "Authorization counter by tuple of identity (client side)",
+		},
+		[]string{"myId", "upstreamId", "status"},
+	)
+	prometheus.MustRegister(AuthzConnectiontClientId)
 
 	collector = newAggregatingCollector()
 	prometheus.MustRegister(collector)
 
-	prometheus.MustRegister(HTTPHistogramAppProcess)
+	prometheus.MustRegister(HTTPHistogramAppProcessId)
 
-	prometheus.MustRegister(HTTPHistogramNetworkLatency)
+	prometheus.MustRegister(HTTPHistogramNetworkLatencyId)
 
 	pFlag, pAddr := config.GetPrometheusHTTPConfig()
 	if pFlag {

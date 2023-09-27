@@ -6,7 +6,9 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/quicsec/quicsec/config"
 	"github.com/quicsec/quicsec/identity"
+	"github.com/quicsec/quicsec/operations"
 	"github.com/quicsec/quicsec/operations/log"
 	"github.com/quicsec/quicsec/spiffeid"
 )
@@ -24,19 +26,6 @@ type VerifyOption interface {
 
 func (fn verifyOption) apply(config *verifyConfig) {
 	fn(config)
-}
-
-// IDFromCert extracts the SPIFFE ID from the URI SAN of the provided
-// certificate. It will return an an error if the certificate does not have
-// exactly one URI SAN with a well-formed SPIFFE ID.
-func IDFromCert(cert *x509.Certificate) (spiffeid.ID, error) {
-	switch {
-	case len(cert.URIs) == 0:
-		return spiffeid.ID{}, errors.New("certificate contains no URI SAN")
-	case len(cert.URIs) > 1:
-		return spiffeid.ID{}, errors.New("certificate contains more than one URI SAN")
-	}
-	return spiffeid.FromURI(cert.URIs[0])
 }
 
 // Verify verifies an X509-SVID chain using the X.509 bundle source. It
@@ -63,7 +52,7 @@ func Verify(certs []*x509.Certificate, opts ...VerifyOption) (spiffeid.ID, [][]*
 	}
 
 	leaf := certs[0]
-	id, err := IDFromCert(leaf)
+	id, err := identity.IDFromCert(leaf)
 	if err != nil {
 		return spiffeid.ID{}, nil, fmt.Errorf("could not get leaf SPIFFE ID: %s", err)
 	}
@@ -154,9 +143,21 @@ func CustomVerifyPeerCertificate(rawCerts [][]byte, verifiedChains [][]*x509.Cer
 		rv := identity.VerifyIdentity(uri.String())
 		if rv {
 			authLogger.Info("verify peer certificate", "authorized", "yes", "URI", uri.String())
+			if config.GetServerSideFlag() {
+				operations.AuthzConnectiontServerId.WithLabelValues(config.GetIdentity().String(), uri.String(), "authorized").Inc()
+			} else {
+				operations.AuthzConnectiontClientId.WithLabelValues(config.GetIdentity().String(), uri.String(), "authorized").Inc()
+			}
 			return nil
 		} else {
+			if config.GetServerSideFlag() {
+				operations.AuthzConnectiontServerId.WithLabelValues(config.GetIdentity().String(), uri.String(), "unauthorized").Inc()
+			} else {
+				operations.AuthzConnectiontClientId.WithLabelValues(config.GetIdentity().String(), uri.String(), "unauthorized").Inc()
+			}
+
 			authLogger.Info("verify peer certificate", "authorized", "no", "URI", uri.String())
+
 		}
 	}
 

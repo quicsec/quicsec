@@ -6,6 +6,7 @@ import (
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/quicsec/quicsec/operations/log"
+	"github.com/quicsec/quicsec/spiffeid"
 	"github.com/spf13/viper"
 )
 
@@ -54,6 +55,13 @@ type Config struct {
 	// mTLS enable
 	MTlsEnableFlag bool
 	MTlsEnable     uint64 `mapstructure:"MTLS_ENABLE"`
+
+	// Identity (x509)
+	Identity spiffeid.ID
+
+	// Server=1
+	// Client=0
+	ServerSideFlag bool
 }
 
 var onlyOnce sync.Once
@@ -103,6 +111,22 @@ func GetInsecureSkipVerify() bool {
 
 func GetMtlsEnable() bool {
 	return globalConfig.MTlsEnableFlag
+}
+
+func GetIdentity() spiffeid.ID {
+	return globalConfig.Identity
+}
+
+func SetIdentity(id spiffeid.ID) {
+	globalConfig.Identity = id
+}
+
+func GetServerSideFlag() bool {
+	return globalConfig.ServerSideFlag
+}
+
+func SetServerSideFlag(f bool) {
+	globalConfig.ServerSideFlag = f
 }
 
 func (c Config) showAuthzRules() {
