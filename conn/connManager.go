@@ -39,7 +39,7 @@ func ListenAndServe(addr string, handler http.Handler) error {
 	// init logger, preshared dump and tracers (metrics and qlog)
 	keyLog, opsTracer := ops.OperationsInit()
 	connLogger := log.LoggerLgr.WithName(log.ConstConnManager)
-
+	config.SetServerSideFlag(true)
 	connLogger.Info("ListenAndServe() initialization")
 
 	tlsConfig := &tls.Config{
@@ -149,6 +149,7 @@ func Do(req *http.Request) (*http.Response, error) {
 
 	connLogger := log.LoggerLgr.WithName(log.ConstConnManager)
 	identityLogger := log.LoggerLgr.WithName(log.ConstIdentityManager)
+	config.SetServerSideFlag(false)
 
 	connLogger.Info("client.Do() initialization")
 

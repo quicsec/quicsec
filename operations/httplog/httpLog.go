@@ -11,6 +11,8 @@ import (
 
 	//"github.com/quicsec/quicsec/operations"
 
+	"github.com/quicsec/quicsec/config"
+	"github.com/quicsec/quicsec/identity"
 	"github.com/quicsec/quicsec/operations"
 	"github.com/quicsec/quicsec/operations/log"
 	"go.uber.org/zap"
@@ -84,18 +86,23 @@ func (lrt LoggingRoundTripper) RoundTrip(r *http.Request) (res *http.Response, e
 		}
 
 		// Prometheus metrics for HTTP
-		operations.HttpRequestsPath.WithLabelValues(r.Host, r.Method, r.URL.RequestURI(), strconv.Itoa(res.StatusCode)).Inc()
-		operations.HttpRequestsStatus.WithLabelValues(strconv.Itoa(res.StatusCode)).Inc()
-		operations.HTTPHistogramNetworkLatency.Observe(duration.Seconds())
+		if len(res.TLS.PeerCertificates) > 0 {
+			serverId, err := identity.IDFromCert(res.TLS.PeerCertificates[0])
+			if err == nil {
+				operations.HttpRequestsPathIdClient.WithLabelValues(config.GetIdentity().String(), serverId.String(), r.Host, r.Method, r.URL.RequestURI(), strconv.Itoa(res.StatusCode)).Inc()
+				operations.HTTPHistogramNetworkLatencyId.WithLabelValues(config.GetIdentity().String(), serverId.String()).Observe(duration.Seconds())
+			}
+		}
 
 		log("handled request",
 			zap.Duration("duration", duration),
 			zap.Int("size", size),
 			zap.Int("status", res.StatusCode),
 			zap.String("resp_proto", res.Proto),
-			zap.Object("resp_headers", LoggableHTTPHeader{
-				Header: res.Header,
-			}),
+			zap.Object("tls", LoggableTLSConnState(*res.TLS)),
+			// zap.Object("resp_headers", LoggableHTTPHeader{
+			// 	Header: res.Header,
+			// }),
 		)
 	}
 
@@ -109,6 +116,7 @@ func (r LoggableHTTPRequestClient) MarshalLogObject(enc zapcore.ObjectEncoder) e
 		ip = r.Host
 		port = ""
 	}
+	enc.AddString("myId", config.GetIdentity().String())
 	enc.AddString("remote_ip", ip)
 	enc.AddString("remote_port", port)
 	enc.AddString("proto", r.Proto)
@@ -118,6 +126,7 @@ func (r LoggableHTTPRequestClient) MarshalLogObject(enc zapcore.ObjectEncoder) e
 	enc.AddObject("headers", LoggableHTTPHeader{
 		Header: r.Header,
 	})
+
 	if r.TLS != nil {
 		enc.AddObject("tls", LoggableTLSConnState(*r.TLS))
 	}
@@ -131,6 +140,7 @@ func (r LoggableHTTPRequest) MarshalLogObject(enc zapcore.ObjectEncoder) error {
 		ip = r.RemoteAddr
 		port = ""
 	}
+	enc.AddString("myId", config.GetIdentity().String())
 	enc.AddString("remote_ip", ip)
 	enc.AddString("remote_port", port)
 	enc.AddString("proto", r.Proto)
@@ -152,13 +162,23 @@ type LoggableTLSConnState tls.ConnectionState
 // MarshalLogObject satisfies the zapcore.ObjectMarshaler interface.
 func (t LoggableTLSConnState) MarshalLogObject(enc zapcore.ObjectEncoder) error {
 	enc.AddBool("resumed", t.DidResume)
-	enc.AddUint16("version", t.Version)
-	enc.AddUint16("cipher_suite", t.CipherSuite)
+	// enc.AddUint16("version", t.Version)
+	// enc.AddUint16("cipher_suite", t.CipherSuite)
 	enc.AddString("proto", t.NegotiatedProtocol)
 	enc.AddString("server_name", t.ServerName)
 	if len(t.PeerCertificates) > 0 {
-		enc.AddString("client_common_name", t.PeerCertificates[0].Subject.CommonName)
-		enc.AddString("client_serial", t.PeerCertificates[0].SerialNumber.String())
+		// enc.AddString("client_common_name", t.PeerCertificates[0].Subject.CommonName)
+		// enc.AddString("client_serial", t.PeerCertificates[0].SerialNumber.String())
+
+		serverId, err := identity.IDFromCert(t.PeerCertificates[0])
+		if err == nil {
+			if config.GetServerSideFlag() {
+				enc.AddString("dowstreamId", serverId.String())
+			} else {
+				enc.AddString("upstreamId", serverId.String())
+			}
+		}
+
 	}
 	return nil
 }
@@ -221,9 +241,13 @@ func WrapHandlerWithLogging(wrappedHandler http.Handler) http.Handler {
 		duration := time.Since(start)
 
 		// Prometheus metrics for HTTP
-		operations.HttpRequestsPath.WithLabelValues(r.Host, r.Method, r.RequestURI, strconv.Itoa(lrw.statusCode)).Inc()
-		operations.HttpRequestsStatus.WithLabelValues(strconv.Itoa(lrw.statusCode)).Inc()
-		operations.HTTPHistogramAppProcess.Observe(duration.Seconds())
+		if len(r.TLS.PeerCertificates) > 0 {
+			serverId, err := identity.IDFromCert(r.TLS.PeerCertificates[0])
+			if err == nil {
+				operations.HttpRequestsPathIdServer.WithLabelValues(config.GetIdentity().String(), serverId.String(), r.Host, r.Method, r.RequestURI, strconv.Itoa(lrw.statusCode)).Inc()
+				operations.HTTPHistogramAppProcessId.WithLabelValues(config.GetIdentity().String(), serverId.String()).Observe(duration.Seconds())
+			}
+		}
 
 		log("handled request",
 			zap.Duration("duration", duration),
