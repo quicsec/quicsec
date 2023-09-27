@@ -1,11 +1,13 @@
 package operations
 
 import (
+	"crypto/x509"
 	"io"
 	"sync"
 
 	"github.com/quic-go/quic-go/logging"
 	"github.com/quicsec/quicsec/config"
+	"github.com/quicsec/quicsec/identity"
 	"github.com/quicsec/quicsec/operations/log"
 	"github.com/quicsec/quicsec/utils"
 )
@@ -59,6 +61,15 @@ func OperationsInit() (io.Writer, logging.Tracer) {
 
 		if len(tracers) > 0 {
 			tracer = logging.NewMultiplexedTracer(tracers...)
+		}
+
+		tlsCert, tlsCertErr := identity.GetCert()
+		if tlsCertErr == nil {
+			x509Cert, _ := x509.ParseCertificate(tlsCert.Certificate[0])
+			serverId, err := identity.IDFromCert(x509Cert)
+			if err == nil {
+				config.SetIdentity(serverId)
+			}
 		}
 	})
 

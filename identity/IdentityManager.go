@@ -10,6 +10,7 @@ import (
 
 	"github.com/quicsec/quicsec/config"
 	"github.com/quicsec/quicsec/operations/log"
+	"github.com/quicsec/quicsec/spiffeid"
 )
 
 func VerifyIdentity(uri string) bool {
@@ -25,6 +26,19 @@ func VerifyIdentity(uri string) bool {
 	}
 
 	return false
+}
+
+// IDFromCert extracts the SPIFFE ID from the URI SAN of the provided
+// certificate. It will return an an error if the certificate does not have
+// exactly one URI SAN with a well-formed SPIFFE ID.
+func IDFromCert(cert *x509.Certificate) (spiffeid.ID, error) {
+	switch {
+	case len(cert.URIs) == 0:
+		return spiffeid.ID{}, errors.New("certificate contains no URI SAN")
+	case len(cert.URIs) > 1:
+		return spiffeid.ID{}, errors.New("certificate contains more than one URI SAN")
+	}
+	return spiffeid.FromURI(cert.URIs[0])
 }
 
 func GetCert() (*tls.Certificate, error) {

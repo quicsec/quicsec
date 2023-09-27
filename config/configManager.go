@@ -11,6 +11,7 @@ import (
 	"github.com/fsnotify/fsnotify"
 	"github.com/go-logr/logr"
 	"github.com/quicsec/quicsec/operations/log"
+	"github.com/quicsec/quicsec/spiffeid"
 	"github.com/spf13/viper"
 )
 
@@ -25,6 +26,7 @@ type Config struct {
 	Metrics  MetricsConfigs
 	Certs    CertificatesConfigs
 	Security SecurityConfigs
+	Local    LocalConfigs
 }
 
 // opsManager - logs
@@ -84,6 +86,15 @@ type MtlsConfig struct {
 
 type AuthzConfigs struct {
 	SpiffeID []string
+}
+
+// LocalConfigs
+type LocalConfigs struct {
+	// Identity (x509)
+	Identity spiffeid.ID
+
+	// Server=1/Client=0
+	ServerSideFlag bool
 }
 
 // AuthzConfig struct to parse the authz json file
@@ -154,6 +165,22 @@ func SetMtlsEnable(flag bool) {
 
 func SetLastAuthRules(spiffeURI []string) {
 	globalConfig.Security.Mtls.Authz.SpiffeID = spiffeURI
+}
+
+func GetIdentity() spiffeid.ID {
+	return globalConfig.Local.Identity
+}
+
+func SetIdentity(id spiffeid.ID) {
+	globalConfig.Local.Identity = id
+}
+
+func GetServerSideFlag() bool {
+	return globalConfig.Local.ServerSideFlag
+}
+
+func SetServerSideFlag(f bool) {
+	globalConfig.Local.ServerSideFlag = f
 }
 
 func (c Config) ShowConfig() {
