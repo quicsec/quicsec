@@ -7,10 +7,16 @@ metadata:
     release: bookbuyer-v3-quicsec-cm
 data:
   quicsec-config.json: |
-    {
-        "quicsec": {
-          "authz_rules": [
-            "spiffe://cluster.local/ns/bookstore/sa/bookstore"
-          ]
-        }
-    }
+      {
+          "version": "v1alpha2",
+          "qm_service_conf": [
+              {
+                      "server_instance_key": "127.0.0.1",
+                      "policy":{
+                              "spiffe://somedomain.foo.bar/foo/bar": {
+                                      "authz": "allow"
+                              }
+                      },
+                      "client_cert": true
+          }]
+      }
