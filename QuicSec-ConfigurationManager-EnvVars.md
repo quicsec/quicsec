@@ -2,10 +2,8 @@
 
 QuicSec settings can be configured on a given quicsec-enabled workload with environment variables. As an alternative, a more sophisticated platform specific control plane (e.g., a Kubernetes operator) can be used to update configuration state and policy rules with the configuration manager via an API.
 
-
-
 ## QuicSec Configuration Manager
-Configuration Manager is a component of QuicSec that unifies configuration of each of the QuicSec components.  It [configures quicsec](#general-configuration) via environment variables or via [Config rules](#config-rules) in the json file (path specified in QUICSEC_CORE_CONFIG). Also it watches [AuthZ rules](#authz-rules) in the json file within the file path specified in QUICSEC_SECURITY_MTLS_AUTHZ_RULES_PATH to maintain connection authentication and authorization rules.
+Configuration Manager is a component of QuicSec that unifies configuration of each of the QuicSec components.  It's possible to [configures quicsec](#general-configuration) via environment variables or via [Config rules](#config-rules) in the json file (path specified in QUICSEC_CORE_CONFIG). The [Config rules](#config-rules) is responsible to maintain authentication and authorization rules (this rules are constantly watches for changes - no need to restart application).
 
 Optionally, an external control plane (e.g., a Kubernetes operator) can maintain the configurations pertinent to the particular workload including authorization rules
 
@@ -63,34 +61,36 @@ QUICSEC_SECURITY_MTLS_INSEC_SKIP_VERIFY="1"             //default: 0
 ```
 
 ### Config rules
-The Config rules are configuration via json [`config.json`](./config.json), with the location of the file being specified in the environment variable QUICSEC_CORE_CONFIG. The quicsec is notified when there is a change in this file - in this way is possible to change the configs and quicsec will be notified with the latest configs values. The current version of quicsec support enable|disable the mtls. In the future more options will be supported via config json.
+The Config rules are configuration via json [`config.json`](./config.json), with the location of the file being specified in the environment variable QUICSEC_CORE_CONFIG. The quicsec is notified when there is a change in this file - in this way is possible to change the configs and quicsec will be notified with the latest configs values.
 ```
 {
-	"security": {
-		"mtls": {
-			"enable": true
-		}
-	}
+    "version": "v1alpha2",
+    "qm_service_conf": [
+    {
+		"server_instance_key": "192.168.0.10",
+		"policy":{
+				"spiffe://somedomain.foo.bar/foo/bar": {
+				        "authz": "allow"
+				},
+				"spiffe://someotherdomain.foo.bar/foo/bar": {
+				        "authz": "deny"
+				}
+		},
+		"client_cert": true
+    },{
+		"server_instance_key": "192.168.0.11",
+		"policy":{
+				"spiffe://somedomain.foo.bar/foo/bar2": {
+				        "authz": "allow"
+				}
+		},
+		"client_cert": true
+    }]
 }
 ```
+The policy rule is matched by the `server_instance_key` based on the address of an instance. This configuration file can thus be shared among instances. You can also configure Authorization (AuthZ) rules in this file. Under the `policy` section, it's possible to specify the URI from the client that must either be authorized (allow) or unauthorized (deny).
 
-### AuthZ rules
-The AuthZ rules are configuration via json [`authzconfig.json`](./authzconfig.json), with the location of the file being specified in the environment variable QUICSEC_SECURITY_MTLS_AUTHZ_RULES_PATH. The quicsec is notified when there is a change in this file - in this way is possible to change the rules and quicsec will be notified with the latest authz rules. The URI from client must be authorized in the configuration to a request be accepted by the server.
-```
-{
-        "quicsec": {
-                "authz_rules": [
-                        "spiffe://demo.http3.page/quicsec/client15/",
-                        "spiffe://demo.http3.page/quicsec/client03/",
-                        "spiffe://example.http3.page/quicsec/client31/"
-                ]
-        }
-}
-```
-Inform the path for the authz rules using the following env vars:
-```
-QUICSEC_SECURITY_MTLS_AUTHZ_RULES_PATH="/volume/authzconfig.json"    //default: "authzconfig.json"
-```
+In order to enable/disable mTLS, just change the `client_cert` flag (true|false).
 
 In summary, the most important configurations are the following:
 ```
@@ -99,5 +99,5 @@ QUICSEC_CERTS_KEY_PATH="/path/to/server.key"
 QUICSEC_CERTS_CA_PATH="/path/to/ca.pem"
 QUICSEC_METRICS_BIND_PORT="192.168.56.101:8080"
 QUICSEC_LOG_PATH="/tmp/output.log"
-QUICSEC_SECURITY_MTLS_AUTHZ_RULES_PATH="/volume/config.json"
+QUICSEC_CORE_CONFIG="/volume/config.json"
 ```
