@@ -140,7 +140,7 @@ func ListenAndServe(addr string, handler http.Handler) error {
 }
 
 func Do(req *http.Request) (*http.Response, error) {
-	start :=  time.Now()
+	start := time.Now()
 	var err error
 	var client *http.Client
 
@@ -186,8 +186,8 @@ func Do(req *http.Request) (*http.Response, error) {
 	}
 
 	quicConf := &quic.Config{
-		Tracer: opsTracer,
-		MaxIdleTimeout: 500 *time.Millisecond,
+		Tracer:         opsTracer,
+		MaxIdleTimeout: 500 * time.Millisecond,
 	}
 
 	getRoundTripper().TLSClientConfig = tlsConfig
@@ -196,12 +196,12 @@ func Do(req *http.Request) (*http.Response, error) {
 	elapsed := time.Since(start).Seconds()
 	connLogger.Info("Connection setup time for requesting", "setup_time", elapsed)
 
-	start =  time.Now()
+	start = time.Now()
 	epAddrs, err := GetAllEpAddresses(req.URL.Hostname())
 	elapsed = time.Since(start).Seconds()
 	connLogger.Info("DNS lookup time for requesting", "dns_lookup_time", elapsed)
 
-	if err !=  nil {
+	if err != nil {
 		// HTTPS lookup failed doing an A lookup instead
 		connLogger.V(log.DebugLevel).Info("HTTPS lookup failed... Doing an A lookup instead...")
 		hostAddr, err := GetEpAddress(req.URL.Hostname())
@@ -210,13 +210,13 @@ func Do(req *http.Request) (*http.Response, error) {
 			return nil, fmt.Errorf("DNS resolution failed")
 		}
 
-		epAddrs = append(epAddrs, hostAddr + ":" + req.URL.Port())
+		epAddrs = append(epAddrs, hostAddr+":"+req.URL.Port())
 	}
 
 	var resp *http.Response
 
 	for _, ep := range epAddrs {
-		start =  time.Now()
+		start = time.Now()
 
 		getRoundTripper().Dial = func(ctx context.Context, addr string, tlsCfg *tls.Config, cfg *quic.Config) (quic.EarlyConnection, error) {
 			conn, err := quic.DialAddrEarlyContext(context.Background(), ep, tlsConfig, quicConf)

@@ -1,8 +1,0 @@
-{
-	"quicsec": {
-		"authz_rules": [
-			"spiffe://anotherdomain.foo.bar/foo/bar",
-			"spiffe://somedomain.foo.bar/foo/bar"
-		]
-	}
-}
