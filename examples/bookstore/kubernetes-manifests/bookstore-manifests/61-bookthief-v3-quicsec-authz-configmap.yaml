@@ -12,6 +12,9 @@ data:
           "qm_service_conf": [
               {
                       "server_instance_key": "127.0.0.1",
+                      "*": {
+                              "authz": "deny"
+                      },
                       "policy":{
                               "spiffe://anotherdomain.foo.bar/foo/bar": {
                                       "authz": "allow"

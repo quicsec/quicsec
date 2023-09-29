@@ -247,7 +247,7 @@ func metricsInit() {
 			Name: "appedge_inbound_cx_total",
 			Help: "Authorization counter by tuple of identity (server side)",
 		},
-		[]string{"myId", "downstreamId", "status"},
+		[]string{"myId", "downstreamId", "status", "policy"},
 	)
 	prometheus.MustRegister(AuthzConnectiontServerId)
 
@@ -256,7 +256,7 @@ func metricsInit() {
 			Name: "appedge_outbound_cx_total",
 			Help: "Authorization counter by tuple of identity (client side)",
 		},
-		[]string{"myId", "upstreamId", "status"},
+		[]string{"myId", "upstreamId", "status", "policy"},
 	)
 	prometheus.MustRegister(AuthzConnectiontClientId)
 
