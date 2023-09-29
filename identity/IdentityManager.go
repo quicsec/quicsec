@@ -13,19 +13,31 @@ import (
 	"github.com/quicsec/quicsec/spiffeid"
 )
 
-func VerifyIdentity(uri string) bool {
-	var AuthIDs []string
-	AuthIDs = config.GetLastAuthRules()
+// return[0] - true (authorized) - false (unauthorized)
+// return[1] - "strict"/"default"
+func VerifyIdentity(uri string) (bool, string) {
+	var AuthIDs map[string]bool
+	AuthIDs, dFlag := config.GetLastAuthRules()
 
-	for _, id := range AuthIDs {
-		v := strings.EqualFold(uri, id)
+	// strict rules
+	for key, allow := range AuthIDs {
+		v := strings.EqualFold(uri, key)
 
 		if v {
-			return true
+			if allow {
+				return true, "strict"
+			} else {
+				return false, "strict"
+			}
 		}
 	}
 
-	return false
+	// default rules
+	if dFlag {
+		return true, "default"
+	} else {
+		return false, "default"
+	}
 }
 
 func GetCurrentIdentity() (spiffeid.ID, error) {
