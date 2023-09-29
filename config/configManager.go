@@ -85,7 +85,8 @@ type MtlsConfig struct {
 }
 
 type AuthzConfigs struct {
-	SpiffeID []string
+	SpiffeID    map[string]bool
+	defaultFlag bool
 }
 
 // LocalConfigs
@@ -138,8 +139,9 @@ func GetPathCAFile() string {
 	return globalConfig.Certs.CaPath
 }
 
-func GetLastAuthRules() []string {
-	return globalConfig.Security.Mtls.Authz.SpiffeID
+func GetLastAuthRules() (map[string]bool, bool) {
+	return globalConfig.Security.Mtls.Authz.SpiffeID,
+		globalConfig.Security.Mtls.Authz.defaultFlag
 }
 
 func GetPrometheusHTTPConfig() (bool, int) {
@@ -166,8 +168,10 @@ func SetMtlsEnable(flag bool) {
 	globalConfig.Security.Mtls.Enable = flag
 }
 
-func SetLastAuthRules(spiffeURI []string) {
+func SetLastAuthRules(spiffeURI map[string]bool, df bool) {
 	globalConfig.Security.Mtls.Authz.SpiffeID = spiffeURI
+	globalConfig.Security.Mtls.Authz.defaultFlag = df
+
 }
 
 func GetIdentity() spiffeid.ID {
@@ -214,8 +218,8 @@ func (c Config) ShowConfig() {
 	fmt.Printf("MtlsEnable:%t\n", c.Security.Mtls.Enable)
 	fmt.Printf("InsecureSkipVerify:%t\n", c.Security.Mtls.InsecSkipVerify)
 	fmt.Printf("Authz:\n")
-	for _, a := range c.Security.Mtls.Authz.SpiffeID {
-		fmt.Printf("\t%s\n", a)
+	for key, df := range c.Security.Mtls.Authz.SpiffeID {
+		fmt.Printf("\t%s:%t\n", key, df)
 	}
 	fmt.Println("")
 
@@ -345,7 +349,7 @@ func loadSecurityConfig() {
 	if viper.IsSet("qm_service_conf") {
 		rawConfigs := viper.Get("qm_service_conf")
 		if configs, ok := rawConfigs.([]interface{}); ok {
-			var spiffeIDs []string
+			spiffeIDs := make(map[string]bool)
 			for _, conf := range configs {
 				c := conf.(map[string]interface{})
 				if serverInstanceKey, exists := c["server_instance_key"].(string); exists {
@@ -355,16 +359,27 @@ func loadSecurityConfig() {
 					}
 					if matchIP(kIp, localIPs) {
 						if policies, exists := c["policy"].(map[string]interface{}); exists {
+							defaultFlag := false
 							for key, policyVal := range policies {
 								policyDetails := policyVal.(map[string]interface{})
-								if authzVal, ok := policyDetails["authz"].(string); ok && authzVal == "allow" {
-									if strings.HasPrefix(key, "spiffe://") {
-										spiffeIDs = append(spiffeIDs, key)
-									}
+								authzVal, ok := policyDetails["authz"].(string)
+								allowFlag := false
+								if ok && authzVal == "allow" {
+									allowFlag = true
 								}
+								// strict rules
+								if strings.HasPrefix(key, "spiffe://") {
+									spiffeIDs[key] = allowFlag
+								}
+								// default rule
+								if strings.HasPrefix(key, "*") {
+									defaultFlag = allowFlag
+								}
+
 							}
-							SetLastAuthRules(spiffeIDs)
+							SetLastAuthRules(spiffeIDs, defaultFlag)
 						}
+
 						if clientCertValue, exists := c["client_cert"].(bool); exists {
 							SetMtlsEnable(clientCertValue)
 						} else {
