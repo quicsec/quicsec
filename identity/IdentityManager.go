@@ -28,6 +28,16 @@ func VerifyIdentity(uri string) bool {
 	return false
 }
 
+func GetCurrentIdentity() (spiffeid.ID, error) {
+	tlsCert, tlsCertErr := GetCert()
+	if tlsCertErr == nil {
+		x509Cert, _ := x509.ParseCertificate(tlsCert.Certificate[0])
+		serverId, err := IDFromCert(x509Cert)
+		return serverId, err
+	}
+	return spiffeid.ID{}, tlsCertErr
+}
+
 // IDFromCert extracts the SPIFFE ID from the URI SAN of the provided
 // certificate. It will return an an error if the certificate does not have
 // exactly one URI SAN with a well-formed SPIFFE ID.
