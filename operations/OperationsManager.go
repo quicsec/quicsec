@@ -1,7 +1,6 @@
 package operations
 
 import (
-	"crypto/x509"
 	"io"
 	"sync"
 
@@ -63,13 +62,9 @@ func OperationsInit() (io.Writer, logging.Tracer) {
 			tracer = logging.NewMultiplexedTracer(tracers...)
 		}
 
-		tlsCert, tlsCertErr := identity.GetCert()
-		if tlsCertErr == nil {
-			x509Cert, _ := x509.ParseCertificate(tlsCert.Certificate[0])
-			serverId, err := identity.IDFromCert(x509Cert)
-			if err == nil {
-				config.SetIdentity(serverId)
-			}
+		currentId, err := identity.GetCurrentIdentity()
+		if err == nil {
+			config.SetIdentity(currentId)
 		}
 	})
 
