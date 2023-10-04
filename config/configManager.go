@@ -95,6 +95,9 @@ type LocalConfigs struct {
 
 	// Server=1/Client=0
 	ServerSideFlag bool
+
+	// Open only H1 server (no H3)
+	H1Only bool
 }
 
 // AuthzConfig struct to parse the authz json file
@@ -183,6 +186,10 @@ func SetServerSideFlag(f bool) {
 	globalConfig.Local.ServerSideFlag = f
 }
 
+func GetLocalOnlyH1() bool {
+	return globalConfig.Local.H1Only
+}
+
 func (c Config) ShowConfig() {
 	fmt.Printf("Init configuration\n")
 
@@ -253,6 +260,7 @@ func LoadConfig() Config {
 		viper.SetDefault("certs.key_path", "certs/cert.key")       // QUICSEC_CERTS_KEY_PATH
 		viper.SetDefault("certs.cert_path", "certs/cert.pem")      // QUICSEC_CERTS_CERT_PATH
 		viper.SetDefault("security.mtls.insec_skip_verify", false) // QUICSEC_SECURITY_MTLS_INSEC_SKIP_VERIFY
+		viper.SetDefault("local.h1only", false)                    // QUICSEC_LOCAL_H1ONLY
 
 		if err := viper.ReadInConfig(); err != nil {
 			fmt.Println("config: error reading config file: " + err.Error())
