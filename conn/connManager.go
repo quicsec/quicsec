@@ -22,6 +22,7 @@ import (
 )
 
 var roundTripper *http3.RoundTripper
+var http1Handle *http.Transport
 var once sync.Once
 
 func getRoundTripper() *http3.RoundTripper {
@@ -30,6 +31,14 @@ func getRoundTripper() *http3.RoundTripper {
 	})
 
 	return roundTripper
+}
+
+func getHTTPTransport() *http.Transport {
+	once.Do(func() {
+		http1Handle = &http.Transport{}
+	})
+
+	return http1Handle
 }
 
 func ListenAndServe(addr string, handler http.Handler) error {
@@ -55,8 +64,6 @@ func ListenAndServe(addr string, handler http.Handler) error {
 
 	tlsConfig.ClientAuth = tls.RequestClientCert
 	tlsConfig.VerifyPeerCertificate = auth.WrapVerifyPeerCertificate(auth.CustomVerifyPeerCertificate)
-
-	connLogger.V(log.DebugLevel).Info("try to bind address for tcp/udp", "addr", addr)
 
 	// Open the listeners
 	udpAddr, err := net.ResolveUDPAddr("udp", addr)
@@ -107,26 +114,47 @@ func ListenAndServe(addr string, handler http.Handler) error {
 	}
 
 	// Start the servers
-	quicServer := &http3.Server{
-		TLSConfig:  tlsConfig,
-		Handler:    httplog.WrapHandlerWithLogging(handler),
-		QuicConfig: quicConf,
+	var qErr chan error
+	var hErr chan error
+	var quicServer *http3.Server
+	var httpServer *http.Server
+
+	qErr = make(chan error)
+	hErr = make(chan error)
+
+	if config.GetLocalOnlyH1() {
+		connLogger.Info("Listen only protocol HTTP/1.1 (TCP)", "addr", tcpAddr)
+		httpServer = &http.Server{
+			Handler: httplog.WrapHandlerWithLogging(handler),
+		}
+
+	} else {
+		quicServer = &http3.Server{
+			TLSConfig:  tlsConfig,
+			Handler:    httplog.WrapHandlerWithLogging(handler),
+			QuicConfig: quicConf,
+		}
+
+		go func() {
+			qErr <- quicServer.Serve(udpConn)
+		}()
+
+		// Add Alt-Svc header if supports H3
+		var AltSvcMiddleware = func(next http.Handler, altSvc *http3.Server) http.Handler {
+			return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				altSvc.SetQuicHeaders(w.Header())
+				next.ServeHTTP(w, r)
+			})
+		}
+
+		httpServer = &http.Server{
+			Handler: AltSvcMiddleware(httplog.WrapHandlerWithLogging(handler), quicServer),
+		}
+		connLogger.Info("Listen both protocol HTTP/1.1 (TCP) and HTTP/3 (UDP)", "addr", tcpAddr)
 	}
 
-	httpServer := &http.Server{
-		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			quicServer.SetQuicHeaders(w.Header())
-			handler.ServeHTTP(w, r)
-		}),
-	}
-
-	hErr := make(chan error)
-	qErr := make(chan error)
 	go func() {
 		hErr <- httpServer.Serve(tlsConn)
-	}()
-	go func() {
-		qErr <- quicServer.Serve(udpConn)
 	}()
 
 	select {
@@ -169,7 +197,6 @@ func Do(req *http.Request) (*http.Response, error) {
 		Certificates:       certs,
 		InsecureSkipVerify: config.GetInsecureSkipVerify(),
 		KeyLogWriter:       keyLog,
-		NextProtos:         []string{http3.NextProtoH3},
 	}
 
 	if config.GetMtlsEnable() {
@@ -185,14 +212,6 @@ func Do(req *http.Request) (*http.Response, error) {
 			tlsConfig.VerifyPeerCertificate = auth.WrapVerifyPeerCertificate(nil)
 		}
 	}
-
-	quicConf := &quic.Config{
-		Tracer:         opsTracer,
-		MaxIdleTimeout: 500 * time.Millisecond,
-	}
-
-	getRoundTripper().TLSClientConfig = tlsConfig
-	getRoundTripper().QuicConfig = quicConf
 
 	elapsed := time.Since(start).Seconds()
 	connLogger.Info("Connection setup time for requesting", "setup_time", elapsed)
@@ -218,18 +237,34 @@ func Do(req *http.Request) (*http.Response, error) {
 
 	for _, ep := range epAddrs {
 		start = time.Now()
+		if config.GetLocalOnlyH1() {
+			getHTTPTransport().TLSClientConfig = tlsConfig
 
-		getRoundTripper().Dial = func(ctx context.Context, addr string, tlsCfg *tls.Config, cfg *quic.Config) (quic.EarlyConnection, error) {
-			conn, err := quic.DialAddrEarlyContext(context.Background(), ep, tlsConfig, quicConf)
-
-			if err != nil {
-				return nil, err
+			client = &http.Client{
+				Transport: httplog.LoggingRoundTripper{Base: getHTTPTransport()},
 			}
-			// return the QUIC connection
-			return conn, nil
-		}
-		client = &http.Client{
-			Transport: httplog.LoggingRoundTripper{Base: getRoundTripper()},
+		} else { // Quic configuration
+			quicConf := &quic.Config{
+				Tracer:         opsTracer,
+				MaxIdleTimeout: 500 * time.Millisecond,
+			}
+
+			getRoundTripper().TLSClientConfig = tlsConfig
+			getRoundTripper().QuicConfig = quicConf
+
+			getRoundTripper().Dial = func(ctx context.Context, addr string, tlsCfg *tls.Config, cfg *quic.Config) (quic.EarlyConnection, error) {
+				conn, err := quic.DialAddrEarlyContext(context.Background(), ep, tlsConfig, quicConf)
+
+				if err != nil {
+					return nil, err
+				}
+				// return the QUIC connection
+				return conn, nil
+			}
+			tlsConfig.NextProtos = []string{http3.NextProtoH3}
+			client = &http.Client{
+				Transport: httplog.LoggingRoundTripper{Base: getRoundTripper()},
+			}
 		}
 
 		identityLogger.V(log.DebugLevel).Info("send client request")
