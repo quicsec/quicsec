@@ -229,7 +229,7 @@ func metricsInit() {
 			Name: "appedge_outbound_rq_total",
 			Help: "HTTP requests counter by group (method, path and status)",
 		},
-		[]string{"myId", "upstreamId", "instance", "method", "path", "status"},
+		[]string{"myId", "upstreamId", "instance", "method", "path", "responseCode"},
 	)
 	prometheus.MustRegister(HttpRequestsPathIdClient)
 
@@ -238,7 +238,7 @@ func metricsInit() {
 			Name: "appedge_inbound_rq_total",
 			Help: "HTTP requests counter by group (method, path and status)",
 		},
-		[]string{"myId", "downstreamId", "instance", "method", "path", "status"},
+		[]string{"myId", "downstreamId", "instance", "method", "path", "responseCode"},
 	)
 	prometheus.MustRegister(HttpRequestsPathIdServer)
 

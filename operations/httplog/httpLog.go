@@ -97,8 +97,7 @@ func (lrt LoggingRoundTripper) RoundTrip(r *http.Request) (res *http.Response, e
 		log("handled request",
 			zap.Duration("duration", duration),
 			zap.Int("size", size),
-			zap.Int("status", res.StatusCode),
-			zap.String("resp_proto", res.Proto),
+			zap.Int("response_code", res.StatusCode),
 			zap.Object("tls", LoggableTLSConnState(*res.TLS)),
 			// zap.Object("resp_headers", LoggableHTTPHeader{
 			// 	Header: res.Header,
@@ -252,7 +251,7 @@ func WrapHandlerWithLogging(wrappedHandler http.Handler) http.Handler {
 		log("handled request",
 			zap.Duration("duration", duration),
 			zap.Int("size", lrw.size),
-			zap.Int("status", lrw.statusCode),
+			zap.Int("response_code", lrw.statusCode),
 			zap.Object("resp_headers", LoggableHTTPHeader{
 				Header: w.Header(),
 			}),
