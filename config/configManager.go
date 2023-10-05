@@ -249,13 +249,13 @@ func LoadConfig() Config {
 		viper.SetConfigType("json")     // Look for specific type
 
 		// defaults
-		viper.SetDefault("log.debug", true)                        // QUICSEC_LOG_DEBUG
+		viper.SetDefault("log.debug", false)                       // QUICSEC_LOG_DEBUG
 		viper.SetDefault("log.path", "")                           // QUICSEC_LOG_PATH
 		viper.SetDefault("http.access.path", "")                   // QUICSEC_HTTP_ACCESS_PATH
 		viper.SetDefault("quic.debug.secret_path", "")             // QUICSEC_QUIC_DEBUG_SECRET_PATH
 		viper.SetDefault("quic.debug.qlog_path", "./qlog/")        // QUICSEC_QUIC_DEBUG_QLOG_PATH
 		viper.SetDefault("metrics.enable", true)                   // QUICSEC_METRICS_ENABLE
-		viper.SetDefault("metrics.bind_port", 8080)                // QUICSEC_METRICS_BIND_PORT
+		viper.SetDefault("metrics.bind_port", 9090)                // QUICSEC_METRICS_BIND_PORT
 		viper.SetDefault("certs.ca_path", "certs/ca.pem")          // QUICSEC_CERTS_CA_PATH
 		viper.SetDefault("certs.key_path", "certs/cert.key")       // QUICSEC_CERTS_KEY_PATH
 		viper.SetDefault("certs.cert_path", "certs/cert.pem")      // QUICSEC_CERTS_CERT_PATH
