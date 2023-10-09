@@ -11,6 +11,10 @@ import (
 	"github.com/quicsec/quicsec"
 )
 
+type cliStruct struct {
+	client *quicsec.Client
+}
+
 var (
 	headers = map[string]string{
 		"client-app": "quicsec-client",
@@ -47,8 +51,13 @@ func main() {
 		req.Header.Add(headerKey, headerValue)
 	}
 
-	for  i := 0; i < *mult; i++ {
-		resp, err := quicsec.Do(req)
+	for i := 0; i < *mult; i++ {
+		// approach 1
+		// resp, err := quicsec.Do(req)
+
+		// approach 2
+		s := &cliStruct{client: &quicsec.Client{}}
+		resp, err := s.client.Do(req)
 
 		if err != nil {
 			fmt.Printf("Error fetching %s: %s\n", *url, err)
