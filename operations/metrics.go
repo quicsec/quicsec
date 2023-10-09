@@ -48,7 +48,7 @@ var (
 			Name:    "appedge_outbound_rq_latency",
 			Help:    "The network latency between the request and the response by tuple of identity",
 			Buckets: prometheus.ExponentialBuckets(0.001, 1.25, 20), // 1ms start
-		}, []string{"myId", "upstreamId"})
+		}, []string{"myId", "upstreamId", "instance"})
 )
 
 type aggregatingCollector struct {
