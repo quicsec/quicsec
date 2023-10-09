@@ -18,6 +18,10 @@ import (
 	"github.com/quicsec/quicsec/utils"
 )
 
+type serverStruct struct {
+	server *quicsec.Server
+}
+
 type binds []string
 
 func (b binds) String() string {
@@ -125,9 +129,9 @@ func setupHandler(www string) http.Handler {
 }
 
 func main() {
-	verbose	:= flag.Bool("v", false, "verbose")
-	addr 	:= flag.String("bind", "localhost:8443", "bind to (e.g localhost:8443)")
-	www 	:= flag.String("www", "", "www data")
+	verbose := flag.Bool("v", false, "verbose")
+	addr := flag.String("bind", "localhost:8443", "bind to (e.g localhost:8443)")
+	www := flag.String("www", "", "www data")
 
 	flag.Parse()
 
@@ -142,5 +146,6 @@ func main() {
 
 	handler := setupHandler(*www)
 
-	quicsec.ListenAndServe(*addr, handler)
+	s := &serverStruct{server: &quicsec.Server{}}
+	s.server.ListenAndServe(*addr, handler)
 }
