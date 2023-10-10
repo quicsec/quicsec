@@ -154,8 +154,8 @@ func CustomVerifyPeerCertificate(rawCerts [][]byte, verifiedChains [][]*x509.Cer
 		return nil
 	}
 
-	if len(rawCerts) != 1 {
-		return fmt.Errorf("auth: required exactly one peer certificate")
+	if len(rawCerts) < 1 {
+		return fmt.Errorf("auth: required one or more peer certificate")
 	}
 
 	cert, err := x509.ParseCertificate(rawCerts[0])
