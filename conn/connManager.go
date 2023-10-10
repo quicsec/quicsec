@@ -49,7 +49,7 @@ func ListenAndServe(addr string, handler http.Handler) error {
 	keyLog, opsTracer := ops.OperationsInit()
 	connLogger := log.LoggerLgr.WithName(log.ConstConnManager)
 	config.SetServerSideFlag(true)
-	connLogger.Info("ListenAndServe() initialization")
+	connLogger.V(log.DebugLevel).Info("ListenAndServe() initialization")
 
 	tlsConfig := &tls.Config{
 		KeyLogWriter:       keyLog,
@@ -123,7 +123,7 @@ func ListenAndServe(addr string, handler http.Handler) error {
 	hErr = make(chan error)
 
 	if config.GetLocalOnlyH1() {
-		connLogger.Info("Listen only protocol HTTP/1.1 (TCP)", "addr", tcpAddr)
+		connLogger.V(log.DebugLevel).Info("Listen only protocol HTTP/1.1 (TCP)", "addr", tcpAddr)
 		httpServer = &http.Server{
 			Handler: httplog.WrapHandlerWithLogging(handler),
 		}
@@ -150,7 +150,7 @@ func ListenAndServe(addr string, handler http.Handler) error {
 		httpServer = &http.Server{
 			Handler: AltSvcMiddleware(httplog.WrapHandlerWithLogging(handler), quicServer),
 		}
-		connLogger.Info("Listen both protocol HTTP/1.1 (TCP) and HTTP/3 (UDP)", "addr", tcpAddr)
+		connLogger.V(log.DebugLevel).Info("Listen both protocol HTTP/1.1 (TCP) and HTTP/3 (UDP)", "addr", tcpAddr)
 	}
 
 	go func() {
@@ -179,7 +179,7 @@ func Do(req *http.Request) (*http.Response, error) {
 	identityLogger := log.LoggerLgr.WithName(log.ConstIdentityManager)
 	config.SetServerSideFlag(false)
 
-	connLogger.Info("client.Do() initialization")
+	connLogger.V(log.DebugLevel).Info("client.Do() initialization")
 
 	idCert, err := identity.GetCert()
 
@@ -214,12 +214,12 @@ func Do(req *http.Request) (*http.Response, error) {
 	}
 
 	elapsed := time.Since(start).Seconds()
-	connLogger.Info("Connection setup time for requesting", "setup_time", elapsed)
+	connLogger.V(log.DebugLevel).Info("Connection setup time for requesting", "setup_time", elapsed)
 
 	start = time.Now()
 	epAddrs, err := GetAllEpAddresses(req.URL.Hostname())
 	elapsed = time.Since(start).Seconds()
-	connLogger.Info("DNS lookup time for requesting", "dns_lookup_time", elapsed)
+	connLogger.V(log.DebugLevel).Info("DNS lookup time for requesting", "dns_lookup_time", elapsed)
 
 	if err != nil {
 		// HTTPS lookup failed doing an A lookup instead
@@ -272,12 +272,12 @@ func Do(req *http.Request) (*http.Response, error) {
 
 		if err != nil {
 			elapsed = time.Since(start).Seconds()
-			connLogger.Info("Trying address failed", "address", ep, "failed_req_time", elapsed)
+			connLogger.V(log.DebugLevel).Info("Trying address failed", "address", ep, "failed_req_time", elapsed)
 
 			continue
 		}
 		elapsed = time.Since(start).Seconds()
-		connLogger.Info("Trying address succeed", "address", ep, "success_req_time", elapsed)
+		connLogger.V(log.DebugLevel).Info("Trying address succeed", "address", ep, "success_req_time", elapsed)
 		break
 	}
 

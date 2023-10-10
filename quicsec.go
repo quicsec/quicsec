@@ -45,7 +45,7 @@ func Do(req *http.Request) (*http.Response, error) {
 	quicSecLogger := log.LoggerLgr.WithName(log.ConstQuicSecGeneral)
 	elapsed := time.Since(start).Seconds()
 
-	quicSecLogger.Info("Request total time", "total_req_time", elapsed)
+	quicSecLogger.V(log.DebugLevel).Info("Request total time", "total_req_time", elapsed)
 
 	return resp, err
 }
