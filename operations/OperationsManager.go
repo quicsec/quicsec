@@ -31,7 +31,7 @@ func OperationsInit() (io.Writer, logging.Tracer) {
 
 		opsLogger := log.LoggerLgr.WithName(log.ConstOperationsManager)
 
-		opsLogger.Info("module initialization")
+		opsLogger.V(log.DebugLevel).Info("module initialization")
 
 		if conf.Quic.Debug.SecretFilePathEnableFlag {
 			opsLogger.V(log.DebugLevel).Info("pre shared key dump enabled", "path", conf.Quic.Debug.SecretFilePath)

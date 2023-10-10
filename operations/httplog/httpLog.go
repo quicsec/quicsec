@@ -75,7 +75,7 @@ func (lrt LoggingRoundTripper) RoundTrip(r *http.Request) (res *http.Response, e
 
 	if err != nil {
 		log("handled request",
-			zap.Duration("duration", duration),
+			zap.String("duration", duration.String()),
 			zap.String("error", err.Error()),
 		)
 	} else {
@@ -96,9 +96,10 @@ func (lrt LoggingRoundTripper) RoundTrip(r *http.Request) (res *http.Response, e
 		}
 
 		log("handled request",
-			zap.Duration("duration", duration),
+			zap.String("duration", duration.String()),
 			zap.Int("size", size),
-			zap.Int("response_code", res.StatusCode),
+			zap.Int("responseCode", res.StatusCode),
+			zap.String("upstreamProto", res.Proto),
 			zap.Object("tls", LoggableTLSConnState(*res.TLS)),
 			// zap.Object("resp_headers", LoggableHTTPHeader{
 			// 	Header: res.Header,
@@ -116,16 +117,20 @@ func (r LoggableHTTPRequestClient) MarshalLogObject(enc zapcore.ObjectEncoder) e
 		ip = r.Host
 		port = ""
 	}
+
+	if ip != "" {
+		enc.AddString("upstreamPeer", ip+":"+port)
+		enc.AddString("proto", r.Proto)
+		enc.AddString("host", r.Host)
+	}
 	enc.AddString("myId", config.GetIdentity().String())
-	enc.AddString("remote_ip", ip)
-	enc.AddString("remote_port", port)
-	enc.AddString("proto", r.Proto)
 	enc.AddString("method", r.Method)
-	enc.AddString("host", r.Host)
-	enc.AddString("uri", r.URL.RequestURI())
-	enc.AddObject("headers", LoggableHTTPHeader{
-		Header: r.Header,
-	})
+	enc.AddString("path", r.URL.RequestURI())
+	if config.GetEnableDebug() {
+		enc.AddObject("headers", LoggableHTTPHeader{
+			Header: r.Header,
+		})
+	}
 
 	if r.TLS != nil {
 		enc.AddObject("tls", LoggableTLSConnState(*r.TLS))
@@ -140,16 +145,20 @@ func (r LoggableHTTPRequest) MarshalLogObject(enc zapcore.ObjectEncoder) error {
 		ip = r.RemoteAddr
 		port = ""
 	}
+
+	if ip != "" {
+		enc.AddString("downstreamPeer", ip+":"+port)
+		enc.AddString("downstreamProto", r.Proto)
+		enc.AddString("host", r.Host)
+	}
 	enc.AddString("myId", config.GetIdentity().String())
-	enc.AddString("remote_ip", ip)
-	enc.AddString("remote_port", port)
-	enc.AddString("proto", r.Proto)
 	enc.AddString("method", r.Method)
-	enc.AddString("host", r.Host)
-	enc.AddString("uri", r.RequestURI)
-	enc.AddObject("headers", LoggableHTTPHeader{
-		Header: r.Header,
-	})
+	enc.AddString("path", r.RequestURI)
+	if config.GetEnableDebug() {
+		enc.AddObject("headers", LoggableHTTPHeader{
+			Header: r.Header,
+		})
+	}
 	if r.TLS != nil {
 		enc.AddObject("tls", LoggableTLSConnState(*r.TLS))
 	}
@@ -164,8 +173,8 @@ func (t LoggableTLSConnState) MarshalLogObject(enc zapcore.ObjectEncoder) error 
 	enc.AddBool("resumed", t.DidResume)
 	// enc.AddUint16("version", t.Version)
 	// enc.AddUint16("cipher_suite", t.CipherSuite)
-	enc.AddString("proto", t.NegotiatedProtocol)
-	enc.AddString("server_name", t.ServerName)
+	enc.AddString("alpn", t.NegotiatedProtocol)
+	// enc.AddString("serverName", t.ServerName)
 	if len(t.PeerCertificates) > 0 {
 		// enc.AddString("client_common_name", t.PeerCertificates[0].Subject.CommonName)
 		// enc.AddString("client_serial", t.PeerCertificates[0].SerialNumber.String())
@@ -249,13 +258,19 @@ func WrapHandlerWithLogging(wrappedHandler http.Handler) http.Handler {
 			}
 		}
 
-		log("handled request",
-			zap.Duration("duration", duration),
+		fields := []zap.Field{
+			zap.String("duration", duration.String()),
 			zap.Int("size", lrw.size),
-			zap.Int("response_code", lrw.statusCode),
-			zap.Object("resp_headers", LoggableHTTPHeader{
+			zap.Int("responseCode", lrw.statusCode),
+		}
+
+		if config.GetEnableDebug() {
+			respHeadersField := zap.Object("respHeaders", LoggableHTTPHeader{
 				Header: w.Header(),
-			}),
-		)
+			})
+			fields = append(fields, respHeadersField)
+		}
+
+		log("handled request", fields...)
 	})
 }

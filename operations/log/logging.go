@@ -12,12 +12,12 @@ var LoggerLgr logr.Logger
 var LoggerRequest *zap.Logger
 
 const (
-	ConstOperationsManager = "operations_manager"
-	ConstIdentityManager   = "identity_manager"
-	ConstConfigManager     = "configuration_manager"
-	ConstConnManager       = "connection_manager"
-	ConstAuthManager       = "authentication_manager"
-	ConstQuicSecGeneral    = "quicsec_general"
+	ConstOperationsManager = "OpsMgr"
+	ConstIdentityManager   = "IdMgr"
+	ConstConfigManager     = "ConfMgr"
+	ConstConnManager       = "ConnMgr"
+	ConstAuthManager       = "AuthMgr"
+	ConstQuicSecGeneral    = "General"
 )
 
 const (
@@ -37,6 +37,7 @@ func InitLoggerLogr(debug bool, filePath string) {
 
 	} else {
 		zapconf = zap.NewProductionConfig()
+
 	}
 
 	if filePath != "" {
@@ -51,11 +52,16 @@ func InitLoggerLogr(debug bool, filePath string) {
 		msgLogFile = "send output log to stdout"
 	}
 
+	zapconf.DisableCaller = true
+	zapconf.DisableStacktrace = true
+	zapconf.EncoderConfig.LevelKey = ""
+
 	z, _ := zapconf.Build()
 
 	LoggerLgr = zapr.NewLogger(z).WithName("Quicsec")
-	LoggerLgr.WithName(ConstOperationsManager).Info("logger initialization")
-	LoggerLgr.WithName(ConstOperationsManager).Info(msgLogFile, "path", filePath)
+
+	LoggerLgr.WithName(ConstOperationsManager).V(DebugLevel).Info("logger initialization")
+	LoggerLgr.WithName(ConstOperationsManager).V(DebugLevel).Info(msgLogFile, "path", filePath)
 }
 
 // logInit initialize the logger
@@ -85,7 +91,7 @@ func InitLoggerRequest(debug bool, filePath string) {
 	} else {
 		msgLogFile = "send access log to stdout"
 	}
-	LoggerLgr.WithName(ConstOperationsManager).Info(msgLogFile, "path", filePath)
+	LoggerLgr.WithName(ConstOperationsManager).V(DebugLevel).Info(msgLogFile, "path", filePath)
 
 	z, _ := zapconf.Build()
 	LoggerRequest = z
