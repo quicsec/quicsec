@@ -48,7 +48,7 @@ var (
 			Name:    "appedge_outbound_rq_latency",
 			Help:    "The network latency between the request and the response by tuple of identity",
 			Buckets: prometheus.ExponentialBuckets(0.001, 1.25, 20), // 1ms start
-		}, []string{"myId", "upstreamId", "instance"})
+		}, []string{"myId", "upstreamId", "upstreamPeer"})
 )
 
 type aggregatingCollector struct {
@@ -229,7 +229,7 @@ func metricsInit() {
 			Name: "appedge_outbound_rq_total",
 			Help: "HTTP requests counter by group (method, path and status)",
 		},
-		[]string{"myId", "upstreamId", "instance", "method", "path", "responseCode"},
+		[]string{"myId", "upstreamId", "upstreamPeer", "method", "path", "responseCode"},
 	)
 	prometheus.MustRegister(HttpRequestsPathIdClient)
 
@@ -238,7 +238,7 @@ func metricsInit() {
 			Name: "appedge_inbound_rq_total",
 			Help: "HTTP requests counter by group (method, path and status)",
 		},
-		[]string{"myId", "downstreamId", "instance", "method", "path", "responseCode"},
+		[]string{"myId", "downstreamId", "downstreamPeer", "method", "path", "responseCode"},
 	)
 	prometheus.MustRegister(HttpRequestsPathIdServer)
 
