@@ -5,18 +5,13 @@ import (
 	"net"
 	"regexp"
 	"sort"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/miekg/dns"
 	"github.com/patrickmn/go-cache"
 )
-
-type RecordCache struct {
-	Priority 	int
-	Addr 		string
-	Duration	float32
-}
 
 var rCache *cache.Cache
 var rCacheLock sync.Mutex
@@ -42,19 +37,23 @@ func lookUp(domain string, dnsType uint16) (*dns.Msg, error) {
 	res, _, err := client.Exchange(&query, net.JoinHostPort(config.Servers[0], "53"))
 
 	if err != nil {
-		return nil, fmt.Errorf("Error querying DNS:", err)
+		return nil, fmt.Errorf("error querying DNS: %s", err.Error())
 	}
 
 	// return the response
 	if res.Rcode != dns.RcodeSuccess {
-		return nil, fmt.Errorf("Dns resolution for %s failed", domain)
+		return nil, fmt.Errorf("dns resolution for %s failed with Rcode %d", domain, res.Rcode)
 	}
 
 	return res, nil
 }
 
-func parseHttpsRecord(dnsMsg *dns.Msg) (map[int]string, uint32) {
-	var upstreams = make(map[int]string)
+func tokenize(str, delimiter string) []string {
+	return strings.Split(str, delimiter)
+}
+
+func parseHttpsRecord(dnsMsg *dns.Msg) (map[string]int, uint32) {
+	var upstreams = make(map[string]int)
 	var ttl uint32
 
 	if dnsMsg != nil {
@@ -65,11 +64,13 @@ func parseHttpsRecord(dnsMsg *dns.Msg) (map[int]string, uint32) {
 				matches := re.FindStringSubmatch(fmt.Sprintf("%s", srv.Value))
 
 				if len(matches) == 4 {
-					ip := matches[3]
 					port := matches[2]
-					addr := fmt.Sprintf("%s:%s", ip, port)
-
-					upstreams[int(srv.Priority)] = addr
+					ipv4Hint := matches[3]
+					ips := tokenize(ipv4Hint, ",")
+					for _, ip := range ips {
+						addr := fmt.Sprintf("%s:%s", ip, port)
+						upstreams[addr] = int(srv.Priority)
+					}
 				} else {
 					fmt.Println("Invalid HTTPS valeu in RDATA")
 				}
@@ -95,29 +96,6 @@ func parseARecord(dnsMsg *dns.Msg) string {
 	return upstream
 }
 
-func takeFirst(ups map[int]string) string {
-	// Get the map keys and sort them
-	keys := make([]int, 0, len(ups))
-	for k := range ups {
-		keys = append(keys, k)
-	}
-	sort.Ints(keys)
-
-	return ups[keys[0]]
-}
-
-func GetPriorEpAddress(domain string) string {
-	msg, err := lookUp(domain, dns.TypeHTTPS)
-
-	if err != nil {
-		return ""
-	}
-
-	ips, _ := parseHttpsRecord(msg)
-
-	return takeFirst(ips)
-}
-
 func GetAllEpAddresses(domain string) ([]string, error) {
 	rCacheLock.Lock()
 	defer rCacheLock.Unlock()
@@ -127,29 +105,31 @@ func GetAllEpAddresses(domain string) ([]string, error) {
 	}
 
 	msg, err := lookUp(domain, dns.TypeHTTPS)
-
 	if err != nil {
 		return nil, err
 	}
 
 	ups, ttl := parseHttpsRecord(msg)
-
 	if len(ups) <= 0 {
-		return nil, fmt.Errorf("Failed to  parse HTTPS record");
+		return nil, fmt.Errorf("failed to  parse HTTPS record");
 	}
 
-	keys := make([]int, 0, len(ups))
-	for k := range ups {
-		keys = append(keys, k)
+	var priorities []int
+	for _, priority := range ups {
+		priorities = append(priorities, priority)
 	}
-	sort.Ints(keys)
+	sort.Ints(priorities)
 
 	var endpoints []string
-
-	for _, k := range keys {
-		endpoints = append(endpoints, ups[k])
+	addedAddrs := make(map[string]bool)
+	for _, priority := range priorities {
+		for address, addPriority := range ups {
+			if addPriority == priority && !addedAddrs[address] {
+				endpoints = append(endpoints, address)
+				addedAddrs[address] = true
+			}
+		}
 	}
-
 	rCache.Set(domain, endpoints, time.Duration(ttl)*time.Second)
 
 	return endpoints, nil
