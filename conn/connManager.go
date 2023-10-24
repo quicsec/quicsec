@@ -217,20 +217,27 @@ func Do(req *http.Request) (*http.Response, error) {
 	connLogger.V(log.DebugLevel).Info("Connection setup time for requesting", "setup_time", elapsed)
 
 	start = time.Now()
-	epAddrs, err := GetAllEpAddresses(req.URL.Hostname())
-	elapsed = time.Since(start).Seconds()
-	connLogger.V(log.DebugLevel).Info("DNS lookup time for requesting", "dns_lookup_time", elapsed)
+	dst := req.URL.Hostname()
 
-	if err != nil {
-		// HTTPS lookup failed doing an A lookup instead
-		connLogger.V(log.DebugLevel).Info("HTTPS lookup failed... Doing an A lookup instead...")
-		hostAddr, err := GetEpAddress(req.URL.Hostname())
+	// It's a domain name
+	var epAddrs []string
+	if net.ParseIP(dst) == nil {
+		epAddrs, err = GetAllEpAddresses(dst)
+		elapsed = time.Since(start).Seconds()
+		connLogger.V(log.DebugLevel).Info("DNS lookup time for requesting", "dns_lookup_time", elapsed)
 
 		if err != nil {
-			return nil, fmt.Errorf("DNS resolution failed")
-		}
+			// HTTPS lookup failed doing an A lookup instead
+			connLogger.V(log.DebugLevel).Info("HTTPS lookup failed... Doing an A lookup instead...")
+			hostAddr, err := GetEpAddress(dst)
+			if err != nil {
+				return nil, fmt.Errorf("DNS resolution failed")
+			}
 
-		epAddrs = append(epAddrs, hostAddr+":"+req.URL.Port())
+			epAddrs = append(epAddrs, hostAddr+":"+req.URL.Port())
+		}
+	} else { // Its an IP address
+		epAddrs = append(epAddrs, dst+":"+req.URL.Port())
 	}
 
 	var resp *http.Response
