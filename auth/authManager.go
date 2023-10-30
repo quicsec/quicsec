@@ -167,7 +167,8 @@ func CustomVerifyPeerCertificate(rawCerts [][]byte, verifiedChains [][]*x509.Cer
 	for _, uri := range cert.URIs {
 		rv, policy := identity.VerifyIdentity(uri.String())
 		if rv {
-			authLogger.Info("verify peer certificate", "authorized", "yes", "URI", uri.String())
+			authLogger.Info("verify peer certificate", "authorized", "yes", "URI", uri.String(), "policy", policy)
+
 			if config.GetServerSideFlag() {
 				operations.AuthzConnectiontServerId.WithLabelValues(config.GetIdentity().String(), uri.String(), "authorized", policy).Inc()
 			} else {
@@ -175,14 +176,13 @@ func CustomVerifyPeerCertificate(rawCerts [][]byte, verifiedChains [][]*x509.Cer
 			}
 			return nil
 		} else {
+			authLogger.Info("verify peer certificate", "authorized", "no", "URI", uri.String(), "policy", policy)
+
 			if config.GetServerSideFlag() {
 				operations.AuthzConnectiontServerId.WithLabelValues(config.GetIdentity().String(), uri.String(), "unauthorized", policy).Inc()
 			} else {
 				operations.AuthzConnectiontClientId.WithLabelValues(config.GetIdentity().String(), uri.String(), "unauthorized", policy).Inc()
 			}
-
-			authLogger.Info("verify peer certificate", "authorized", "no", "URI", uri.String())
-
 		}
 	}
 
