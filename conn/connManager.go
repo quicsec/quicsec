@@ -14,6 +14,7 @@ import (
 
 	"github.com/quicsec/quicsec/auth"
 	"github.com/quicsec/quicsec/config"
+	"github.com/quicsec/quicsec/http/filters"
 	"github.com/quicsec/quicsec/identity"
 	"github.com/quicsec/quicsec/operations/httplog"
 	"github.com/quicsec/quicsec/operations/log"
@@ -97,6 +98,18 @@ func ListenAndServe(addr string, handler http.Handler) error {
 		handler = http.DefaultServeMux
 	}
 
+	/* configure filter chain */
+	filterChain := &filters.FilterChain{
+		Filters: []filters.Filters{
+			filters.NewCorazaFilter("/home/vagrant/go/src/github.com/quicsec/quicsec/http/filters/default.config"),
+			filters.NewExtAuthFilter("http://localhost:8181/v1/data/httpapi/authz"),
+		},
+	}
+
+	finalHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		filterChain.Apply(w, r, handler.ServeHTTP)
+	})
+
 	quicConf := &quic.Config{
 		Tracer: opsTracer,
 	}
@@ -125,13 +138,13 @@ func ListenAndServe(addr string, handler http.Handler) error {
 	if config.GetLocalOnlyH1() {
 		connLogger.V(log.DebugLevel).Info("Listen only protocol HTTP/1.1 (TCP)", "addr", tcpAddr)
 		httpServer = &http.Server{
-			Handler: httplog.WrapHandlerWithLogging(handler),
+			Handler: httplog.WrapHandlerWithLogging(finalHandler),
 		}
 
 	} else {
 		quicServer = &http3.Server{
 			TLSConfig:  tlsConfig,
-			Handler:    httplog.WrapHandlerWithLogging(handler),
+			Handler:    httplog.WrapHandlerWithLogging(finalHandler),
 			QuicConfig: quicConf,
 		}
 
@@ -148,7 +161,7 @@ func ListenAndServe(addr string, handler http.Handler) error {
 		}
 
 		httpServer = &http.Server{
-			Handler: AltSvcMiddleware(httplog.WrapHandlerWithLogging(handler), quicServer),
+			Handler: AltSvcMiddleware(httplog.WrapHandlerWithLogging(finalHandler), quicServer),
 		}
 		connLogger.V(log.DebugLevel).Info("Listen both protocol HTTP/1.1 (TCP) and HTTP/3 (UDP)", "addr", tcpAddr)
 	}
