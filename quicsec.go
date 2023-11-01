@@ -13,8 +13,6 @@ import (
 	"github.com/quicsec/quicsec/operations/log"
 )
 
-type binds []string
-
 type Client struct {
 	Client *http.Client
 }
