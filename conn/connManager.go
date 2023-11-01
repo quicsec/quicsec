@@ -17,6 +17,7 @@ import (
 	"github.com/quicsec/quicsec/identity"
 	"github.com/quicsec/quicsec/operations/httplog"
 	"github.com/quicsec/quicsec/operations/log"
+	"github.com/quicsec/quicsec/http/filters"
 
 	ops "github.com/quicsec/quicsec/operations"
 )
@@ -90,6 +91,18 @@ func ListenAndServe(addr string, handler http.Handler) error {
 		handler = http.DefaultServeMux
 	}
 
+	/* configure filter chain */
+	filterChain := &filters.FilterChain{
+		Filters: []filters.Filters{
+			filters.NewCorazaFilter("/home/vagrant/go/src/github.com/quicsec/quicsec/http/filters/default.config"),
+			filters.NewExtAuthFilter("http://localhost:8181/v1/data/httpapi/authz"),
+		},
+	}
+
+	finalHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request, ) {
+		filterChain.Apply(w, r, handler.ServeHTTP)
+	})
+
 	quicConf := &quic.Config{
 		Tracer: opsTracer,
 	}
@@ -109,14 +122,14 @@ func ListenAndServe(addr string, handler http.Handler) error {
 	// Start the servers
 	quicServer := &http3.Server{
 		TLSConfig:  tlsConfig,
-		Handler:    httplog.WrapHandlerWithLogging(handler),
+		Handler:    httplog.WrapHandlerWithLogging(finalHandler),
 		QuicConfig: quicConf,
 	}
 
 	httpServer := &http.Server{
 		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			quicServer.SetQuicHeaders(w.Header())
-			handler.ServeHTTP(w, r)
+			finalHandler.ServeHTTP(w, r)
 		}),
 	}
 
