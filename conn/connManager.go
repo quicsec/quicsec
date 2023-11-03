@@ -94,8 +94,8 @@ func ListenAndServe(addr string, handler http.Handler) error {
 	/* configure filter chain */
 	filterChain := &filters.FilterChain{
 		Filters: []filters.Filters{
-			filters.NewCorazaFilter("/home/vagrant/go/src/github.com/quicsec/quicsec/http/filters/default.config"),
-			filters.NewExtAuthFilter("http://localhost:8181/v1/data/httpapi/authz"),
+			&filters.CorazaFilter{},
+			&filters.ExtAuthFilter{},
 		},
 	}
 
