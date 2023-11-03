@@ -183,6 +183,10 @@ func SetServerSideFlag(f bool) {
 	globalConfig.Local.ServerSideFlag = f
 }
 
+func GetMetricsEnabled() bool {
+	return globalConfig.Metrics.Enable
+}
+
 func (c Config) ShowConfig() {
 	fmt.Printf("Init configuration\n")
 
