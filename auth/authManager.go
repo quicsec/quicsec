@@ -168,21 +168,23 @@ func CustomVerifyPeerCertificate(rawCerts [][]byte, verifiedChains [][]*x509.Cer
 		rv := identity.VerifyIdentity(uri.String())
 		if rv {
 			authLogger.Info("verify peer certificate", "authorized", "yes", "URI", uri.String())
-			if config.GetServerSideFlag() {
-				operations.AuthzConnectiontServerId.WithLabelValues(config.GetIdentity().String(), uri.String(), "authorized").Inc()
-			} else {
-				operations.AuthzConnectiontClientId.WithLabelValues(config.GetIdentity().String(), uri.String(), "authorized").Inc()
+			if config.GetMetricsEnabled() {
+				if config.GetServerSideFlag() {
+					operations.AuthzConnectiontServerId.WithLabelValues(config.GetIdentity().String(), uri.String(), "authorized").Inc()
+				} else {
+					operations.AuthzConnectiontClientId.WithLabelValues(config.GetIdentity().String(), uri.String(), "authorized").Inc()
+				}
 			}
 			return nil
 		} else {
-			if config.GetServerSideFlag() {
-				operations.AuthzConnectiontServerId.WithLabelValues(config.GetIdentity().String(), uri.String(), "unauthorized").Inc()
-			} else {
-				operations.AuthzConnectiontClientId.WithLabelValues(config.GetIdentity().String(), uri.String(), "unauthorized").Inc()
+			if config.GetMetricsEnabled() {
+				if config.GetServerSideFlag() {
+					operations.AuthzConnectiontServerId.WithLabelValues(config.GetIdentity().String(), uri.String(), "unauthorized").Inc()
+				} else {
+					operations.AuthzConnectiontClientId.WithLabelValues(config.GetIdentity().String(), uri.String(), "unauthorized").Inc()
+				}
 			}
-
 			authLogger.Info("verify peer certificate", "authorized", "no", "URI", uri.String())
-
 		}
 	}
 
