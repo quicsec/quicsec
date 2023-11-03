@@ -194,6 +194,10 @@ func GetLocalOnlyH1() bool {
 	return globalConfig.Local.H1Only
 }
 
+func GetMetricsEnabled() bool {
+	return globalConfig.Metrics.Enable
+}
+
 func (c Config) ShowConfig() {
 	fmt.Printf("Init configuration\n")
 

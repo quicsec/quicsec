@@ -9,8 +9,6 @@ import (
 	"strings"
 	"time"
 
-	//"github.com/quicsec/quicsec/operations"
-
 	"github.com/quicsec/quicsec/config"
 	"github.com/quicsec/quicsec/identity"
 	"github.com/quicsec/quicsec/operations"
@@ -86,11 +84,13 @@ func (lrt LoggingRoundTripper) RoundTrip(r *http.Request) (res *http.Response, e
 		}
 
 		// Prometheus metrics for HTTP
-		if len(res.TLS.PeerCertificates) > 0 {
-			serverId, err := identity.IDFromCert(res.TLS.PeerCertificates[0])
-			if err == nil {
-				operations.HttpRequestsPathIdClient.WithLabelValues(config.GetIdentity().String(), serverId.String(), r.Host, r.Method, r.URL.RequestURI(), strconv.Itoa(res.StatusCode)).Inc()
-				operations.HTTPHistogramNetworkLatencyId.WithLabelValues(config.GetIdentity().String(), serverId.String(), r.Host).Observe(duration.Seconds())
+		if config.GetMetricsEnabled() {
+			if len(res.TLS.PeerCertificates) > 0 {
+				serverId, err := identity.IDFromCert(res.TLS.PeerCertificates[0])
+				if err == nil {
+					operations.HttpRequestsPathIdClient.WithLabelValues(config.GetIdentity().String(), serverId.String(), r.Host, r.Method, r.URL.RequestURI(), strconv.Itoa(res.StatusCode)).Inc()
+					operations.HTTPHistogramNetworkLatencyId.WithLabelValues(config.GetIdentity().String(), serverId.String(), r.Host).Observe(duration.Seconds())
+				}
 			}
 		}
 
