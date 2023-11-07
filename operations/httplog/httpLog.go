@@ -13,7 +13,6 @@ import (
 
 	"github.com/quicsec/quicsec/config"
 	"github.com/quicsec/quicsec/identity"
-	"github.com/quicsec/quicsec/operations"
 	"github.com/quicsec/quicsec/operations/log"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
