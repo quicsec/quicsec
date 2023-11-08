@@ -25,7 +25,9 @@ func OperationsInit() (io.Writer, logging.Tracer) {
 	var tracers []logging.Tracer
 	var tracer logging.Tracer
 	var keyLog io.Writer
-	conf := config.LoadConfig()
+
+	//[TODO] configmanager is originaly being initialized here. Maybe we should move it to server/client init.
+	config.InitConfigManager()
 
 	onlyOnce.Do(func() {
 
@@ -33,24 +35,24 @@ func OperationsInit() (io.Writer, logging.Tracer) {
 
 		opsLogger.V(log.DebugLevel).Info("module initialization")
 
-		if conf.Quic.Debug.SecretFilePathEnableFlag {
-			opsLogger.V(log.DebugLevel).Info("pre shared key dump enabled", "path", conf.Quic.Debug.SecretFilePath)
+		if config.GetQuicDebugSecretFilePathEnabled() {
+			opsLogger.V(log.DebugLevel).Info("pre shared key dump enabled", "path", config.GetQuicDebugSecretFilePath())
 
-			keyLog = utils.CreateFileRotate(conf.Quic.Debug.SecretFilePath, 2)
+			keyLog = utils.CreateFileRotate(config.GetQuicDebugSecretFilePath(), 2)
 		} else {
 			opsLogger.V(log.DebugLevel).Info("pre shared key dump disabled")
 		}
 
-		if conf.Quic.Debug.QlogEnableFlag {
-			opsLogger.V(log.DebugLevel).Info("qlog enabled", "path", conf.Quic.Debug.QlogDirPath)
+		if config.GetQuicDebugQlogEnabled() {
+			opsLogger.V(log.DebugLevel).Info("qlog enabled", "path", config.GetQuicDebugQlogDirPath())
 
-			qlogTracer := qlogInit(conf.Quic.Debug.QlogDirPath)
+			qlogTracer := qlogInit(config.GetQuicDebugQlogDirPath())
 			tracers = append(tracers, qlogTracer)
 		} else {
 			opsLogger.V(log.DebugLevel).Info("qlog disabled")
 		}
 
-		if conf.Metrics.Enable {
+		if config.GetMetricsEnabled() {
 			opsLogger.V(log.DebugLevel).Info("trace metrics enabled")
 			metricsInit()
 			tracers = append(tracers, &MetricsTracer{})

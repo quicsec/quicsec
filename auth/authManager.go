@@ -165,7 +165,7 @@ func CustomVerifyPeerCertificate(rawCerts [][]byte, verifiedChains [][]*x509.Cer
 	}
 
 	for _, uri := range cert.URIs {
-		rv, policy := identity.VerifyIdentity(uri.String())
+		rv, policy := identity.AllowedIdentity(uri.String())
 		if rv {
 			authLogger.Info("verify peer certificate", "authorized", "yes", "URI", uri.String(), "policy", policy)
 			if config.GetMetricsEnabled() {

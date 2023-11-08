@@ -6,25 +6,17 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"strings"
 
 	"github.com/quicsec/quicsec/config"
 	"github.com/quicsec/quicsec/operations/log"
 	"github.com/quicsec/quicsec/spiffeid"
 )
 
-// return[0] - true (authorized) - false (unauthorized)
-// return[1] - "strict"/"default"
-func VerifyIdentity(uri string) (bool, string) {
-	var AuthIDs map[string]bool
-	AuthIDs, dFlag := config.GetLastAuthRules()
-
-	// strict rules
-	for key, allow := range AuthIDs {
-		v := strings.EqualFold(uri, key)
-
-		if v {
-			if allow {
+func AllowedIdentity(uri string) (bool, string) {
+	fmt.Println("GetAllowedIdentities:", config.GetAllowedIdentities())
+	for id, allowed := range config.GetAllowedIdentities() {
+		if id == uri {
+			if allowed == config.AuthzAllow {
 				return true, "strict"
 			} else {
 				return false, "strict"
@@ -32,8 +24,8 @@ func VerifyIdentity(uri string) (bool, string) {
 		}
 	}
 
-	// default rules
-	if dFlag {
+	defaultAllowed := config.GetDefaultAllowed()
+	if defaultAllowed == config.AuthzAllow {
 		return true, "default"
 	} else {
 		return false, "default"
