@@ -6,21 +6,15 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"strings"
 
 	"github.com/quicsec/quicsec/config"
 	"github.com/quicsec/quicsec/operations/log"
 	"github.com/quicsec/quicsec/spiffeid"
 )
 
-func VerifyIdentity(uri string) bool {
-	var AuthIDs []string
-	AuthIDs = config.GetLastAuthRules()
-
-	for _, id := range AuthIDs {
-		v := strings.EqualFold(uri, id)
-
-		if v {
+func AllowedIdentity(uri string) bool {
+	for _, allowed := range config.GetAllowedIdentities() {
+		if allowed == uri {
 			return true
 		}
 	}
