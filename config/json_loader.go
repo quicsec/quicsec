@@ -109,7 +109,9 @@ func (j *JSONLoader) Load() {
 			fmt.Println("failed to load service config")
 			panic(err.Error())
 		}
+
 		viper.AutomaticEnv()
+
 		if err := viper.Unmarshal(j.config); err != nil {
 			fmt.Println("config: unable to decode into struct: " + err.Error())
 		}

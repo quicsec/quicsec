@@ -93,7 +93,7 @@ func (c *CorazaFilter) Execute(w http.ResponseWriter, r *http.Request, next http
 	return nil
 }
 
-func logError(error types.MatchedRule) {
-	msg := error.ErrorLog()
-	fmt.Printf("[logError][%s] %s\n", error.Rule().Severity(), msg)
+func logError(mr types.MatchedRule) {
+	msg := mr.ErrorLog()
+	fmt.Printf("[logError][%s] %s\n", mr.Rule().Severity(), msg)
 }
