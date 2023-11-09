@@ -48,7 +48,7 @@ func (j *JSONLoader) SetDefaultConfig() {
 				SecretFilePathEnabled: false,
 				SecretFilePath:        "",
 				QlogEnabled:           false,
-				QlogDirPath:           "./qlog/",
+				QlogDirPath:           "",
 			},
 		},
 		Metrics: MetricsConfigs{
@@ -134,8 +134,8 @@ func (j *JSONLoader) Load() {
 			j.config.Quic.Debug.SecretFilePathEnabled = true
 		}
 		// qlog dir
-		if j.config.Quic.Debug.QlogDirPath == "" {
-			j.config.Quic.Debug.QlogEnabled = false
+		if j.config.Quic.Debug.QlogDirPath != "" {
+			j.config.Quic.Debug.QlogEnabled = true
 		}
 		// prometheus metrics http
 		if j.config.Metrics.BindPort != 0 {
