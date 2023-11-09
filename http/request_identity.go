@@ -39,7 +39,7 @@ func GetRequestIdentity(r *http.Request) (RequestIdentity) {
 			}
 		}
 		knowId := false
-		kIds := config.GetLastAuthRules()
+		kIds := config.GetAllowedIdentities()
 
 		for _, id := range kIds {
 			if reqIdentity.String() == id {
