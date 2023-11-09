@@ -29,7 +29,7 @@ If `QUICSEC_QUIC_DEBUG_SECRET_PATH` is set to "", no pre shared key is generated
 
 **3. Flag to enable qlog and the path directory**
 ```
-QUICSEC_QUIC_DEBUG_QLOG_PATH="/tmp/qlog/"               //default: "./qlog/"
+QUICSEC_QUIC_DEBUG_QLOG_PATH="/tmp/qlog/"               //default: ""
 ```
 If `QUICSEC_QUIC_DEBUG_QLOG_PATH` is set to "", no qlog is generated.
 
