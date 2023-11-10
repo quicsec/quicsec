@@ -6,8 +6,12 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"strings"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/secretsmanager"
 	"github.com/quicsec/quicsec/config"
 	"github.com/quicsec/quicsec/operations/log"
 	"github.com/quicsec/quicsec/spiffeid"
@@ -63,7 +67,49 @@ func IDFromCert(cert *x509.Certificate) (spiffeid.ID, error) {
 	return spiffeid.FromURI(cert.URIs[0])
 }
 
+func getSecretManager(name string) (string, error) {
+	regionName := os.Getenv("AWS_DEFAULT_REGION")
+
+	sess, err := session.NewSession(&aws.Config{
+		Region: aws.String(regionName),
+	})
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Session creation failed: %s", err)
+		return "", err
+	}
+
+	svc := secretsmanager.New(sess)
+
+	input := secretsmanager.GetSecretValueInput{
+		SecretId: aws.String(name),
+	}
+
+	resp, err := svc.GetSecretValue(&input)
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to get secret: %s", err)
+		return "", err
+	}
+
+	return aws.StringValue(resp.SecretString), nil
+}
+
 func GetCert() (*tls.Certificate, error) {
+	if config.GetCertsMethod() == "aws" {
+		return GetCertAws()
+	}
+	return GetCertDisk()
+}
+
+func GetCertPool() (*x509.CertPool, error) {
+	if config.GetCertsMethod() == "aws" {
+		return GetCertPoolAws()
+	}
+	return GetCertPoolDisk()
+}
+
+func GetCertDisk() (*tls.Certificate, error) {
 	certFile := config.GetPathCertFile()
 	keyFile := config.GetPathKeyFile()
 
@@ -80,7 +126,61 @@ func GetCert() (*tls.Certificate, error) {
 	return &cert, err
 }
 
-func GetCertPool() (*x509.CertPool, error) {
+func GetCertAws() (*tls.Certificate, error) {
+	cert_name := config.GetPathCertFile()
+	key_name := config.GetPathKeyFile()
+
+	if len(cert_name) == 0 || len(key_name) == 0 {
+		return nil, errors.New("must provide certificate and key")
+	}
+
+	certPEM, err := getSecretManager(cert_name)
+	if err != nil {
+		fmt.Println("Error:\n", err)
+	}
+
+	keyPEM, err := getSecretManager(key_name)
+	if err != nil {
+		fmt.Println("Error:\n", err)
+	}
+
+	cert, err := tls.X509KeyPair([]byte(certPEM), []byte(keyPEM))
+	if err != nil {
+		err = fmt.Errorf("failed trying to load x509 key pair %v", err)
+	}
+
+	return &cert, err
+}
+
+func GetCertPoolAws() (*x509.CertPool, error) {
+	idLogger := log.LoggerLgr.WithName(log.ConstConnManager)
+
+	pool, err := x509.SystemCertPool()
+
+	if err != nil {
+		idLogger.Error(err, "failed to get system cert pool")
+		return nil, err
+	}
+
+	ca_name := config.GetPathCAFile()
+
+	if len(ca_name) == 0 {
+		return nil, errors.New("must provide CA certificate")
+	}
+
+	caPEM, err := getSecretManager(ca_name)
+	if err != nil {
+		fmt.Println("Error:\n", err)
+	}
+
+	if ok := pool.AppendCertsFromPEM([]byte(caPEM)); !ok {
+		return nil, errors.New("could not add root ceritificate to pool")
+	}
+
+	return pool, nil
+}
+
+func GetCertPoolDisk() (*x509.CertPool, error) {
 	idLogger := log.LoggerLgr.WithName(log.ConstConnManager)
 
 	pool, err := x509.SystemCertPool()

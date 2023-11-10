@@ -69,6 +69,7 @@ type MetricsConfigs struct {
 // Identity Manager
 // identityManager - certificates
 type CertificatesConfigs struct {
+	Method   string `mapstructure:"method"`
 	CaPath   string `mapstructure:"ca_path"`
 	KeyPath  string `mapstructure:"key_path"`
 	CertPath string `mapstructure:"cert_path"`
@@ -125,6 +126,10 @@ var globalConfig = Config{
 	Metrics: MetricsConfigs{
 		BindEnableFlag: false,
 	},
+}
+
+func GetCertsMethod() string {
+	return globalConfig.Certs.Method
 }
 
 func GetPathCertFile() string {
@@ -207,6 +212,7 @@ func (c Config) ShowConfig() {
 	fmt.Printf("MetricsEnable:%t\n", c.Metrics.Enable)
 	fmt.Printf("BindPort:%d\n", c.Metrics.BindPort)
 
+	fmt.Printf("Cert method:%s\n", c.Certs.Method)
 	fmt.Printf("CAPath:%s\n", c.Certs.CaPath)
 	fmt.Printf("KeyPath:%s\n", c.Certs.KeyPath)
 	fmt.Printf("CertPath:%s\n", c.Certs.CertPath)
@@ -260,6 +266,7 @@ func LoadConfig() Config {
 		viper.SetDefault("quic.debug.qlog_path", "./qlog/")        // QUICSEC_QUIC_DEBUG_QLOG_PATH
 		viper.SetDefault("metrics.enable", true)                   // QUICSEC_METRICS_ENABLE
 		viper.SetDefault("metrics.bind_port", 9090)                // QUICSEC_METRICS_BIND_PORT
+		viper.SetDefault("certs.method", "disk")                   // QUICSEC_CERTS_METHOD (disk|aws)
 		viper.SetDefault("certs.ca_path", "certs/ca.pem")          // QUICSEC_CERTS_CA_PATH
 		viper.SetDefault("certs.key_path", "certs/cert.key")       // QUICSEC_CERTS_KEY_PATH
 		viper.SetDefault("certs.cert_path", "certs/cert.pem")      // QUICSEC_CERTS_CERT_PATH
@@ -329,6 +336,8 @@ func LoadConfig() Config {
 		}
 
 		confLogger.V(log.DebugLevel).Info("all configuration loaded")
+
+		globalConfig.ShowConfig()
 
 	})
 
