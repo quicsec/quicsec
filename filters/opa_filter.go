@@ -1,4 +1,3 @@
-// quicsec/http/filters/ext_auth_filter.go
 package filters
 
 import (
@@ -6,38 +5,26 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
 
-	. "github.com/quicsec/quicsec/http"
+	"github.com/quicsec/quicsec/config"
 )
 
 type ExtAuthFilter struct {
 	opaURL string
 }
 
-func NewExtAuthFilter(opaURL string) *ExtAuthFilter {
-	return &ExtAuthFilter{opaURL: opaURL}
+func NewExtAuthFilter(opaURL string) (*ExtAuthFilter, error) {
+	return &ExtAuthFilter{opaURL: opaURL}, nil
 }
 
 func (e *ExtAuthFilter) loadOPAConfig(id RequestIdentity) error {
 	var policyUrl string
-	switch id.Class {
-		case NO_IDENTITY:
-			policyUrl = os.Getenv("QUICSEC_OPA_NO_ID_POLICY")
-		case UNK_IDENTITY:
-			policyUrl = os.Getenv("QUICSEC_OPA_UKN_ID_POLICY")
-		case KNW_IDENTITY:
-			policyUrl = os.Getenv("QUICSEC_OPA_KNW_ID_POLICY")
-		default:
-			policyUrl = os.Getenv("QUICSEC_OPA_DEFAULT_POLICY")
-	}
 
-	if policyUrl == "" {
-		fmt.Println("no OPA policy found for identiy class:", id.Class.String(), "loading default OPA policy")
-		policyUrl = os.Getenv("QUICSEC_OPA_DEFAULT_POLICY")
-
-		if policyUrl == "" {
-			return fmt.Errorf("failed to load default OPA rules. The env variable QUICSEC_OPA_DEFAULT_POLICY must be configured")
+	extAuthConfig := config.GetExtAuthConfig(id.Spiffeid)
+	if extAuthConfig != nil {
+		opaConfig := extAuthConfig.Opa
+		if opaConfig.Url != "" {
+			policyUrl = opaConfig.Url
 		}
 	}
 

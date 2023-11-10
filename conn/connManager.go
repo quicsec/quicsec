@@ -17,7 +17,8 @@ import (
 	"github.com/quicsec/quicsec/identity"
 	"github.com/quicsec/quicsec/operations/httplog"
 	"github.com/quicsec/quicsec/operations/log"
-	"github.com/quicsec/quicsec/http/filters"
+
+	"github.com/quicsec/quicsec/filters"
 
 	ops "github.com/quicsec/quicsec/operations"
 )
@@ -91,13 +92,7 @@ func ListenAndServe(addr string, handler http.Handler) error {
 		handler = http.DefaultServeMux
 	}
 
-	/* configure filter chain */
-	filterChain := &filters.FilterChain{
-		Filters: []filters.Filters{
-			&filters.CorazaFilter{},
-			&filters.ExtAuthFilter{},
-		},
-	}
+	filterChain := &filters.FilterChain{}
 
 	finalHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request, ) {
 		filterChain.Apply(w, r, handler.ServeHTTP)

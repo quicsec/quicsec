@@ -2,64 +2,49 @@ package filters
 
 import (
 	"fmt"
-	"log"
 	"net/http"
-	"os"
-
-	. "github.com/quicsec/quicsec/http"
 
 	"github.com/corazawaf/coraza/v3"
 	"github.com/corazawaf/coraza/v3/types"
+	"github.com/quicsec/quicsec/config"
 )
 
 type CorazaFilter struct {
 	Waf coraza.WAF
 }
 
-func NewCorazaFilter(config string) *CorazaFilter {
+func NewCorazaFilter(config string) (*CorazaFilter, error) {
 	waf, err := coraza.NewWAF(
 			coraza.NewWAFConfig().
 				WithErrorCallback(logError).
 				WithDirectivesFromFile(config),
 	)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
-	return  &CorazaFilter{Waf: waf}
+	return  &CorazaFilter{Waf: waf},  nil
 }
+
 func (c *CorazaFilter) loadWafConfig(id RequestIdentity) error {
-	var config string
+	var directives string
 
-	switch id.Class {
-		case NO_IDENTITY:
-			config = os.Getenv("QUICSEC_WAF_NO_ID_RULES")
-		case UNK_IDENTITY:
-			config = os.Getenv("QUICSEC_WAF_UKN_ID_RULES")
-		case KNW_IDENTITY:
-			config = os.Getenv("QUICSEC_WAF_KNW_ID_RULES")
-		default:
-			config = os.Getenv("QUICSEC_WAF_DEFAULT_RULES")
-	}
-
-	if config == "" {
-		fmt.Println("no rules found for identiy class:", id.Class.String(), "loading default WAF rules")
-		config = os.Getenv("QUICSEC_WAF_DEFAULT_RULES")
-
-		if config == "" {
-			return fmt.Errorf("failed to load default WAF rules. The env variable QUICSEC_WAF_DEFAULT_RULES must be configured")
+	wafConfig := config.GetWafConfig(id.Spiffeid)
+	if wafConfig != nil {
+		corazaConfig := wafConfig.Coraza
+		for _, directive := range corazaConfig {
+			directives += directive + "\n"
 		}
 	}
 
 	waf, err := coraza.NewWAF(
 		coraza.NewWAFConfig().
 			WithErrorCallback(logError).
-			WithDirectivesFromFile(config),
+			WithDirectives(directives),
 	)
 	if err != nil {
 		return err
 	}
-	
 	c.Waf = waf
 
 	return nil

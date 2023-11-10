@@ -16,8 +16,6 @@ func InitConfigManager() {
 
 	loader.Load()
 	loadedConfig = loader.GetConfig()
-
-	ShowConfig()
 }
 
 func GetPathCertFile() string {
@@ -45,11 +43,11 @@ func GetAllowedIdentities() []string {
 }
 
 func GetPrometheusHTTPConfig() (bool, int) {
-	return loadedConfig.Metrics.BindEnableFlag, loadedConfig.Metrics.BindPort
+	return loadedConfig.Metrics.BindEnabled, loadedConfig.Metrics.BindPort
 }
 
 func GetLogFileConfig() (bool, string) {
-	return loadedConfig.Log.LogOutputFileFlag, loadedConfig.Log.Path
+	return loadedConfig.Log.LogFileEnabled, loadedConfig.Log.Path
 }
 
 func GetEnableDebug() bool {
@@ -61,7 +59,7 @@ func GetInsecureSkipVerify() bool {
 }
 
 func GetMtlsEnable() bool {
-	return loadedConfig.ServiceConf.Mtls.Enable
+	return loadedConfig.ServiceConf.Mtls.MtlsEnabled
 }
 
 func GetIdentity() spiffeid.ID {
@@ -69,7 +67,7 @@ func GetIdentity() spiffeid.ID {
 }
 
 func GetServerSideFlag() bool {
-	return loadedConfig.Local.ServerSideFlag
+	return loadedConfig.Local.ServerContext
 }
 
 func GetMetricsEnabled() bool {
@@ -93,7 +91,7 @@ func GetQuicDebugQlogDirPath() string {
 }
 
 func SetMtlsEnable(flag bool) {
-	loadedConfig.ServiceConf.Mtls.Enable = flag
+	loadedConfig.ServiceConf.Mtls.MtlsEnabled = flag
 }
 
 func SetInsecureSkipVerify(flag bool) {
@@ -101,7 +99,7 @@ func SetInsecureSkipVerify(flag bool) {
 }
 
 func SetServerSideFlag(f bool) {
-	loadedConfig.Local.ServerSideFlag = f
+	loadedConfig.Local.ServerContext = f
 }
 
 func SetIdentity(id spiffeid.ID) {
@@ -112,6 +110,27 @@ func SetPolicy(policy map[string]PolicyData) {
 	loadedConfig.ServiceConf.Policy = policy
 }
 
+func GetExtAuthConfig(id string) *ExtAuthConfig {
+	if policy, ok := loadedConfig.ServiceConf.Policy[id]; ok {
+		return &policy.FilterChain.ExtAuth
+	}
+	return nil
+}
+
+func GetWafConfig(id string) *WafConfig {
+	if policy, ok := loadedConfig.ServiceConf.Policy[id]; ok {
+		return &policy.FilterChain.Waf
+	}
+	return nil
+}
+
+func GetFiltersChain(id string) []string {
+	if policy, ok := loadedConfig.ServiceConf.Policy[id]; ok {
+		return policy.FilterChain.FiltersAvb
+	}
+	return nil
+}
+
 func ShowConfig() {
 	fmt.Println("printing initialized config printing config")
 	json, err := json.MarshalIndent(loadedConfig, "", "    ")
@@ -120,3 +139,4 @@ func ShowConfig() {
 	}
 	fmt.Println(string(json))
 }
+

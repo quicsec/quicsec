@@ -4,7 +4,24 @@
         "conf_selector": "127.0.0.1",
         "policy":{
                 "spiffe://anotherdomain.foo.bar/foo/bar": {
-                        "authz": "allow"
+                        "authz": "allow",
+                        "filters": {
+                            "waf": {
+                              "coraza": [
+                                "SecRule REQUEST_URI \"@contains admin\" \"id:1,phase:1,deny,status:403,msg:'Access to admin area is restricted',log,auditlog\"",
+                                "SecRule REQUEST_URI \"@contains demo\" \"id:2,phase:1,deny,status:403,msg:'Access to admin area is restricted',log,auditlog\""
+                              ]
+                            },
+                            "ext_auth": {
+                              "opa": {
+                                "url": "http://localhost:8181/v1/data/httpapi/authz",
+                                "auth": "pod8",
+                                "pass_jwt_claims": "enabled",
+                                "pass_svc_identity": "enabled",
+                                "pass_cli_identity": "enabled"
+                              }
+                            }
+                          }
                 }
         },
         "mtls":{

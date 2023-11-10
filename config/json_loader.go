@@ -2,7 +2,6 @@ package config
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net"
 	"os"
@@ -21,7 +20,7 @@ const QuicsecPrefix string = "QUICSEC"
 
 type JSONLoader struct {
 	config *Config
-	once sync.Once
+	once   sync.Once
 }
 
 func (j *JSONLoader) SetDefaultConfig() {
@@ -29,16 +28,16 @@ func (j *JSONLoader) SetDefaultConfig() {
 		ServiceConf: ServiceConf{
 			Mtls: MtlsConfig{
 				InsecSkipVerify: false,
-				Enable: false,
+				MtlsEnabled:     false,
 			},
 		},
 		Log: LogConfigs{
-			LogOutputFileFlag: false,
-			LogAccessOutputFileFlag: false,
-			Debug: true,
-			Path: "",
+			LogFileEnabled:       false,
+			AccessLogFileEnabled: false,
+			Debug:                true,
+			Path:                 "",
 		},
-		HTTP: HttpConfigs{
+		Http: HttpConfigs{
 			Access: AccessConfigs{
 				Path: "",
 			},
@@ -46,20 +45,20 @@ func (j *JSONLoader) SetDefaultConfig() {
 		Quic: QuicConfigs{
 			Debug: QuicDebugConfigs{
 				SecretFilePathEnabled: false,
-				SecretFilePath: "",
-				QlogEnabled: false,
-				QlogDirPath: "",
+				SecretFilePath:        "",
+				QlogEnabled:           false,
+				QlogDirPath:           "",
 			},
 		},
 		Metrics: MetricsConfigs{
-			Enable: true,
-			BindEnableFlag: false,
-			BindPort: 8080,
+			Enable:      true,
+			BindEnabled: false,
+			BindPort:    8080,
 		},
 		Certs: CertificatesConfigs{
-			CaPath: "certs/ca.pem",
+			CaPath:   "certs/ca.pem",
 			CertPath: "certs/cert.pem",
-			KeyPath: "certs/cert.key",
+			KeyPath:  "certs/cert.key",
 		},
 	}
 }
@@ -81,18 +80,18 @@ func (j *JSONLoader) Load() {
 		viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 
 		// defaults
-		viper.SetDefault("serviceconf.mtls.insec_skip_verify", j.config.ServiceConf.Mtls.InsecSkipVerify) 	// QUICSEC_SERVICECONF_MTLS_INSEC_SKIP_VERIFY
-		viper.SetDefault("serviceconf.mtls.client_cert", j.config.ServiceConf.Mtls.Enable)					// QUICSEC_SERVICECONF_MTLS_CLIENT_CERT
-		viper.SetDefault("log.debug", j.config.Log.Debug)                        							// QUICSEC_LOG_DEBUG
-		viper.SetDefault("log.path", j.config.Log.Path)                           							// QUICSEC_LOG_PATH
-		viper.SetDefault("http.access.path", j.config.HTTP.Access.Path)                   					// QUICSEC_HTTP_ACCESS_PATH
-		viper.SetDefault("quic.debug.secret_path", j.config.Quic.Debug.SecretFilePath)             			// QUICSEC_QUIC_DEBUG_SECRET_PATH
-		viper.SetDefault("quic.debug.qlog_path", j.config.Quic.Debug.QlogDirPath)        					// QUICSEC_QUIC_DEBUG_QLOG_PATH
-		viper.SetDefault("metrics.enable", j.config.Metrics.Enable)                   						// QUICSEC_METRICS_ENABLE
-		viper.SetDefault("metrics.bind_port", j.config.Metrics.BindPort)                					// QUICSEC_METRICS_BIND_PORT
-		viper.SetDefault("certs.ca_path", j.config.Certs.CaPath)          									// QUICSEC_CERTS_CA_PATH
-		viper.SetDefault("certs.key_path", j.config.Certs.KeyPath)       									// QUICSEC_CERTS_KEY_PATH
-		viper.SetDefault("certs.cert_path", j.config.Certs.CaPath)      									// QUICSEC_CERTS_CERT_PATH
+		viper.SetDefault("serviceconf.mtls.insec_skip_verify", j.config.ServiceConf.Mtls.InsecSkipVerify) // QUICSEC_SERVICECONF_MTLS_INSEC_SKIP_VERIFY
+		viper.SetDefault("serviceconf.mtls.client_cert", j.config.ServiceConf.Mtls.MtlsEnabled)           // QUICSEC_SERVICECONF_MTLS_CLIENT_CERT
+		viper.SetDefault("log.debug", j.config.Log.Debug)                                                 // QUICSEC_LOG_DEBUG
+		viper.SetDefault("log.path", j.config.Log.Path)                                                   // QUICSEC_LOG_PATH
+		viper.SetDefault("http.access.path", j.config.Http.Access.Path)                                   // QUICSEC_HTTP_ACCESS_PATH
+		viper.SetDefault("quic.debug.secret_path", j.config.Quic.Debug.SecretFilePath)                    // QUICSEC_QUIC_DEBUG_SECRET_PATH
+		viper.SetDefault("quic.debug.qlog_path", j.config.Quic.Debug.QlogDirPath)                         // QUICSEC_QUIC_DEBUG_QLOG_PATH
+		viper.SetDefault("metrics.enable", j.config.Metrics.Enable)                                       // QUICSEC_METRICS_ENABLE
+		viper.SetDefault("metrics.bind_port", j.config.Metrics.BindPort)                                  // QUICSEC_METRICS_BIND_PORT
+		viper.SetDefault("certs.ca_path", j.config.Certs.CaPath)                                          // QUICSEC_CERTS_CA_PATH
+		viper.SetDefault("certs.key_path", j.config.Certs.KeyPath)                                        // QUICSEC_CERTS_KEY_PATH
+		viper.SetDefault("certs.cert_path", j.config.Certs.CaPath)                                        // QUICSEC_CERTS_CERT_PATH
 
 		if err := viper.ReadInConfig(); err != nil {
 			fmt.Println("config: error reading config file: " + err.Error())
@@ -100,7 +99,7 @@ func (j *JSONLoader) Load() {
 			viper.WatchConfig()
 			viper.OnConfigChange(func(e fsnotify.Event) {
 				j.loadServiceConfig()
-				confLogger.V(log.DebugLevel).Info("Security config has changed...")
+				confLogger.V(log.DebugLevel).Info("service config has changed...")
 			})
 		}
 
@@ -117,14 +116,14 @@ func (j *JSONLoader) Load() {
 
 		// log into file
 		if j.config.Log.Path != "" {
-			j.config.Log.LogOutputFileFlag = true
+			j.config.Log.LogFileEnabled = true
 		} else {
-			j.config.Log.LogOutputFileFlag = false
+			j.config.Log.LogFileEnabled = false
 		}
 
 		log.InitLoggerLogr(j.config.Log.Debug, j.config.Log.Path)
 
-		log.InitLoggerRequest(j.config.Log.Debug, j.config.HTTP.Access.Path)
+		log.InitLoggerRequest(j.config.Log.Debug, j.config.Http.Access.Path)
 
 		confLogger = log.LoggerLgr.WithName(log.ConstConfigManager)
 		confLogger.V(log.DebugLevel).Info("all environment variables loaded")
@@ -140,13 +139,13 @@ func (j *JSONLoader) Load() {
 		}
 		// prometheus metrics http
 		if j.config.Metrics.BindPort != 0 {
-			j.config.Metrics.BindEnableFlag = true
+			j.config.Metrics.BindEnabled = true
 		}
 		// log http requests into file
-		if j.config.HTTP.Access.Path != "" {
-			j.config.Log.LogAccessOutputFileFlag = true
+		if j.config.Http.Access.Path != "" {
+			j.config.Log.AccessLogFileEnabled = true
 		} else {
-			j.config.Log.LogAccessOutputFileFlag = false
+			j.config.Log.AccessLogFileEnabled = false
 		}
 
 		confLogger.V(log.DebugLevel).Info("all configuration loaded")
@@ -174,44 +173,64 @@ func (j *JSONLoader) loadServiceConfig() error {
 		var serviceConf ServiceConf
 		for k, v := range serviceConfigMap {
 			switch k {
-				case "conf_selector":
-					if confSelector, ok := v.(string); ok {
-						serviceConf.ConfSelector = confSelector
-					}
-				case "policy":
-					if policyMap, ok := v.(map[string]interface{}); ok {
-						serviceConf.Policy = make(map[string]PolicyData)
-						for policyKey, policyValue := range policyMap {
-							if policyDataMap, ok := policyValue.(map[string]interface{}); ok {
-								var policyData PolicyData
-								if authz, ok := policyDataMap["authz"].(string); ok {
-									policyData.Authz = AuthzValue(authz)
-								}
-								serviceConf.Policy[policyKey] = policyData
+			case "conf_selector":
+				if confSelector, ok := v.(string); ok {
+					serviceConf.ConfSelector = confSelector
+				}
+			case "policy":
+				if policyMap, ok := v.(map[string]interface{}); ok {
+					serviceConf.Policy = make(map[string]PolicyData)
+					for policyKey, policyValue := range policyMap {
+						if policyDataMap, ok := policyValue.(map[string]interface{}); ok {
+							var policyData PolicyData
+							//load authz config
+							if authz, ok := policyDataMap["authz"].(string); ok {
+								policyData.Authz = AuthzValue(authz)
 							}
+							//load  filter chain config
+							if filtersMap, ok := policyDataMap["filters"].(map[string]interface{}); ok {
+								//load waf filter config
+								if wafConfig, ok := filtersMap["waf"].(map[string]interface{}); ok {
+									wafConfigParsed, err := parseWafConfig(wafConfig)
+									if err != nil {
+										return err
+									}
+									policyData.FilterChain.Waf = wafConfigParsed
+									policyData.FilterChain.FiltersAvb = append(policyData.FilterChain.FiltersAvb, "waf")
+								}
+								// load extAuthz  filter
+								if extAuthConfig, ok := filtersMap["ext_auth"].(map[string]interface{}); ok {
+									extAuthConfigParsed, err := parseExtAuthConfig(extAuthConfig)
+									if err != nil {
+										return err
+									}
+									policyData.FilterChain.ExtAuth.Opa = extAuthConfigParsed
+									policyData.FilterChain.FiltersAvb = append(policyData.FilterChain.FiltersAvb, "ext_auth")
+								}
+							}
+							serviceConf.Policy[policyKey] = policyData
 						}
 					}
-				case "mtls":
-					if mtlsMap, ok := v.(map[string]interface{}); ok {
-						var mtlsConfig MtlsConfig
-
-						if insecSkipVerify, ok := mtlsMap["insec_skip_verify"].(bool); ok {
-							mtlsConfig.InsecSkipVerify = insecSkipVerify
-						}
-
-						if clientCert, ok := mtlsMap["client_cert"].(bool); ok {
-							mtlsConfig.Enable = clientCert
-						}
-						serviceConf.Mtls = mtlsConfig
+				}
+			case "mtls":
+				if mtlsMap, ok := v.(map[string]interface{}); ok {
+					var mtlsConfig MtlsConfig
+					if insecSkipVerify, ok := mtlsMap["insec_skip_verify"].(bool); ok {
+						mtlsConfig.InsecSkipVerify = insecSkipVerify
 					}
+
+					if clientCert, ok := mtlsMap["client_cert"].(bool); ok {
+						mtlsConfig.MtlsEnabled = clientCert
+					}
+					serviceConf.Mtls = mtlsConfig
+				}
 			}
 		}
 		if matchSelector(serviceConf.ConfSelector) {
 			j.config.ServiceConf.ConfSelector = serviceConf.ConfSelector
 			j.config.ServiceConf.Policy = serviceConf.Policy
-			j.config.ServiceConf.Mtls.Enable = serviceConf.Mtls.Enable
+			j.config.ServiceConf.Mtls.MtlsEnabled = serviceConf.Mtls.MtlsEnabled
 			j.config.ServiceConf.Mtls.InsecSkipVerify = serviceConf.Mtls.InsecSkipVerify
-
 			break
 		}
 	}
@@ -225,24 +244,6 @@ func (j *JSONLoader) PrintCurretConfig() {
 		fmt.Println("failed to marshal config to json error:", err.Error())
 	}
 	fmt.Println(string(json))
-}
-
-func (a *AuthzValue) UnmarshalJSON(data []byte) error {
-	var str string
-	if err := json.Unmarshal(data, &str); err != nil {
-		return err
-	}
-
-	switch str {
-		case "allow":
-			*a = AuthzAllow
-		case "deny":
-			*a = AuthzDeny
-		default:
-			return errors.New("authz must be either 'allow' or 'deny'")
-	}
-
-	return nil
 }
 
 func setupCoreConfig() (string, string, string) {
@@ -271,8 +272,8 @@ func setupCoreConfig() (string, string, string) {
 func matchSelector(selector string) bool {
 	/*nowadays we use local netowrork interfaces a ips to match the selector
 	  we should choose other types like instance IDs or UUIDs*/
-	ips,  err := getCurrentIPs()
-	if err != nil{
+	ips, err := getCurrentIPs()
+	if err != nil {
 		panic("failed to get ips from netwrok interfaces")
 	}
 

@@ -1,4 +1,4 @@
-package qhttp
+package filters
 
 import (
 	"net/http"

@@ -45,6 +45,7 @@ require (
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/jptosso/coraza-waf v1.2.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
+	github.com/kisielk/godepgraph v0.0.0-20221115040737-2d0831789458 // indirect
 	github.com/magefile/mage v1.15.0 // indirect
 	github.com/magiconair/properties v1.8.6 // indirect
 	github.com/mailru/easyjson v0.7.6 // indirect

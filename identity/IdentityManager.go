@@ -5,7 +5,7 @@ import (
 	"crypto/x509"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"os"
 
 	"github.com/quicsec/quicsec/config"
 	"github.com/quicsec/quicsec/operations/log"
@@ -78,7 +78,7 @@ func GetCertPool() (*x509.CertPool, error) {
 		return nil, errors.New("must provide CA certificate, you can configure this via environment variable: `CA_FILE`")
 	}
 
-	caCertRaw, err := ioutil.ReadFile(caCertPath)
+	caCertRaw, err := os.ReadFile(caCertPath)
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to read CA certificate %v", err)
