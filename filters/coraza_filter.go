@@ -7,6 +7,7 @@ import (
 	"github.com/corazawaf/coraza/v3"
 	"github.com/corazawaf/coraza/v3/types"
 	"github.com/quicsec/quicsec/config"
+	"github.com/quicsec/quicsec/operations/log"
 )
 
 type CorazaFilter struct {
@@ -79,6 +80,7 @@ func (c *CorazaFilter) Execute(w http.ResponseWriter, r *http.Request, next http
 }
 
 func logError(mr types.MatchedRule) {
+	filterLogger := log.LoggerLgr.WithName("coraza-filter")
 	msg := mr.ErrorLog()
-	fmt.Printf("[logError][%s] %s\n", mr.Rule().Severity(), msg)
+	filterLogger.V(log.DebugLevel).Info("coraza-action", "severity:", mr.Rule().Severity(), "msg:", msg)
 }
