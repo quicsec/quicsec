@@ -7,17 +7,16 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	"strconv"
 	"sync"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/quic-go/quic-go"
 	"github.com/quic-go/quic-go/logging"
-	"github.com/quicsec/quicsec/config"
 	"github.com/quicsec/quicsec/operations/log"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/prometheus/client_golang/prometheus/push"
 )
 
 var (
@@ -100,6 +99,7 @@ func (c *aggregatingCollector) RemoveConn(id string) {
 }
 
 var collector *aggregatingCollector
+var pusher *push.Pusher
 
 type MetricsTracer struct {
 	logging.NullTracer
@@ -136,12 +136,21 @@ func runPrometheusHTTP(address string) {
 	}
 }
 
+func PushMetricsPrometheus() {
+	fmt.Println("PushMetricsPrometheus: http://3.227.24.192:9091")
+	if err := pusher.Push(); err != nil {
+		fmt.Println("Could not push metric to Pushgateway:", err)
+	}
+}
+
 // metricsInit start tracing the metrics using prometheus
 func metricsInit() {
 	const (
 		direction = "direction"
 		encLevel  = "encryption_level"
 	)
+
+	pusher = push.New("http://3.227.24.192:9091", "db_backup3")
 
 	closedConns = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
@@ -151,6 +160,7 @@ func metricsInit() {
 		[]string{direction},
 	)
 	prometheus.MustRegister(closedConns)
+	pusher.Collector(closedConns)
 	newConns = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "quic_connections_new_total",
@@ -159,6 +169,7 @@ func metricsInit() {
 		[]string{direction, "handshake_successful"},
 	)
 	prometheus.MustRegister(newConns)
+	pusher.Collector(newConns)
 	bytesTransferred = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "quic_transferred_bytes",
@@ -167,6 +178,7 @@ func metricsInit() {
 		[]string{direction},
 	)
 	prometheus.MustRegister(bytesTransferred)
+	pusher.Collector(bytesTransferred)
 	packetsTransferred = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "quic_transferred_packets_total",
@@ -175,6 +187,7 @@ func metricsInit() {
 		[]string{direction},
 	)
 	prometheus.MustRegister(packetsTransferred)
+	pusher.Collector(packetsTransferred)
 	sentPackets = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "quic_packets_sent_total",
@@ -183,6 +196,7 @@ func metricsInit() {
 		[]string{encLevel},
 	)
 	prometheus.MustRegister(sentPackets)
+	pusher.Collector(sentPackets)
 	rcvdPackets = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "quic_packets_rcvd_total",
@@ -191,6 +205,7 @@ func metricsInit() {
 		[]string{encLevel},
 	)
 	prometheus.MustRegister(rcvdPackets)
+	pusher.Collector(rcvdPackets)
 	bufferedPackets = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "quic_packets_buffered_total",
@@ -199,6 +214,7 @@ func metricsInit() {
 		[]string{"packet_type"},
 	)
 	prometheus.MustRegister(bufferedPackets)
+	pusher.Collector(bufferedPackets)
 	droppedPackets = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "quic_packets_dropped_total",
@@ -207,6 +223,7 @@ func metricsInit() {
 		[]string{"packet_type", "reason"},
 	)
 	prometheus.MustRegister(droppedPackets)
+	pusher.Collector(droppedPackets)
 	connErrors = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "quic_connection_errors_total",
@@ -215,6 +232,7 @@ func metricsInit() {
 		[]string{"side", "error_code", "reason"},
 	)
 	prometheus.MustRegister(connErrors)
+	pusher.Collector(connErrors)
 	lostPackets = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "quic_packets_lost_total",
@@ -223,7 +241,7 @@ func metricsInit() {
 		[]string{encLevel, "reason"},
 	)
 	prometheus.MustRegister(lostPackets)
-
+	pusher.Collector(lostPackets)
 	HttpRequestsPathIdClient = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "appedge_outbound_rq_total",
@@ -232,6 +250,7 @@ func metricsInit() {
 		[]string{"myId", "upstreamId", "upstreamPeer", "method", "path", "responseCode"},
 	)
 	prometheus.MustRegister(HttpRequestsPathIdClient)
+	pusher.Collector(HttpRequestsPathIdClient)
 
 	HttpRequestsPathIdServer = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
@@ -241,6 +260,7 @@ func metricsInit() {
 		[]string{"myId", "downstreamId", "downstreamPeer", "method", "path", "responseCode"},
 	)
 	prometheus.MustRegister(HttpRequestsPathIdServer)
+	pusher.Collector(HttpRequestsPathIdServer)
 
 	AuthzConnectiontServerId = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
@@ -250,6 +270,7 @@ func metricsInit() {
 		[]string{"myId", "downstreamId", "status", "policy"},
 	)
 	prometheus.MustRegister(AuthzConnectiontServerId)
+	pusher.Collector(AuthzConnectiontServerId)
 
 	AuthzConnectiontClientId = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
@@ -259,20 +280,24 @@ func metricsInit() {
 		[]string{"myId", "upstreamId", "status", "policy"},
 	)
 	prometheus.MustRegister(AuthzConnectiontClientId)
+	pusher.Collector(AuthzConnectiontClientId)
 
 	collector = newAggregatingCollector()
 	prometheus.MustRegister(collector)
 
+	pusher.Collector(collector)
 	prometheus.MustRegister(HTTPHistogramAppProcessId)
+	pusher.Collector(HTTPHistogramAppProcessId)
 
 	prometheus.MustRegister(HTTPHistogramNetworkLatencyId)
 
-	pFlag, pAddr := config.GetPrometheusHTTPConfig()
-	if pFlag {
-		go runPrometheusHTTP("0.0.0.0:" + strconv.Itoa(pAddr))
-	} else {
-		log.LoggerLgr.WithName(log.ConstOperationsManager).V(log.DebugLevel).Info("configure QUICSEC_METRICS_BIND_PORT to access Prometheus metrics")
-	}
+	pusher.Collector(HTTPHistogramNetworkLatencyId)
+	// pFlag, pAddr := config.GetPrometheusHTTPConfig()
+	// if pFlag {
+	// 	go runPrometheusHTTP("0.0.0.0:" + strconv.Itoa(pAddr))
+	// } else {
+	// 	log.LoggerLgr.WithName(log.ConstOperationsManager).V(log.DebugLevel).Info("configure QUICSEC_METRICS_BIND_PORT to access Prometheus metrics")
+	// }
 }
 func (m *MetricsTracer) TracerForConnection(_ context.Context, p logging.Perspective, connID logging.ConnectionID) logging.ConnectionTracer {
 	return &metricsConnTracer{perspective: p, connID: connID}

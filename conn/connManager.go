@@ -15,6 +15,7 @@ import (
 	"github.com/quicsec/quicsec/auth"
 	"github.com/quicsec/quicsec/config"
 	"github.com/quicsec/quicsec/identity"
+	"github.com/quicsec/quicsec/operations"
 	"github.com/quicsec/quicsec/operations/httplog"
 	"github.com/quicsec/quicsec/operations/log"
 
@@ -291,6 +292,9 @@ func Do(req *http.Request) (*http.Response, error) {
 	if resp == nil {
 		return nil, fmt.Errorf("failed to connect to any IP address")
 	}
+
+	// Push prometheus metrics
+	operations.PushMetricsPrometheus()
 
 	return resp, err
 }
