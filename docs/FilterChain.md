@@ -11,7 +11,7 @@ A Filter Chain, when implemented in HTTP middleware, serves multiple purposes:
 - **Interception and Transformation**: Filters can intercept and optionally transform HTTP requests and responses, enabling dynamic handling based on specific conditions.
 
 ## Current Support for Filters
-- **WAF Filter**: Utilizes [Coraza](https://github.com/corazawaf/coraza), a robust web application firewall, to apply security rules and protect against common web vulnerabilities. 
+- **WAF Filter**: Utilizes [Coraza](https://github.com/corazawaf/coraza), a robust WAF (Web Application Firewall), to apply security rules and protect against common web vulnerabilities. 
 - **ExtAuth Filter**: Based on [Open Policy Agent (OPA)](https://www.openpolicyagent.org/), it facilitates external authentication processes, ensuring secure access control.
 
 ## Implementation and Usage
@@ -28,7 +28,7 @@ The configuration of the Filter Chain is defined in JSON format, which specifies
         "waf": {
             "coraza": [
                 "SecRule REQUEST_URI \"@contains admin\" \"id:1,phase:1,deny,status:403,msg:'Access to admin area is restricted',log,auditlog\"",
-                "SecRule REQUEST_URI \"@contains demo\" \"id:2,phase:1,deny,status:403,msg:'Access to admin area is restricted',log,auditlog\""
+                "SecRule REQUEST_URI \"@contains demo\" \"id:2,phase:1,deny,status:403,msg:'Access to demo area is restricted',log,auditlog\""
             ]
         },
         "ext_auth": {
@@ -56,8 +56,8 @@ The configuration of the Filter Chain is defined in JSON format, which specifies
 - Configured Under: "waf" key.
 - Implementation: Utilizes Coraza, a robust WAF.
 
-Settings: Array of rules for request filtering.
-- Rule: "SecRule REQUEST_URI \"@contains admin\" \"id:1,phase:1,deny,status:403,msg:'Access to admin area is restricted',log,auditlog\"" specifies a security rule for the WAF that prevents access to the path /admin. For more detailed info regarding rules please go  to [Coraza](https://github.com/corazawaf/coraza) project.
+Settings: Array of directives for request filtering.
+- Rule: "SecRule REQUEST_URI \"@contains admin\" \"id:1,phase:1,deny,status:403,msg:'Access to admin area is restricted',log,auditlog\"" specifies a security rule for the WAF that prevents access to the path /admin. For more detailed info regarding directives please go to [Coraza](https://coraza.io/docs/seclang/directives/) docs.
 - Customization: Add or remove rules based on security requirements.
 
 **External Authentication Filter (OPA)**:
