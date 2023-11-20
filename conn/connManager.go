@@ -238,6 +238,12 @@ func Do(req *http.Request) (*http.Response, error) {
 		}
 		client = &http.Client{
 			Transport: httplog.LoggingRoundTripper{Base: getRoundTripper()},
+			//[TODO]  when redirectiong we can customize headers
+			// CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			// 	if req.Response.StatusCode == http.StatusTemporaryRedirect {
+			// 	}
+			// 	return nil
+			// },
 		}
 
 		identityLogger.V(log.DebugLevel).Info("send client request")

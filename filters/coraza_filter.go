@@ -29,8 +29,14 @@ func NewCorazaFilter(config string) (*CorazaFilter, error) {
 
 func (c *CorazaFilter) loadWafConfig(id RequestIdentity) error {
 	var directives string
+	var wafConfig *config.WafConfig
 
-	wafConfig := config.GetWafConfig(id.Spiffeid)
+	if id.Class == UNK_IDENTITY || id.Class == NO_IDENTITY {
+		wafConfig = config.GetWafConfig("*")
+	} else {
+		wafConfig = config.GetWafConfig(id.Spiffeid)
+	}
+
 	if wafConfig != nil {
 		corazaConfig := wafConfig.Coraza
 		for _, directive := range corazaConfig {

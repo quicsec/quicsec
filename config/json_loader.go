@@ -79,6 +79,8 @@ func (j *JSONLoader) Load() {
 		viper.SetEnvPrefix(QuicsecPrefix)
 		viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 
+		viper.AutomaticEnv()
+
 		// defaults
 		viper.SetDefault("serviceconf.mtls.insec_skip_verify", j.config.ServiceConf.Mtls.InsecSkipVerify) // QUICSEC_SERVICECONF_MTLS_INSEC_SKIP_VERIFY
 		viper.SetDefault("serviceconf.mtls.client_cert", j.config.ServiceConf.Mtls.MtlsEnabled)           // QUICSEC_SERVICECONF_MTLS_CLIENT_CERT
@@ -108,10 +110,12 @@ func (j *JSONLoader) Load() {
 			panic(err.Error())
 		}
 
-		viper.AutomaticEnv()
-
-		if err := viper.Unmarshal(j.config); err != nil {
-			fmt.Println("config: unable to decode into struct: " + err.Error())
+		for _, key := range viper.AllKeys() {
+			envKey := strings.ToUpper(QuicsecPrefix + "_" + strings.ReplaceAll(key, ".", "_"))
+			err := viper.BindEnv(key, envKey)
+			if err != nil {
+				fmt.Println("config: unable to bind env: " + err.Error())
+			}
 		}
 
 		// log into file
@@ -157,6 +161,11 @@ func (j *JSONLoader) GetConfig() *Config {
 }
 
 func (j *JSONLoader) loadServiceConfig() error {
+
+	if err := viper.Unmarshal(j.config); err != nil {
+		fmt.Println("config: unable to decode into struct: " + err.Error())
+	}
+
 	rawServiceConfs := viper.Get("service_conf")
 
 	serviceConfs, ok := rawServiceConfs.([]interface{})
@@ -198,7 +207,7 @@ func (j *JSONLoader) loadServiceConfig() error {
 									policyData.FilterChain.Waf = wafConfigParsed
 									policyData.FilterChain.FiltersAvb = append(policyData.FilterChain.FiltersAvb, "waf")
 								}
-								// load extAuthz  filter
+								// load ext_authz filter config
 								if extAuthConfig, ok := filtersMap["ext_auth"].(map[string]interface{}); ok {
 									extAuthConfigParsed, err := parseExtAuthConfig(extAuthConfig)
 									if err != nil {
@@ -206,6 +215,15 @@ func (j *JSONLoader) loadServiceConfig() error {
 									}
 									policyData.FilterChain.ExtAuth.Opa = extAuthConfigParsed
 									policyData.FilterChain.FiltersAvb = append(policyData.FilterChain.FiltersAvb, "ext_auth")
+								}
+								// load oauth2 filter config
+								if oAuth2Config, ok := filtersMap["oauth2"].(map[string]interface{}); ok {
+									oAuth2ConfigParsed, err := parseOAuth2Config(oAuth2Config)
+									if err != nil {
+										return err
+									}
+									policyData.FilterChain.Oauth2 = oAuth2ConfigParsed
+									policyData.FilterChain.FiltersAvb = append(policyData.FilterChain.FiltersAvb, "oauth2")
 								}
 							}
 							serviceConf.Policy[policyKey] = policyData
@@ -216,11 +234,21 @@ func (j *JSONLoader) loadServiceConfig() error {
 				if mtlsMap, ok := v.(map[string]interface{}); ok {
 					var mtlsConfig MtlsConfig
 					if insecSkipVerify, ok := mtlsMap["insec_skip_verify"].(bool); ok {
-						mtlsConfig.InsecSkipVerify = insecSkipVerify
+						sv := os.Getenv("QUICSEC_SERVICECONF_MTLS_INSEC_SKIP_VERIFY")
+						if sv == ""{
+							mtlsConfig.InsecSkipVerify = insecSkipVerify
+						} else {
+							mtlsConfig.InsecSkipVerify = parseBool(sv)
+						}
 					}
 
 					if clientCert, ok := mtlsMap["client_cert"].(bool); ok {
-						mtlsConfig.MtlsEnabled = clientCert
+						cc := os.Getenv("QUICSEC_SERVICECONF_MTLS_CLIENT_CERT")
+						if cc == ""{
+							mtlsConfig.MtlsEnabled = clientCert
+						} else {
+							mtlsConfig.MtlsEnabled = parseBool(cc)
+						}
 					}
 					serviceConf.Mtls = mtlsConfig
 				}
@@ -270,7 +298,7 @@ func setupCoreConfig() (string, string, string) {
 }
 
 func matchSelector(selector string) bool {
-	/*nowadays we use local netowrork interfaces a ips to match the selector
+	/*nowadays we use local network interfaces IPs to match the selector
 	  we should choose other types like instance IDs or UUIDs*/
 	ips, err := getCurrentIPs()
 	if err != nil {
@@ -319,4 +347,15 @@ func matchIP(ip net.IP, ips []net.IP) bool {
 		}
 	}
 	return false
+}
+
+func parseBool(str string) (bool) {
+	switch strings.ToLower(str) {
+    case "true", "1":
+        return true
+    case "false", "0", "":
+        return false
+    default:
+        return false
+    }
 }

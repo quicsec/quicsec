@@ -26,7 +26,6 @@ func OperationsInit() (io.Writer, logging.Tracer) {
 	var tracer logging.Tracer
 	var keyLog io.Writer
 
-	//[TODO] configmanager is originaly being initialized here. Maybe we should move it to server/client init.
 	config.InitConfigManager()
 
 	onlyOnce.Do(func() {

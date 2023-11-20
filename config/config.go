@@ -25,7 +25,7 @@ type Config struct {
 type ServiceConf struct {
 	ConfSelector string                `mapstructure:"conf_selector"`
 	Policy       map[string]PolicyData `mapstructure:"policy"`
-	Mtls         MtlsConfig			   `mapstructure:"mtls"`
+	Mtls         MtlsConfig            `mapstructure:"mtls"`
 }
 
 type PolicyData struct {
@@ -34,9 +34,10 @@ type PolicyData struct {
 }
 
 type FiltersConfig struct {
-	FiltersAvb	[]string
-	Waf     WafConfig     `mapstructure:"waf"`
-	ExtAuth ExtAuthConfig `mapstructure:"ext_auth"`
+	FiltersAvb []string
+	Waf        WafConfig     `mapstructure:"waf"`
+	ExtAuth    ExtAuthConfig `mapstructure:"ext_auth"`
+	Oauth2     Oauth2Config  `mapstructure:"oauth2"`
 }
 
 type WafConfig struct {
@@ -53,6 +54,15 @@ type OpaConfig struct {
 	PassJwtClaims       string `mapstructure:"pass_jwt_claims"`
 	PassServiceIdentity string `mapstructure:"pass_svc_identity"`
 	PassClientIdentity  string `mapstructure:"pass_cli_identity"`
+}
+
+type Oauth2Config struct {
+	ClientId     string   `mapstructure:"client_id"`
+	ClientSecret string   `mapstructure:"client_secret"`
+	AuthzEp      string   `mapstructure:"authz_endpoint"`
+	TokenEp      string   `mapstructure:"token_endpoint"`
+	RedirectURL  string   `mapstructure:"redirect_url"`
+	Scopes       []string `mapstructure:"scopes"`
 }
 
 type MtlsConfig struct {

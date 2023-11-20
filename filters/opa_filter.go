@@ -19,13 +19,20 @@ func NewExtAuthFilter(opaURL string) (*ExtAuthFilter, error) {
 
 func (e *ExtAuthFilter) loadOPAConfig(id RequestIdentity) error {
 	var policyUrl string
+	var extAuthConfig *config.ExtAuthConfig
 
-	extAuthConfig := config.GetExtAuthConfig(id.Spiffeid)
+	if id.Class == UNK_IDENTITY || id.Class == NO_IDENTITY {
+		extAuthConfig = config.GetExtAuthConfig("*")
+	} else {
+		extAuthConfig = config.GetExtAuthConfig(id.Spiffeid)
+	}
+
 	if extAuthConfig != nil {
 		opaConfig := extAuthConfig.Opa
 		if opaConfig.Url != "" {
 			policyUrl = opaConfig.Url
 		}
+		// [TODO] we need a default rule or fallback here
 	}
 
 	e.opaURL = policyUrl

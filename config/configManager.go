@@ -124,11 +124,33 @@ func GetWafConfig(id string) *WafConfig {
 	return nil
 }
 
+func GetOauth2Config(id string) *Oauth2Config {
+	if policy, ok := loadedConfig.ServiceConf.Policy[id]; ok {
+		return &policy.FilterChain.Oauth2
+	}
+	return nil
+}
+
 func GetFiltersChain(id string) []string {
 	if policy, ok := loadedConfig.ServiceConf.Policy[id]; ok {
 		return policy.FilterChain.FiltersAvb
 	}
 	return nil
+}
+
+func GetStarPolicyEnable() bool {
+	policies := loadedConfig.ServiceConf.Policy
+
+	for id := range  policies {
+		if id == "*" {
+			policy := policies[id]
+			if policy.Authz == AuthzAllow {
+				return true
+			}
+		}
+	}
+
+	return false
 }
 
 func ShowConfig() {
