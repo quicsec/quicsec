@@ -10,7 +10,7 @@
             "waf": {
               "coraza": [
                 "SecRule REQUEST_URI \"@contains admin\" \"id:1,phase:1,deny,status:403,msg:'Access to admin area is restricted',log,auditlog\"",
-                "SecRule REQUEST_URI \"@contains demo\" \"id:2,phase:1,deny,status:403,msg:'Access to admin area is restricted',log,auditlog\""
+                "SecRule REQUEST_URI \"@contains private\" \"id:2,phase:1,deny,status:403,msg:'Access to admin area is restricted',log,auditlog\""
               ]
             },
             "ext_auth": {
@@ -38,7 +38,7 @@
             "waf": {
               "coraza": [
                 "SecRule REQUEST_URI \"@contains admin\" \"id:1,phase:1,deny,status:403,msg:'Access to admin area is restricted',log,auditlog\"",
-                "SecRule REQUEST_URI \"@contains demo\" \"id:2,phase:1,deny,status:403,msg:'Access to admin area is restricted',log,auditlog\""
+                "SecRule REQUEST_URI \"@contains private\" \"id:2,phase:1,deny,status:403,msg:'Access to admin area is restricted',log,auditlog\""
               ]
             },
             "ext_auth": {
