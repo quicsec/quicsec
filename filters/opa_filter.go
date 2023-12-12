@@ -76,7 +76,7 @@ func (e *ExtAuthFilter) Execute(w http.ResponseWriter, r *http.Request, next htt
 
 	allowed, ok := resultMap["allow"].(bool)
 	if !ok || !allowed {
-		return fmt.Errorf("blocked by OPA")
+		return fmt.Errorf("blocked by guardrail policy:SecOps admin only")
 	}
 
 	return nil

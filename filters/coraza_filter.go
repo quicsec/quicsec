@@ -77,8 +77,7 @@ func (c *CorazaFilter) Execute(w http.ResponseWriter, r *http.Request, next http
 	if it := tx.Interruption();it != nil {
 		switch it.Action {
 			case "deny":
-				http.Error(w, "blocked by WAF", http.StatusForbidden)
-				return fmt.Errorf("blocked by WAF")
+				return fmt.Errorf("blocked by WAAP/WAF:Unauthorized identity")
 		}
 	}
 

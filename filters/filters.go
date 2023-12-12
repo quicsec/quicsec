@@ -1,6 +1,7 @@
 package filters
 
 import (
+	"fmt"
 	"net/http"
 )
 
@@ -22,7 +23,20 @@ func (f *FilterChain) Apply(w http.ResponseWriter, r *http.Request, next http.Ha
 
 	for _,  filter := range f.Filters {
 		if err := filter.Execute(w,r, next); err != nil {
-			http.Error(w, err.Error(), http.StatusForbidden)
+			// http.Error(w, err.Error(), http.StatusForbidden)
+			w.WriteHeader(http.StatusForbidden)
+			w.Header().Set("Content-Type", "text/html")
+			errorHtml := fmt.Sprintf(`
+                <html>
+                    <head><title>QUICSEC Error</title></head>
+                    <body>
+                        <h1>Forbidden</h1>
+                        <p>Sorry, the filter chain has identified unauthorized operation.</p>
+                        <p>Error: %s</p>
+                    </body>
+                </html>
+            `, err.Error())
+			w.Write([]byte(errorHtml))
 			return
 		}
 	}
