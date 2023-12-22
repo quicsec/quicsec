@@ -58,6 +58,7 @@ func (c *CorazaFilter) loadWafConfig(id RequestIdentity) error {
 }
 
 func (c *CorazaFilter) Execute(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) error {
+	logger := log.LoggerLgr.WithName("coraza-filter")
 	//we can chose the waf configuration given an identity
 	err := c.loadWafConfig(GetRequestIdentity(r))
 	if err != nil {
@@ -77,6 +78,7 @@ func (c *CorazaFilter) Execute(w http.ResponseWriter, r *http.Request, next http
 	if it := tx.Interruption();it != nil {
 		switch it.Action {
 			case "deny":
+				logger.V(log.DebugLevel).Info("blocked by WAAP/WAF:Unauthorized identity")
 				return fmt.Errorf("blocked by WAAP/WAF:Unauthorized identity")
 		}
 	}

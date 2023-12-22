@@ -3,6 +3,8 @@ package filters
 import (
 	"fmt"
 	"net/http"
+
+	"github.com/quicsec/quicsec/operations/log"
 )
 
 type Filter interface {
@@ -15,15 +17,20 @@ type FilterChain struct {
 
 func (f *FilterChain) Apply(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 	var err error
+	logger := log.LoggerLgr.WithName(log.ConstFilterChain)
+
+	logger.V(log.DebugLevel).Info("applying filters to the chain")
 
 	f.Filters, err = GetConfiguredFilters(GetRequestIdentity(r))
 	if err != nil {
+		logger.V(log.DebugLevel).Info("no filters configured for this deploy")
 	 f.Filters = nil
 	}
 
 	for _,  filter := range f.Filters {
 		if err := filter.Execute(w,r, next); err != nil {
-			// http.Error(w, err.Error(), http.StatusForbidden)
+			logger.V(log.DebugLevel).Info("request no authorized by filters.", " error", err)
+
 			w.WriteHeader(http.StatusForbidden)
 			w.Header().Set("Content-Type", "text/html")
 			errorHtml := fmt.Sprintf(`

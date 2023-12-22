@@ -18,6 +18,7 @@ const (
 	ConstConnManager       = "connection_manager"
 	ConstAuthManager       = "authentication_manager"
 	ConstQuicSecGeneral    = "quicsec_general"
+	ConstFilterChain       = "filter_chain"
 )
 
 const (

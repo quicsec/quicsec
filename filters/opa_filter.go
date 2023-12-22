@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/quicsec/quicsec/config"
+	"github.com/quicsec/quicsec/operations/log"
 )
 
 type ExtAuthFilter struct {
@@ -40,6 +41,8 @@ func (e *ExtAuthFilter) loadOPAConfig(id RequestIdentity) error {
 }
 
 func (e *ExtAuthFilter) Execute(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) error {
+	logger := log.LoggerLgr.WithName("opa-filter")
+
 	err := e.loadOPAConfig(GetRequestIdentity(r))
 	if err != nil {
 		return err
@@ -76,6 +79,7 @@ func (e *ExtAuthFilter) Execute(w http.ResponseWriter, r *http.Request, next htt
 
 	allowed, ok := resultMap["allow"].(bool)
 	if !ok || !allowed {
+		logger.V(log.DebugLevel).Info("blocked by guardrail policy:SecOps admin only")
 		return fmt.Errorf("blocked by guardrail policy:SecOps admin only")
 	}
 
