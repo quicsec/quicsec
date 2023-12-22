@@ -163,16 +163,6 @@ func CustomVerifyPeerCertificate(rawCerts [][]byte, verifiedChains [][]*x509.Cer
 		return nil
 	}
 
-	if config.GetStarPolicyEnable() {
-		authLogger.V(log.DebugLevel).Info("Creating a wildcard identity for policy '*' (STAR) due to the absence of a peer certificate.")
-		authLogger.Info("verify peer wildcard", "authorized", "yes", "URI", "spiffe://*")
-		// if config.GetMetricsEnabled() {
-
-		// }
-
-		return nil
-	}
-
 	if len(rawCerts) != 1 {
 		return fmt.Errorf("auth: required exactly one peer certificate")
 	}
@@ -196,14 +186,24 @@ func CustomVerifyPeerCertificate(rawCerts [][]byte, verifiedChains [][]*x509.Cer
 			}
 			return nil
 		} else {
-			if config.GetMetricsEnabled() {
-				if config.GetServerSideFlag() {
-					operations.AuthzConnectiontServerId.WithLabelValues(config.GetIdentity().String(), uri.String(), "unauthorized").Inc()
-				} else {
-					operations.AuthzConnectiontClientId.WithLabelValues(config.GetIdentity().String(), uri.String(), "unauthorized").Inc()
+			if config.GetStarPolicyEnable() {
+				authLogger.V(log.DebugLevel).Info("Creating a wildcard identity for policy '*' (STAR) due to the absence of a peer certificate.")
+				authLogger.Info("verify peer wildcard", "authorized", "yes", "URI", "spiffe://*")
+
+				//if config.GetServerSideFlag() {
+					// increment metrics for star authz
+				//}
+				return nil
+			} else {
+				if config.GetMetricsEnabled() {
+					if config.GetServerSideFlag() {
+						operations.AuthzConnectiontServerId.WithLabelValues(config.GetIdentity().String(), uri.String(), "unauthorized").Inc()
+					} else {
+						operations.AuthzConnectiontClientId.WithLabelValues(config.GetIdentity().String(), uri.String(), "unauthorized").Inc()
+					}
 				}
+				authLogger.Info("verify peer certificate", "authorized", "no", "URI", uri.String())
 			}
-			authLogger.Info("verify peer certificate", "authorized", "no", "URI", uri.String())
 		}
 	}
 
