@@ -200,30 +200,36 @@ func (j *JSONLoader) loadServiceConfig() error {
 							if filtersMap, ok := policyDataMap["filters"].(map[string]interface{}); ok {
 								//load waf filter config
 								if wafConfig, ok := filtersMap["waf"].(map[string]interface{}); ok {
-									wafConfigParsed, err := parseWafConfig(wafConfig)
-									if err != nil {
-										return err
+									if len(wafConfig) > 0 {
+										wafConfigParsed, err := parseWafConfig(wafConfig)
+										if err != nil {
+											return err
+										}
+										policyData.FilterChain.Waf = wafConfigParsed
+										policyData.FilterChain.FiltersAvb = append(policyData.FilterChain.FiltersAvb, "waf")
 									}
-									policyData.FilterChain.Waf = wafConfigParsed
-									policyData.FilterChain.FiltersAvb = append(policyData.FilterChain.FiltersAvb, "waf")
 								}
 								// load ext_authz filter config
 								if extAuthConfig, ok := filtersMap["ext_auth"].(map[string]interface{}); ok {
-									extAuthConfigParsed, err := parseExtAuthConfig(extAuthConfig)
-									if err != nil {
-										return err
+									if len(extAuthConfig) > 0 {
+										extAuthConfigParsed, err := parseExtAuthConfig(extAuthConfig)
+										if err != nil {
+											return err
+										}
+										policyData.FilterChain.ExtAuth.Opa = extAuthConfigParsed
+										policyData.FilterChain.FiltersAvb = append(policyData.FilterChain.FiltersAvb, "ext_auth")
 									}
-									policyData.FilterChain.ExtAuth.Opa = extAuthConfigParsed
-									policyData.FilterChain.FiltersAvb = append(policyData.FilterChain.FiltersAvb, "ext_auth")
 								}
 								// load oauth2 filter config
 								if oAuth2Config, ok := filtersMap["oauth2"].(map[string]interface{}); ok {
-									oAuth2ConfigParsed, err := parseOAuth2Config(oAuth2Config)
-									if err != nil {
-										return err
+									if len(oAuth2Config) > 0 {
+										oAuth2ConfigParsed, err := parseOAuth2Config(oAuth2Config)
+										if err != nil {
+											return err
+										}
+										policyData.FilterChain.Oauth2 = oAuth2ConfigParsed
+										policyData.FilterChain.FiltersAvb = append(policyData.FilterChain.FiltersAvb, "oauth2")
 									}
-									policyData.FilterChain.Oauth2 = oAuth2ConfigParsed
-									policyData.FilterChain.FiltersAvb = append(policyData.FilterChain.FiltersAvb, "oauth2")
 								}
 							}
 							serviceConf.Policy[policyKey] = policyData
