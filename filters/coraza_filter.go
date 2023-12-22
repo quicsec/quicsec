@@ -31,6 +31,8 @@ func (c *CorazaFilter) loadWafConfig(id RequestIdentity) error {
 	var directives string
 	var wafConfig *config.WafConfig
 
+	logger := log.LoggerLgr.WithName("coraza-filter")
+
 	if id.Class == UNK_IDENTITY || id.Class == NO_IDENTITY {
 		wafConfig = config.GetWafConfig("*")
 	} else {
@@ -40,6 +42,7 @@ func (c *CorazaFilter) loadWafConfig(id RequestIdentity) error {
 	if wafConfig != nil {
 		corazaConfig := wafConfig.Coraza
 		for _, directive := range corazaConfig {
+			logger.V(log.DebugLevel).Info("adding directives to waf config", "directive", directive)
 			directives += directive + "\n"
 		}
 	}

@@ -29,7 +29,7 @@ func (f *FilterChain) Apply(w http.ResponseWriter, r *http.Request, next http.Ha
 
 	for _,  filter := range f.Filters {
 		if err := filter.Execute(w,r, next); err != nil {
-			logger.V(log.DebugLevel).Info("request no authorized by filters.", " error", err)
+			logger.V(log.DebugLevel).Info("request not authorized by filters.", " error", err)
 
 			w.WriteHeader(http.StatusForbidden)
 			w.Header().Set("Content-Type", "text/html")
