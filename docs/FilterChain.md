@@ -13,6 +13,7 @@ A Filter Chain, when implemented in HTTP middleware, serves multiple purposes:
 ## Current Support for Filters
 - **WAF Filter**: Utilizes [Coraza](https://github.com/corazawaf/coraza), a robust WAF (Web Application Firewall), to apply security rules and protect against common web vulnerabilities. 
 - **ExtAuth Filter**: Based on [Open Policy Agent (OPA)](https://www.openpolicyagent.org/), it facilitates external authentication processes, ensuring secure access control.
+- **OAuth2 Filter**: Implements the OAuth2 [authorization code flow](https://auth0.com/docs/get-started/authentication-and-authorization-flow/authorization-code-flow), providing robust authentication and authorization mechanisms.
 
 ## Implementation and Usage
 - The middleware initializes by loading the configuration and creating filter instances as per the setup.
@@ -39,6 +40,14 @@ The configuration of the Filter Chain is defined in JSON format, which specifies
                 "pass_svc_identity": "enabled",
                 "pass_cli_identity": "enabled"
             }
+        },
+        "oauth2": {
+            "client_id": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+            "client_secret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+            "authz_endpoint": "https://dev-xxxxxxxxxxxxxxxx.us.auth0.com/",
+            "token_endpoint": "/oauth/token",
+            "redirect_url": "https://localhost:8443/callback",
+            "scopes": []
         }
     }
 }
@@ -73,39 +82,63 @@ Settings:
 - pass_cli_identity: Enable passing client identity. (not implemented yet)
 - Customization: Modify these settings to match the external authentication requirements.
 
+**OAuth2 Filter**:
+
+- Configured Under: "oauth2" key.
+- Implementation: Manages OAuth2 authorization code flow.
+
+Settings:
+- client_id: The OAuth2 client identifier.
+- client_secret: A secret key used for client authentication.
+- authz_endpoint: Authorization server's endpoint URL.
+- token_endpoint: Endpoint URL to obtain tokens.
+- redirect_url: URL to redirect users after authentication.
+- scopes: An array of scopes for OAuth2.
+
 
 ##  Config Sample With Filters
 
 ```
 {
     "version": "v1alpha2",
-    "service_conf": [{
-        "conf_selector": "127.0.0.1",
-        "policy": {
-            "spiffe://anotherdomain.foo.bar/foo/bar": {
-                "authz": "allow",
-                "filters": {
-                    "waf": {
-                      "coraza": [
-                        "SecRule REQUEST_URI \"@contains admin\" \"id:1,phase:1,deny,status:403,msg:'Access to admin area is restricted',log,auditlog\"",
-                        "SecRule REQUEST_URI \"@contains demo\" \"id:2,phase:1,deny,status:403,msg:'Access to admin area is restricted',log,auditlog\""
-                      ]
-                    },
-                    "ext_auth": {
-                      "opa": {
-                        "url": "http://localhost:8181/v1/data/httpapi/authz",
-                        "auth": "pod8",
-                        "pass_jwt_claims": "enabled",
-                        "pass_svc_identity": "enabled",
-                        "pass_cli_identity": "enabled"
-                      }
+    "service_conf": [
+        {
+            "conf_selector": "127.0.0.1",
+            "policy": {
+                "spiffe://anotherdomain.foo.bar/foo/bar": {
+                    "authz": "allow",
+                    "filters": {
+                        "waf": {
+                            "coraza": [
+                                "SecRule REQUEST_URI \"@contains admin\" \"id:1,phase:1,deny,status:403,msg:'Access to admin area is restricted',log,auditlog\"",
+                                "SecRule REQUEST_URI \"@contains demo\" \"id:2,phase:1,deny,status:403,msg:'Access to demo area is restricted',log,auditlog\""
+                            ]
+                        },
+                        "ext_auth": {
+                            "opa": {
+                                "url": "http://localhost:8181/v1/data/httpapi/authz",
+                                "auth": "pod8",
+                                "pass_jwt_claims": "enabled",
+                                "pass_svc_identity": "enabled",
+                                "pass_cli_identity": "enabled"
+                            }
+                        },
+                        "oauth2": {
+                            "client_id": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+                            "client_secret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+                            "authz_endpoint": "https://dev-xxxxxxxxxxxxxxxx.us.auth0.com/",
+                            "token_endpoint": "/oauth/token",
+                            "redirect_url": "https://localhost:8443/callback",
+                            "scopes": []
+                        }
                     }
                 }
+            },
+            "mtls": {
+                "client_cert": true
             }
-        },
-        "mtls": {
-            "client_cert": true
         }
-    }]
+    ]
 }
+
 ```
