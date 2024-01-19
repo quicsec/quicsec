@@ -26,7 +26,7 @@ func lookUp(domain string, dnsType uint16) (*dns.Msg, error) {
 
 	// Create a DNS client
 	client := dns.Client{}
-	config, _ := dns.ClientConfigFromFile("/etc/resolv.conf")
+	config, _ := dnsClientConfig()
 
 	// Create a query
 	query := dns.Msg{}
