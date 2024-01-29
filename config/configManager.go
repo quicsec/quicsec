@@ -342,16 +342,16 @@ func loadSecurityConfig() {
 		panic("failed to get ips from netwrok interfaces.")
 	}
 
-	if viper.IsSet("qm_service_conf") {
-		rawConfigs := viper.Get("qm_service_conf")
+	if viper.IsSet("service_conf") {
+		rawConfigs := viper.Get("service_conf")
 		if configs, ok := rawConfigs.([]interface{}); ok {
 			spiffeIDs := make(map[string]bool)
 			for _, conf := range configs {
 				c := conf.(map[string]interface{})
-				if serverInstanceKey, exists := c["server_instance_key"].(string); exists {
+				if serverInstanceKey, exists := c["conf_selector"].(string); exists {
 					kIp := net.ParseIP(serverInstanceKey)
 					if kIp == nil {
-						panic("failed to parse server_instance_key as an IP adrress format")
+						panic("failed to parse conf_selector as an IP adrress format")
 					}
 					if matchIP(kIp, localIPs) {
 						if policies, exists := c["policy"].(map[string]interface{}); exists {
@@ -375,21 +375,26 @@ func loadSecurityConfig() {
 							}
 							SetLastAuthRules(spiffeIDs, defaultFlag)
 						}
-
-						if clientCertValue, exists := c["client_cert"].(bool); exists {
-							SetMtlsEnable(clientCertValue)
+						
+						if mtlsValue, ok := c["mtls"].(map[string]interface{}); ok {
+							if clientCertValue, ok := mtlsValue["client_cert"].(bool); ok {
+								SetMtlsEnable(clientCertValue)
+							} else {
+								confLogger.V(log.DebugLevel).Info("client_cert key not found in mtls. Keeping it disable...")
+								SetMtlsEnable(false)
+							}
 						} else {
-							confLogger.V(log.DebugLevel).Info("client_cert key not found. Keeping it disable...")
+							confLogger.V(log.DebugLevel).Info("mtls key not found. Keeping client_cert disable...")
 							SetMtlsEnable(false)
 						}
 					}
 				}
 			}
 		} else {
-			panic("Unexpected type for 'qm_service_conf'")
+			panic("Unexpected type for 'service_conf'")
 		}
 	} else {
-		panic("qm_service_conf' key not found in config")
+		panic("service_conf' key not found in config")
 	}
 }
 
