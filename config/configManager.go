@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/go-logr/logr"
@@ -243,6 +244,26 @@ func readCoreConfig() (string, string, string) {
 		dir = "./"
 		file = "config"
 	}
+	
+	// Check if file exists first, if not, wait at max 5 min
+    timeout := 60 * 5 * time.Second
+    checkInterval := 5 * time.Second
+    startTime := time.Now()
+
+    for {
+        if _, err := os.Stat(coreConfigFull); err == nil {
+            break
+        } else if !os.IsNotExist(err) {
+            panic(err)
+        }
+
+        if time.Since(startTime) > timeout {
+			msg := fmt.Sprintf("Timeout: Config file does not exist after waiting %d seconds", timeout/time.Second)
+            panic(msg)
+        }
+
+        time.Sleep(checkInterval)
+    }
 	return dir, file, coreConfigFull
 }
 
