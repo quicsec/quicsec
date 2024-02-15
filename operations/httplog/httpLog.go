@@ -90,7 +90,7 @@ func (lrt LoggingRoundTripper) RoundTrip(r *http.Request) (res *http.Response, e
 				serverId, err := identity.IDFromCert(res.TLS.PeerCertificates[0])
 				if err == nil {
 					operations.HttpRequestsPathIdClient.WithLabelValues(config.GetIdentity().String(), serverId.String(), r.Host, r.Method, r.URL.RequestURI(), strconv.Itoa(res.StatusCode)).Inc()
-					operations.HTTPHistogramNetworkLatencyId.WithLabelValues(config.GetIdentity().String(), serverId.String()).Observe(duration.Seconds())
+					operations.HTTPHistogramNetworkLatencyId.WithLabelValues(config.GetIdentity().String(), serverId.String(), r.Host).Observe(duration.Seconds())
 				}
 			}
 		}
