@@ -3,12 +3,15 @@
     "service_conf": [{
         "conf_selector": "127.0.0.1",
         "policy":{
+                "*": {
+                        "authz": "deny"
+                },
                 "spiffe://anotherdomain.foo.bar/foo/bar": {
-                        "authz": "allow"
-                }
+                        "authz": "deny"
+		}
         },
         "mtls":{
-                "client_cert": false
+                "client_cert": true
         }
     }]
 }
