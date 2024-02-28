@@ -2,7 +2,9 @@
 package httplog
 
 import (
+	"bytes"
 	"crypto/tls"
+	"io"
 	"net"
 	"net/http"
 	"strconv"
@@ -23,11 +25,16 @@ type loggingResponseWriter struct {
 	http.ResponseWriter // compose original http.ResponseWriter
 	statusCode          int
 	size                int
+	body                bytes.Buffer
 }
 
-func (r *loggingResponseWriter) Write(b []byte) (int, error) {
-	size, err := r.ResponseWriter.Write(b) // write response using original http.ResponseWriter
-	r.size += size                         // capture size
+func (lrw *loggingResponseWriter) Write(b []byte) (int, error) {
+	// Capture the response body
+	if _, err := lrw.body.Write(b); err != nil {
+		return 0, err // Properly handle the error
+	}
+	size, err := lrw.ResponseWriter.Write(b) // Write response using original http.ResponseWriter
+	lrw.size += size                         // Capture size
 	return size, err
 }
 
@@ -39,7 +46,7 @@ func (r *loggingResponseWriter) WriteHeader(statusCode int) {
 func NewLoggingResponseWriter(w http.ResponseWriter) *loggingResponseWriter {
 	// WriteHeader(int) is not called if our response implicitly returns 200 OK, so
 	// we default to that status code.
-	return &loggingResponseWriter{w, http.StatusOK, 0}
+	return &loggingResponseWriter{w, http.StatusOK, 0, bytes.Buffer{}}
 }
 
 type LoggableHTTPRequestClient struct {
@@ -154,10 +161,19 @@ func (r LoggableHTTPRequest) MarshalLogObject(enc zapcore.ObjectEncoder) error {
 	enc.AddString("myId", config.GetIdentity().String())
 	enc.AddString("method", r.Method)
 	enc.AddString("path", r.RequestURI)
+
 	if config.GetEnableDebug() {
 		enc.AddObject("headers", LoggableHTTPHeader{
 			Header: r.Header,
 		})
+
+		// Reading the request body
+		bodyBytes, err := io.ReadAll(r.Body)
+		if err == nil {
+			enc.AddString("body", string(bodyBytes))
+			enc.AddInt("bodySize", len(string(bodyBytes)))
+		}
+
 	}
 	if r.TLS != nil {
 		enc.AddObject("tls", LoggableTLSConnState(*r.TLS))
@@ -260,15 +276,19 @@ func WrapHandlerWithLogging(wrappedHandler http.Handler) http.Handler {
 
 		fields := []zap.Field{
 			zap.String("duration", duration.String()),
-			zap.Int("size", lrw.size),
-			zap.Int("responseCode", lrw.statusCode),
+			zap.Int("respBodySize", lrw.size),
+			zap.Int("respCode", lrw.statusCode),
 		}
 
 		if config.GetEnableDebug() {
 			respHeadersField := zap.Object("respHeaders", LoggableHTTPHeader{
-				Header: w.Header(),
+				Header: lrw.Header(), // Note: Use lrw.Header() to get the response headers
 			})
 			fields = append(fields, respHeadersField)
+
+			// Correctly appending the response body to the log fields
+			respBodyField := zap.String("respBody", lrw.body.String())
+			fields = append(fields, respBodyField)
 		}
 
 		log("handled request", fields...)

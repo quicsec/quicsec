@@ -7,7 +7,7 @@
                         "authz": "deny"
                 },
                 "spiffe://anotherdomain.foo.bar/foo/bar": {
-                        "authz": "deny"
+                        "authz": "allow"
 		}
         },
         "mtls":{
