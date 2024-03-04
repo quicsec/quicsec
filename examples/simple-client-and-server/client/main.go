@@ -85,7 +85,32 @@ func main() {
 		fmt.Println("#################################################")
 		fmt.Printf("\t\tRESULTS\n")
 		fmt.Println("#################################################")
+
 		fmt.Printf("Request-url: \n\t\t%s\n", *url)
-		// Continue with your output formatting...
+
+		fmt.Println("Request-headers:")
+
+		for k, v := range req.Header {
+			fmt.Printf("\t\t%s : %s\n", k, v)
+		}
+
+		fmt.Println("Response-headers:")
+
+		for k, v := range resp.Header {
+			fmt.Printf("\t\t%s : %s\n", k, v)
+		}
+		fmt.Printf("Status: \n\t\t%s\n", resp.Status)
+
+		fmt.Println("Response Body:")
+
+		body := &bytes.Buffer{}
+
+		_, err = io.Copy(body, resp.Body)
+
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		fmt.Printf("\t\t%s", body.Bytes())
 	}
 }
