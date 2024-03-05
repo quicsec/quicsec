@@ -4,6 +4,7 @@ package httplog
 import (
 	"bytes"
 	"crypto/tls"
+	"encoding/base64"
 	"io"
 	"net"
 	"net/http"
@@ -170,8 +171,9 @@ func (r LoggableHTTPRequest) MarshalLogObject(enc zapcore.ObjectEncoder) error {
 		// Reading the request body
 		bodyBytes, err := io.ReadAll(r.Body)
 		if err == nil {
-			enc.AddString("body", string(bodyBytes))
-			enc.AddInt("bodySize", len(string(bodyBytes)))
+			encodedString := base64.StdEncoding.EncodeToString(bodyBytes)
+			enc.AddString("body", encodedString)
+			enc.AddInt("bodySize", len(encodedString))
 		}
 
 	}
@@ -274,9 +276,11 @@ func WrapHandlerWithLogging(wrappedHandler http.Handler) http.Handler {
 			}
 		}
 
+		encodedString := base64.StdEncoding.EncodeToString(lrw.body.Bytes())
+		encodedStringSize := len(encodedString)
 		fields := []zap.Field{
 			zap.String("duration", duration.String()),
-			zap.Int("respBodySize", lrw.size),
+			zap.Int("respBodySize", encodedStringSize),
 			zap.Int("respCode", lrw.statusCode),
 		}
 
@@ -287,7 +291,7 @@ func WrapHandlerWithLogging(wrappedHandler http.Handler) http.Handler {
 			fields = append(fields, respHeadersField)
 
 			// Correctly appending the response body to the log fields
-			respBodyField := zap.String("respBody", lrw.body.String())
+			respBodyField := zap.String("respBody", encodedString)
 			fields = append(fields, respBodyField)
 		}
 
