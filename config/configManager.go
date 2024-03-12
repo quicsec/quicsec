@@ -34,8 +34,14 @@ type Config struct {
 type LogConfigs struct {
 	LogOutputFileFlag       bool
 	LogAccessOutputFileFlag bool
-	Debug                   bool   `mapstructure:"debug"`
-	Path                    string `mapstructure:"path"`
+	Debug                   bool       `mapstructure:"debug"`
+	Http                    BodyHeader `mapstructure:"http"`
+	Path                    string     `mapstructure:"path"`
+}
+
+type BodyHeader struct {
+	Body   bool `mapstructure:"body"`
+	Header bool `mapstructure:"header"`
 }
 
 type HttpConfigs struct {
@@ -157,6 +163,14 @@ func GetEnableDebug() bool {
 	return globalConfig.Log.Debug
 }
 
+func GetEnableLogHTTPBody() bool {
+	return globalConfig.Log.Http.Body
+}
+
+func GetEnableLogHTTPHeader() bool {
+	return globalConfig.Log.Http.Header
+}
+
 func GetInsecureSkipVerify() bool {
 	return globalConfig.Security.Mtls.InsecSkipVerify
 }
@@ -203,6 +217,8 @@ func (c Config) ShowConfig() {
 	fmt.Printf("Init configuration\n")
 
 	fmt.Printf("LogVerbose:%t\n", c.Log.Debug)
+	fmt.Printf("LogHTTPBody:%t\n", c.Log.Http.Body)
+	fmt.Printf("LogHTTPHeader:%t\n", c.Log.Http.Header)
 	fmt.Printf("LogOutputFile:%s\n", c.Log.Path)
 	fmt.Printf("LogAccessOutputFile:%s\n", c.HTTP.Access.Path)
 
@@ -244,26 +260,26 @@ func readCoreConfig() (string, string, string) {
 		dir = "./"
 		file = "config"
 	}
-	
+
 	// Check if file exists first, if not, wait at max 5 min
-    timeout := 60 * 5 * time.Second
-    checkInterval := 5 * time.Second
-    startTime := time.Now()
+	timeout := 60 * 5 * time.Second
+	checkInterval := 5 * time.Second
+	startTime := time.Now()
 
-    for {
-        if _, err := os.Stat(coreConfigFull); err == nil {
-            break
-        } else if !os.IsNotExist(err) {
-            panic(err)
-        }
+	for {
+		if _, err := os.Stat(coreConfigFull); err == nil {
+			break
+		} else if !os.IsNotExist(err) {
+			panic(err)
+		}
 
-        if time.Since(startTime) > timeout {
+		if time.Since(startTime) > timeout {
 			msg := fmt.Sprintf("Timeout: Config file does not exist after waiting %d seconds", timeout/time.Second)
-            panic(msg)
-        }
+			panic(msg)
+		}
 
-        time.Sleep(checkInterval)
-    }
+		time.Sleep(checkInterval)
+	}
 	return dir, file, coreConfigFull
 }
 
@@ -279,6 +295,8 @@ func LoadConfig() Config {
 
 		// defaults
 		viper.SetDefault("log.debug", false)                       // QUICSEC_LOG_DEBUG
+		viper.SetDefault("log.http.body", false)                   // QUICSEC_LOG_HTTP_BODY
+		viper.SetDefault("log.http.header", false)                 // QUICSEC_LOG_HTTP_HEADER
 		viper.SetDefault("log.path", "")                           // QUICSEC_LOG_PATH
 		viper.SetDefault("http.access.path", "")                   // QUICSEC_HTTP_ACCESS_PATH
 		viper.SetDefault("quic.debug.secret_path", "")             // QUICSEC_QUIC_DEBUG_SECRET_PATH
@@ -400,7 +418,7 @@ func loadSecurityConfig() {
 							}
 							SetLastAuthRules(spiffeIDs, defaultFlag)
 						}
-						
+
 						if mtlsValue, ok := c["mtls"].(map[string]interface{}); ok {
 							if clientCertValue, ok := mtlsValue["client_cert"].(bool); ok {
 								SetMtlsEnable(clientCertValue)

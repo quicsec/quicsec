@@ -134,7 +134,7 @@ func (r LoggableHTTPRequestClient) MarshalLogObject(enc zapcore.ObjectEncoder) e
 	enc.AddString("myId", config.GetIdentity().String())
 	enc.AddString("method", r.Method)
 	enc.AddString("path", r.URL.RequestURI())
-	if config.GetEnableDebug() {
+	if config.GetEnableLogHTTPHeader() {
 		enc.AddObject("headers", LoggableHTTPHeader{
 			Header: r.Header,
 		})
@@ -163,11 +163,13 @@ func (r LoggableHTTPRequest) MarshalLogObject(enc zapcore.ObjectEncoder) error {
 	enc.AddString("method", r.Method)
 	enc.AddString("path", r.RequestURI)
 
-	if config.GetEnableDebug() {
+	if config.GetEnableLogHTTPHeader() {
 		enc.AddObject("headers", LoggableHTTPHeader{
 			Header: r.Header,
 		})
+	}
 
+	if config.GetEnableLogHTTPBody() {
 		// Reading the request body
 		bodyBytes, err := io.ReadAll(r.Body)
 		if err == nil {
@@ -175,8 +177,8 @@ func (r LoggableHTTPRequest) MarshalLogObject(enc zapcore.ObjectEncoder) error {
 			enc.AddString("body", encodedString)
 			enc.AddInt("bodySize", len(encodedString))
 		}
-
 	}
+
 	if r.TLS != nil {
 		enc.AddObject("tls", LoggableTLSConnState(*r.TLS))
 	}
@@ -276,23 +278,28 @@ func WrapHandlerWithLogging(wrappedHandler http.Handler) http.Handler {
 			}
 		}
 
-		encodedString := base64.StdEncoding.EncodeToString(lrw.body.Bytes())
-		encodedStringSize := len(encodedString)
 		fields := []zap.Field{
 			zap.String("duration", duration.String()),
-			zap.Int("respBodySize", encodedStringSize),
 			zap.Int("respCode", lrw.statusCode),
 		}
 
-		if config.GetEnableDebug() {
+		if config.GetEnableLogHTTPHeader() {
 			respHeadersField := zap.Object("respHeaders", LoggableHTTPHeader{
 				Header: lrw.Header(), // Note: Use lrw.Header() to get the response headers
 			})
 			fields = append(fields, respHeadersField)
+		}
 
+		// Log the response body if the config is enabled
+		if config.GetEnableLogHTTPBody() {
+			encodedString := base64.StdEncoding.EncodeToString(lrw.body.Bytes())
+			encodedStringSize := len(encodedString)
+			bodyFields := []zap.Field{
+				zap.Int("respBodySize", encodedStringSize),
+				zap.String("respBody", encodedString),
+			}
 			// Correctly appending the response body to the log fields
-			respBodyField := zap.String("respBody", encodedString)
-			fields = append(fields, respBodyField)
+			fields = append(fields, bodyFields...)
 		}
 
 		log("handled request", fields...)

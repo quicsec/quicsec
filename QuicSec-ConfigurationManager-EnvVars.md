@@ -21,19 +21,29 @@ QUICSEC_HTTP_ACCESS_PATH="/var/log/access.log"          //default: ""
 ```
 If `QUICSEC_LOG_PATH` is set to "", the stdout is automatically used.
 
-**2. Flag to enable dump of pre shared secret and the path file**
+**2. HTTP logger for header and body**
+
+It is possible to log both the headers and the body content from HTTP requests and responses.
+The body content is encoded in the base64 format when necessary to ensure safe transmission of binary data.
+
+```
+QUICSEC_LOG_HTTP_HEADER="1"                             //default: 0
+QUICSEC_LOG_HTTP_BODY="1"                               //default: 0
+```
+
+**3. Flag to enable dump of pre shared secret and the path file**
 ```
 QUICSEC_QUIC_DEBUG_SECRET_PATH="./pre-shared-key.txt"   //default: ""
 ```
 If `QUICSEC_QUIC_DEBUG_SECRET_PATH` is set to "", no pre shared key is generated.
 
-**3. Flag to enable qlog and the path directory**
+**4. Flag to enable qlog and the path directory**
 ```
 QUICSEC_QUIC_DEBUG_QLOG_PATH="/tmp/qlog/"               //default: "./qlog/"
 ```
 If `QUICSEC_QUIC_DEBUG_QLOG_PATH` is set to "", no qlog is generated.
 
-**4. Flag to enable tracing metrics using prometheus**
+**5. Flag to enable tracing metrics using prometheus**
 
 When metrics is enable (default), it's possible to export: counters (connection duration; transferred bytes recv/sent; packets recv/sent; handshake successful; and others) and TLS error. These metrics can be accessed via http by the prometheus (need to be configurade).
 ```
@@ -43,7 +53,7 @@ QUICSEC_METRICS_BIND_PORT="8080"                        //default: ""
 If `QUICSEC_METRICS_BIND_PORT` is set to "", the prometheus metrics won't be
 avaiable via http.
 
-**5. Certificate paths**
+**6. Certificate paths**
 
 The certificates for both client/server are configurable via env vars:
 ```
@@ -52,7 +62,7 @@ QUICSEC_CERTS_KEY_PATH="/path/to/server.key"            //default: "certs/cert.k
 QUICSEC_CERTS_CA_PATH="/path/to/ca.pem"                 //default: "certs/ca.pem"
 ```
 
-**6. Flag to enable mTLS and skip the verify**
+**7. Flag to enable mTLS and skip the verify**
 
 If insecure skip verify is true, the client won't check the server certificate.
 ```
