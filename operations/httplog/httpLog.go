@@ -135,7 +135,7 @@ func (r LoggableHTTPRequestClient) MarshalLogObject(enc zapcore.ObjectEncoder) e
 	enc.AddString("method", r.Method)
 	enc.AddString("path", r.URL.RequestURI())
 	if config.GetEnableLogHTTPHeader() {
-		enc.AddObject("headers", LoggableHTTPHeader{
+		enc.AddObject("reqHeaders", LoggableHTTPHeader{
 			Header: r.Header,
 		})
 	}
@@ -164,7 +164,7 @@ func (r LoggableHTTPRequest) MarshalLogObject(enc zapcore.ObjectEncoder) error {
 	enc.AddString("path", r.RequestURI)
 
 	if config.GetEnableLogHTTPHeader() {
-		enc.AddObject("headers", LoggableHTTPHeader{
+		enc.AddObject("reqHeaders", LoggableHTTPHeader{
 			Header: r.Header,
 		})
 	}
@@ -174,8 +174,8 @@ func (r LoggableHTTPRequest) MarshalLogObject(enc zapcore.ObjectEncoder) error {
 		bodyBytes, err := io.ReadAll(r.Body)
 		if err == nil {
 			encodedString := base64.StdEncoding.EncodeToString(bodyBytes)
-			enc.AddString("body", encodedString)
-			enc.AddInt("bodySize", len(encodedString))
+			enc.AddString("reqBody", encodedString)
+			enc.AddInt("reqBodySize", len(encodedString))
 		}
 	}
 
