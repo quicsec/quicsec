@@ -10,8 +10,6 @@ import (
 	"github.com/quicsec/quicsec/operations/log"
 )
 
-type binds []string
-
 func ListenAndServe(addr string, handler http.Handler) error {
 
 	if len(addr) == 0 {

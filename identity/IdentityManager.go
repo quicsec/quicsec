@@ -5,22 +5,16 @@ import (
 	"crypto/x509"
 	"errors"
 	"fmt"
-	"io/ioutil"
-	"strings"
+	"os"
 
 	"github.com/quicsec/quicsec/config"
 	"github.com/quicsec/quicsec/operations/log"
 	"github.com/quicsec/quicsec/spiffeid"
 )
 
-func VerifyIdentity(uri string) bool {
-	var AuthIDs []string
-	AuthIDs = config.GetLastAuthRules()
-
-	for _, id := range AuthIDs {
-		v := strings.EqualFold(uri, id)
-
-		if v {
+func AllowedIdentity(uri string) bool {
+	for _, allowed := range config.GetAllowedIdentities() {
+		if allowed == uri {
 			return true
 		}
 	}
@@ -84,7 +78,7 @@ func GetCertPool() (*x509.CertPool, error) {
 		return nil, errors.New("must provide CA certificate, you can configure this via environment variable: `CA_FILE`")
 	}
 
-	caCertRaw, err := ioutil.ReadFile(caCertPath)
+	caCertRaw, err := os.ReadFile(caCertPath)
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to read CA certificate %v", err)

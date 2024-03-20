@@ -1,12 +1,74 @@
 {
-    "version": "v1alpha2",
-    "qm_service_conf": [{
-        "server_instance_key": "127.0.0.1",
-        "policy":{
-                "spiffe://anotherdomain.foo.bar/foo/bar": {
-                        "authz": "allow"
-                }
+  "version": "v1alpha2",
+  "service_conf": [
+    {
+      "conf_selector": "127.0.0.1",
+      "policy": {
+        "*": {
+          "authz": "allow",
+          "filters": {
+            "waf": {
+              "coraza": [
+                "SecRule REQUEST_URI \"@contains admin\" \"id:1,phase:1,deny,status:403,msg:'Access to admin area is restricted',log,auditlog\"",
+                "SecRule REQUEST_URI \"@contains private\" \"id:2,phase:1,deny,status:403,msg:'Access to admin area is restricted',log,auditlog\""
+              ]
+            },
+            "ext_auth": {
+              "opa": {
+                "url": "http://localhost:8181/v1/data/httpapi/authz",
+                "auth": "pod8",
+                "pass_jwt_claims": "enabled",
+                "pass_svc_identity": "enabled",
+                "pass_cli_identity": "enabled"
+              }
+            },
+            "oauth2": {
+              "client_id": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+              "client_secret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+              "authz_endpoint": "https://dev-xxxxxxxxxxxxxxxx.us.auth0.com/",
+              "token_endpoint": "/oauth/token",
+              "redirect_url": "https://localhost:8443/callback",
+              "scopes": []
+            }
+          }
         },
+        "spiffe://anotherdomain.foo.bar/foo/bar": {
+          "authz": "allow",
+          "filters": {
+            "waf": {
+              "coraza": [
+                "SecRule REQUEST_URI \"@contains admin\" \"id:1,phase:1,deny,status:403,msg:'Access to admin area is restricted',log,auditlog\"",
+                "SecRule REQUEST_URI \"@contains private\" \"id:2,phase:1,deny,status:403,msg:'Access to admin area is restricted',log,auditlog\""
+              ]
+            },
+            "ext_auth": {
+              "opa": {
+                "url": "http://localhost:8181/v1/data/httpapi/authz",
+                "auth": "pod8",
+                "pass_jwt_claims": "enabled",
+                "pass_svc_identity": "enabled",
+                "pass_cli_identity": "enabled"
+              }
+            }
+          }
+        },
+        "spiffe://pod8.io/foo/bar": {
+          "authz": "allow",
+          "filters": {
+            "oauth2": {
+              "client_id": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+              "client_secret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+              "authz_endpoint": "https://dev-qon2w2rcdecfw3vc.us.auth0.com/",
+              "token_endpoint": "/oauth/token",
+              "redirect_url": "https://localhost:8443/callback",
+              "scopes": []
+            }
+          }
+        }
+      },
+      "mtls": {
         "client_cert": true
-    }]
+      }
+    }
+  ]
 }

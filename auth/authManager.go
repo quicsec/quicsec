@@ -33,7 +33,6 @@ func (fn verifyOption) apply(config *verifyConfig) {
 // in the bundle.
 func Verify(certs []*x509.Certificate, opts ...VerifyOption) (spiffeid.ID, [][]*x509.Certificate, error) {
 	authLogger := log.LoggerLgr.WithName(log.ConstConnManager)
-	myPool, err := identity.GetCertPool()
 
 	authLogger.V(log.DebugLevel).Info("verify X509-SVID chain using the X.509 bundle source")
 
@@ -46,19 +45,29 @@ func Verify(certs []*x509.Certificate, opts ...VerifyOption) (spiffeid.ID, [][]*
 		return spiffeid.ID{}, nil, nil
 	}
 
+	myPool, err := identity.GetCertPool()
 	if err != nil {
 		authLogger.Error(err, "failed to get system cert pool")
 	}
 
-	config := &verifyConfig{}
+	vConfig := &verifyConfig{}
 	for _, opt := range opts {
-		opt.apply(config)
+		opt.apply(vConfig)
 	}
 
 	switch {
 	case len(certs) == 0:
 		authLogger.V(log.DebugLevel).Info("certificate not supplied by peer")
-		return spiffeid.ID{}, nil, errors.New("empty certificates chain")
+		if config.GetStarPolicyEnable() {
+			authLogger.V(log.DebugLevel).Info("Policy '*' (STAR) is enabled")
+			starId, err := spiffeid.FromString("spiffe://*")
+			if err != nil {
+				return spiffeid.ID{}, nil, errors.New("failed to create wildcard spiffe id for '*'")
+			}
+			return starId, nil, nil
+		} else {
+			return spiffeid.ID{}, nil, errors.New("empty certificates chain")
+		}
 	case myPool == nil:
 		return spiffeid.ID{}, nil, errors.New("pool is required")
 	}
@@ -82,7 +91,7 @@ func Verify(certs []*x509.Certificate, opts ...VerifyOption) (spiffeid.ID, [][]*
 		Roots:         myPool,
 		Intermediates: NewCertPool(certs[1:]),
 		KeyUsages:     []x509.ExtKeyUsage{x509.ExtKeyUsageAny},
-		CurrentTime:   config.now,
+		CurrentTime:   vConfig.now,
 	})
 	if err != nil {
 		return id, nil, fmt.Errorf("auth: could not verify leaf certificate: %w", err)
@@ -165,7 +174,7 @@ func CustomVerifyPeerCertificate(rawCerts [][]byte, verifiedChains [][]*x509.Cer
 	}
 
 	for _, uri := range cert.URIs {
-		rv := identity.VerifyIdentity(uri.String())
+		rv := identity.AllowedIdentity(uri.String())
 		if rv {
 			authLogger.Info("verify peer certificate", "authorized", "yes", "URI", uri.String())
 			if config.GetMetricsEnabled() {
@@ -177,14 +186,24 @@ func CustomVerifyPeerCertificate(rawCerts [][]byte, verifiedChains [][]*x509.Cer
 			}
 			return nil
 		} else {
-			if config.GetMetricsEnabled() {
-				if config.GetServerSideFlag() {
-					operations.AuthzConnectiontServerId.WithLabelValues(config.GetIdentity().String(), uri.String(), "unauthorized").Inc()
-				} else {
-					operations.AuthzConnectiontClientId.WithLabelValues(config.GetIdentity().String(), uri.String(), "unauthorized").Inc()
+			if config.GetStarPolicyEnable() {
+				authLogger.V(log.DebugLevel).Info("Creating a wildcard identity for policy '*' (STAR) due to the absence of a peer certificate.")
+				authLogger.Info("verify peer wildcard", "authorized", "yes", "URI", "spiffe://*")
+
+				//if config.GetServerSideFlag() {
+					// increment metrics for star authz
+				//}
+				return nil
+			} else {
+				if config.GetMetricsEnabled() {
+					if config.GetServerSideFlag() {
+						operations.AuthzConnectiontServerId.WithLabelValues(config.GetIdentity().String(), uri.String(), "unauthorized").Inc()
+					} else {
+						operations.AuthzConnectiontClientId.WithLabelValues(config.GetIdentity().String(), uri.String(), "unauthorized").Inc()
+					}
 				}
+				authLogger.Info("verify peer certificate", "authorized", "no", "URI", uri.String())
 			}
-			authLogger.Info("verify peer certificate", "authorized", "no", "URI", uri.String())
 		}
 	}
 

@@ -18,6 +18,8 @@ import (
 	"github.com/quicsec/quicsec/operations/httplog"
 	"github.com/quicsec/quicsec/operations/log"
 
+	"github.com/quicsec/quicsec/filters"
+
 	ops "github.com/quicsec/quicsec/operations"
 )
 
@@ -90,6 +92,12 @@ func ListenAndServe(addr string, handler http.Handler) error {
 		handler = http.DefaultServeMux
 	}
 
+	filterChain := &filters.FilterChain{}
+
+	finalHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request, ) {
+		filterChain.Apply(w, r, handler.ServeHTTP)
+	})
+
 	quicConf := &quic.Config{
 		Tracer: opsTracer,
 	}
@@ -109,14 +117,14 @@ func ListenAndServe(addr string, handler http.Handler) error {
 	// Start the servers
 	quicServer := &http3.Server{
 		TLSConfig:  tlsConfig,
-		Handler:    httplog.WrapHandlerWithLogging(handler),
+		Handler:    httplog.WrapHandlerWithLogging(finalHandler),
 		QuicConfig: quicConf,
 	}
 
 	httpServer := &http.Server{
 		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			quicServer.SetQuicHeaders(w.Header())
-			handler.ServeHTTP(w, r)
+			finalHandler.ServeHTTP(w, r)
 		}),
 	}
 
@@ -230,6 +238,12 @@ func Do(req *http.Request) (*http.Response, error) {
 		}
 		client = &http.Client{
 			Transport: httplog.LoggingRoundTripper{Base: getRoundTripper()},
+			//[TODO]  when redirectiong we can customize headers
+			// CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			// 	if req.Response.StatusCode == http.StatusTemporaryRedirect {
+			// 	}
+			// 	return nil
+			// },
 		}
 
 		identityLogger.V(log.DebugLevel).Info("send client request")
