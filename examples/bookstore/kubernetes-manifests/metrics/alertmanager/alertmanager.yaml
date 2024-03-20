@@ -1,0 +1,13 @@
+route:
+  group_by: ['alertname', 'downstreamId']
+  group_wait: 45s
+  group_interval: 600m  # Interval for added alerts to a group, set it to 10 hours
+  repeat_interval: 600m  # Alert will not be sent more than once every 10 hours for a given downstreamId.
+  receiver: 'slack-webhook'
+receivers:
+- name: 'slack-webhook'
+  slack_configs:
+  - api_url: 'https://hooks.slack.com/services/ABCDABCD123/ABCDABCD123/YourSlackWebhook'
+    channel: '#your-slack-alerts-channel'
+    text: '{{ range .Alerts }}Alert: {{ .Annotations.description }}                                                     <{{ .Annotations.remediationURL }}|Remediate>                                  Severity: {{ .Labels.severity }}       {{ end }}'
+

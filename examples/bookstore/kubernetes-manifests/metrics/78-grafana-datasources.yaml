@@ -2,8 +2,8 @@
 apiVersion: v1
 kind: Secret
 metadata:
-  name: grafana-datasources-qs-monitoring
-  namespace: qs-monitoring
+  name: grafana-datasources-qm-monitoring
+  namespace: qm-monitoring
   labels:
     grafana_datasource: "1"
     app: prometheus-operator-grafana
@@ -20,7 +20,17 @@ stringData:
                 "name": "prometheus",
                 "orgId": 1,
                 "type": "prometheus",
-                "url": "http://prometheus-operated.qs-monitoring:9090/",
+                "url": "http://prometheus-operated.qm-monitoring:9090/",
+                "version": 1
+            },
+            {
+                #"access": "proxy",
+                #"isDefault": true,
+                "editable": false,
+                "name": "loki",
+                "orgId": 1,
+                "type": "loki",
+                "url": "http://loki.qm-monitoring:3100/",
                 "version": 1
             }
         ]

@@ -1,0 +1,66 @@
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: qm-servicemonitor
+  namespace: qm-monitoring
+  labels:
+    qm-monitoring: enabled
+    serviceMonitorSelector: prometheus
+spec:
+  namespaceSelector:
+    any: true
+  selector:
+    matchLabels:
+      qm-monitoring: enabled
+  endpoints:
+  #- port: service-tcp
+  - port: metrics
+    path: /metrics
+    interval: 30s
+    honorLabels: true
+    relabelings:
+    - sourceLabels: [__meta_kubernetes_pod_label_version]
+      targetLabel: version
+    - sourceLabels: [__meta_kubernetes_pod_name, __meta_kubernetes_pod_ip]
+      separator: ';'
+      regex: '(.+);(.+)'
+      targetLabel: myWl
+      replacement: '$1/$2'
+    metricRelabelings:
+    # Create Identity label from container name and NS name until we are able to label workloads with ID value
+    - sourceLabels: [namespace, pod]
+      regex: "(.*);(.*?)-.*"
+      replacement: "spiffe://cluster.local/ns/$1/sa/$2"
+      targetLabel: myId
+    # Rename label 'status' to 'verdict'
+    - sourceLabels: [status]
+      targetLabel: verdict
+      action: replace
+    # If 'downstreamId' label is missing or has no value after the first rule, set its value to 'unknown'
+    - sourceLabels: [downstreamId]
+      regex: "^$"
+      replacement: "unknown"
+      targetLabel: downstreamId
+      action: replace
+    - sourceLabels: [upstreamPeer]
+      targetLabel: upstream
+      action: replace
+    - action: labeldrop
+      regex: identity
+    - action: labeldrop
+      regex: status
+    - action: labeldrop
+      regex: endpoint
+    - action: labeldrop
+      regex: job
+    #- action: labeldrop
+    #  regex: instance
+    - action: labeldrop
+      regex: service
+    - action: labeldrop
+      regex: pod
+    - action: labeldrop
+      regex: handshake
+
+---

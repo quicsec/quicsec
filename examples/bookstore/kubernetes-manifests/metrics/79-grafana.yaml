@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: grafana
-  namespace: qs-monitoring
+  namespace: qm-monitoring
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -11,7 +11,7 @@ metadata:
     app.kubernetes.io/component: grafana
     app.kubernetes.io/name: grafana
   name: grafana
-  namespace: qs-monitoring
+  namespace: qm-monitoring
 spec:
   replicas: 1
   selector:
@@ -33,6 +33,16 @@ spec:
         ports:
         - containerPort: 3000
           name: http
+        envFrom:
+          - configMapRef:
+              name: grafana-config
+        env:
+        #  - name: GF_INSTALL_PLUGINS
+        #    value: "https://github.com/knightss27/grafana-network-weathermap/releases/download/v0.3.5/knightss27-weathermap-panel-0.3.5.zip;custom-plugin"
+          - name: GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH
+            value: "/grafana-dashboard-definitions/0/grafana-dashboard-home/home.json"
+          - name: GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS
+            value: "knightss27-weathermap-panel"
         readinessProbe:
           httpGet:
             path: /api/health
@@ -54,14 +64,29 @@ spec:
         - mountPath: /var/lib/grafana
           name: grafana-storage
           readOnly: false
+        - mountPath: /tmp
+          name: grafana-tmp
+          readOnly: false
         - mountPath: /etc/grafana/provisioning/datasources
           name: grafana-datasources
           readOnly: false
-        - mountPath: /etc/grafana/provisioning/dashboards
-          name: grafana-dashboards-qs-monitoring
+        - mountPath: /grafana-dashboard-definitions/0/grafana-dashboard-home
+          name: grafana-dashboard-home
+          readOnly: false
+        - mountPath: /grafana-dashboard-definitions/0/grafana-dashboard-quicmeshmap
+          name: grafana-dashboard-quicmeshmap
+          readOnly: false
+        - mountPath: /grafana-dashboard-definitions/0/grafana-dashboard-downstreams
+          name: grafana-dashboard-downstreams
           readOnly: false
         - mountPath: /grafana-dashboard-definitions/0/grafana-dashboard-quicstats
           name: grafana-dashboard-quicstats
+          readOnly: false
+        - mountPath: /etc/grafana/provisioning/dashboards
+          name: grafana-dashboards-qm-monitoring
+          readOnly: false
+        - mountPath: /grafana-dashboard-definitions/0/grafana-dashboard-k6
+          name: grafana-dashboard-k6
           readOnly: false
       nodeSelector:
         kubernetes.io/os: linux
@@ -73,15 +98,29 @@ spec:
       volumes:
       - emptyDir: {}
         name: grafana-storage
+      - emptyDir: {}
+        name: grafana-tmp
       - name: grafana-datasources
         secret:
-          secretName: grafana-datasources-qs-monitoring
+          secretName: grafana-datasources-qm-monitoring
+      - configMap:
+          name: grafana-dashboard-home
+        name: grafana-dashboard-home
+      - configMap:
+          name: grafana-dashboard-quicmeshmap
+        name: grafana-dashboard-quicmeshmap
+      - configMap:
+          name: grafana-dashboard-downstreams
+        name: grafana-dashboard-downstreams
+      - configMap:
+          name: grafana-dashboard-k6
+        name: grafana-dashboard-k6
       - configMap:
           name: grafana-dashboard-quicstats
         name: grafana-dashboard-quicstats
       - configMap:
-          name: grafana-dashboards-qs-monitoring
-        name: grafana-dashboards-qs-monitoring
+          name: grafana-dashboards-qm-monitoring
+        name: grafana-dashboards-qm-monitoring
 ---
 apiVersion: v1
 kind: Service
@@ -90,7 +129,7 @@ metadata:
     app.kubernetes.io/component: grafana
     app.kubernetes.io/name: grafana
   name: grafana
-  namespace: qs-monitoring
+  namespace: qm-monitoring
 spec:
   ports:
   - name: http

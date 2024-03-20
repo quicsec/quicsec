@@ -1,0 +1,51 @@
+---
+# promtail-metrics 
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: promtail-servicemonitor
+  namespace: qm-monitoring
+  labels:
+    qm-monitoring: enabled
+    serviceMonitorSelector: prometheus
+spec:
+  endpoints:
+  - interval: 30s
+    port: promtail-metrics
+    path: /metrics
+    honorLabels: true
+    relabelings:
+    - sourceLabels: [__meta_kubernetes_pod_label_version]
+      targetLabel: version
+    metricRelabelings:
+    # Create Identity label from container name and NS name until we are able to label workloads with ID value
+    - sourceLabels: [namespace, pod]
+      regex: "(.*);(.*?)-.*"
+      replacement: "spiffe://cluster.local/ns/$1/sa/$2"
+      targetLabel: myId
+    - action: labeldrop
+      regex: "identity"
+    - action: labeldrop
+      regex: "container_name"
+    - action: labeldrop
+      regex: "filename"
+    - action: labeldrop
+      regex: "endpoint"
+    - action: labeldrop
+      regex: "instance"
+    - action: labeldrop
+      regex: "job"
+    - action: labeldrop
+      regex: "service"
+    - action: labeldrop
+      regex: "pod"
+
+  namespaceSelector:
+    matchNames:
+    - qm-monitoring
+  selector:
+    matchLabels:
+      qm-monitoring: enabled
+      app.kubernetes.io/name: promtail
+---
+

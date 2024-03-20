@@ -1,0 +1,24 @@
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  labels:
+    prometheus: prometheus
+    role: alert-rules
+  name: prometheus-qm-alerts
+  namespace: qm-monitoring
+spec:
+  groups:
+  - name: ./example.rules
+    rules:
+    - alert: UnauthorizedAccess
+      expr: increase(appedge_inbound_cx_total{verdict="unauthorized"}[3m]) > 0
+      for: 30s
+      labels:
+        severity: critical
+        downstreamId: '{{ $labels.downstreamId }}'
+        myId: '{{ $labels.myId }}'
+      annotations:
+              description: '{{ $labels.myId }}: Unauthorized access attemped by: {{ $labels.downstreamId }} - access attempt denied'
+              remediationURL: 'https://github.com/quich3/appedge-demo/blob/main/guardrails/identity-sets/trusted-clients.yaml'
+---

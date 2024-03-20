@@ -1,0 +1,2968 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-downstreams
+  namespace: qm-monitoring
+data:
+  downstreams.json: |-
+    {
+      "annotations": {
+        "list": [
+          {
+            "builtIn": 1,
+            "datasource": {
+              "type": "datasource",
+              "uid": "grafana"
+            },
+            "enable": true,
+            "hide": true,
+            "iconColor": "rgba(0, 211, 255, 1)",
+            "name": "Annotations & Alerts",
+            "target": {
+              "limit": 100,
+              "matchAny": false,
+              "tags": [],
+              "type": "dashboard"
+            },
+            "type": "dashboard"
+          }
+        ]
+      },
+      "description": "QM Service - Downstreams Dashboard",
+      "editable": false,
+      "fiscalYearStartMonth": 0,
+      "gnetId": 13861,
+      "graphTooltip": 0,
+      "links": [],
+      "liveNow": false,
+      "panels": [
+        {
+          "collapsed": false,
+          "datasource": {
+            "type": "datasource",
+            "uid": "grafana"
+          },
+          "gridPos": {
+            "h": 1,
+            "w": 24,
+            "x": 0,
+            "y": 0
+          },
+          "id": 10,
+          "panels": [],
+          "targets": [
+            {
+              "datasource": {
+                "type": "datasource",
+                "uid": "grafana"
+              },
+              "refId": "A"
+            }
+          ],
+          "title": "Global Security Metrics - ${qmService}",
+          "type": "row"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P1809F7CD0C75ACF3"
+          },
+          "description": "Application Security Index\n0.0: Insecure (identity lacking, no defense)\n0.5: Suspect (Identity present, no defense)\n1.0: Safer (Identity present, defenses active)",
+          "fieldConfig": {
+            "defaults": {
+              "decimals": 1,
+              "mappings": [],
+              "max": 1,
+              "min": 0,
+              "noValue": "No data",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "dark-red",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 0.01
+                  },
+                  {
+                    "color": "light-red",
+                    "value": 0.2
+                  },
+                  {
+                    "color": "super-light-red",
+                    "value": 0.4
+                  },
+                  {
+                    "color": "dark-yellow",
+                    "value": 0.5
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 0.6
+                  },
+                  {
+                    "color": "super-light-yellow",
+                    "value": 0.7
+                  },
+                  {
+                    "color": "super-light-green",
+                    "value": 0.8
+                  },
+                  {
+                    "color": "light-green",
+                    "value": 0.9
+                  },
+                  {
+                    "color": "dark-green",
+                    "value": 1
+                  }
+                ]
+              },
+              "unit": "none"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 6,
+            "w": 6,
+            "x": 0,
+            "y": 1
+          },
+          "id": 2,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "mean"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "9.2.5",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "P1809F7CD0C75ACF3"
+              },
+              "editorMode": "code",
+              "expr": "(\n  0.9 * sum((rate(appedge_inbound_cx_total{policy=\"strict\", verdict=\"authorized\"}[2m]) * 60) OR on() vector(0))\n  + 0.8 * sum((rate(appedge_inbound_cx_total{policy=\"strict\", verdict=\"unauthorized\"}[2m]) * 60) OR on() vector(0))\n  + 0.1 * sum((rate(appedge_inbound_cx_total{policy=\"default\", verdict=\"unauthorized\"}[2m]) * 60) OR on() vector(0))\n) \n/\nsum(rate(appedge_inbound_cx_total{policy=~\"default|strict\", verdict=~\"authorized|unauthorized\"}[2m]) * 60)\n",
+              "hide": false,
+              "legendFormat": "ASDEX",
+              "range": true,
+              "refId": "B"
+            }
+          ],
+          "title": "ASDEX (App Security Index )",
+          "transformations": [],
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P1809F7CD0C75ACF3"
+          },
+          "description": "mTLS Failures - Connection attempts by clients with unauthorized SPIFFE IDs",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "continuous-YlRd",
+                "seriesBy": "last"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "percentage",
+                "steps": [
+                  {
+                    "color": "super-light-red",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 50
+                  },
+                  {
+                    "color": "dark-red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 6,
+            "w": 7,
+            "x": 6,
+            "y": 1
+          },
+          "id": 110,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "text": {
+              "titleSize": 48,
+              "valueSize": 24
+            },
+            "textMode": "value"
+          },
+          "pluginVersion": "9.2.5",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "P1809F7CD0C75ACF3"
+              },
+              "editorMode": "code",
+              "expr": "sum(rate(appedge_inbound_cx_total{verdict=\"unauthorized\"}[$__rate_interval])) by (downstreamId) OR on() vector(0) ",
+              "interval": "",
+              "legendFormat": "{{downstreamId}} Auth Failure Rate ",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "QM mTLS Auth Failures",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P1809F7CD0C75ACF3"
+          },
+          "description": "mTLS Successes - Connection attempts by clients with authorized SPIFFE IDs",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "continuous-BlPu",
+                "seriesBy": "last"
+              },
+              "decimals": 2,
+              "mappings": [],
+              "noValue": "No Data",
+              "thresholds": {
+                "mode": "percentage",
+                "steps": [
+                  {
+                    "color": "super-light-red",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 50
+                  },
+                  {
+                    "color": "dark-red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "none"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 6,
+            "w": 6,
+            "x": 13,
+            "y": 1
+          },
+          "id": 80,
+          "options": {
+            "colorMode": "none",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "text": {
+              "titleSize": 48,
+              "valueSize": 24
+            },
+            "textMode": "value"
+          },
+          "pluginVersion": "9.2.5",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "P1809F7CD0C75ACF3"
+              },
+              "editorMode": "code",
+              "expr": "sum(rate(appedge_inbound_cx_total{verdict=\"authorized\"}[$__rate_interval])) by (downstreamId) OR on() vector(0) ",
+              "interval": "",
+              "legendFormat": "{{downstreamId}}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "QM mTLS Auth Success",
+          "type": "stat"
+        },
+        {
+          "collapsed": false,
+          "datasource": {
+            "type": "datasource",
+            "uid": "grafana"
+          },
+          "gridPos": {
+            "h": 1,
+            "w": 24,
+            "x": 0,
+            "y": 7
+          },
+          "id": 14,
+          "panels": [],
+          "repeat": "K6RequestName",
+          "targets": [
+            {
+              "datasource": {
+                "type": "datasource",
+                "uid": "grafana"
+              },
+              "refId": "A"
+            }
+          ],
+          "title": "${qmService} Service Health - by Downstreams (${downstreamService})",
+          "type": "row"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P1809F7CD0C75ACF3"
+          },
+          "description": "Application Performance Index\n0.0: Bad\n0.5: Average\n1.0: Good ",
+          "fieldConfig": {
+            "defaults": {
+              "decimals": 1,
+              "mappings": [],
+              "max": 1,
+              "min": 0,
+              "noValue": "0.0",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "blue",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 0.01
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 0.5
+                  },
+                  {
+                    "color": "green",
+                    "value": 0.8
+                  }
+                ]
+              },
+              "unit": "percentUnit"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 10,
+            "w": 5,
+            "x": 0,
+            "y": 8
+          },
+          "id": 45,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "last"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "9.2.5",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "P1809F7CD0C75ACF3"
+              },
+              "expr": "sum(rate(k6_check{outcome=\"fail\"}[$__rate_interval])) / sum(rate(k6_check[$__rate_interval]))",
+              "interval": "",
+              "legendFormat": "",
+              "queryType": "randomWalk",
+              "refId": "A"
+            }
+          ],
+          "title": "APDEX (App Perf Index)",
+          "transformations": [],
+          "type": "stat"
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P1809F7CD0C75ACF3"
+          },
+          "description": "",
+          "fill": 8,
+          "fillGradient": 0,
+          "gridPos": {
+            "h": 6,
+            "w": 6,
+            "x": 5,
+            "y": 8
+          },
+          "hiddenSeries": false,
+          "id": 16,
+          "legend": {
+            "avg": true,
+            "current": false,
+            "max": true,
+            "min": true,
+            "show": true,
+            "total": false,
+            "values": true
+          },
+          "lines": true,
+          "linewidth": 1,
+          "nullPointMode": "null",
+          "options": {
+            "alertThreshold": false
+          },
+          "percentage": false,
+          "pluginVersion": "9.2.5",
+          "pointradius": 2,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "stack": true,
+          "steppedLine": false,
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "P1809F7CD0C75ACF3"
+              },
+              "editorMode": "code",
+              "expr": "sum by (responseCode) (rate(appedge_inbound_rq_total{myId=\"$qmService\"}[$__rate_interval]))",
+              "interval": "",
+              "legendFormat": "HTTP {{responseCode}}",
+              "queryType": "randomWalk",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "thresholds": [],
+          "timeRegions": [],
+          "title": "Throughput",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "mode": "time",
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "$$hashKey": "object:122",
+              "format": "short",
+              "label": "",
+              "logBase": 1,
+              "min": "0",
+              "show": true
+            },
+            {
+              "$$hashKey": "object:123",
+              "format": "short",
+              "label": "",
+              "logBase": 1,
+              "show": true
+            }
+          ],
+          "yaxis": {
+            "align": false
+          }
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P1809F7CD0C75ACF3"
+          },
+          "description": "",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "continuous-GrYlRd"
+              },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 50,
+                "gradientMode": "opacity",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "normal"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 5,
+            "w": 5,
+            "x": 11,
+            "y": 8
+          },
+          "id": 28,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "9.2.5",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "P1809F7CD0C75ACF3"
+              },
+              "editorMode": "code",
+              "expr": "sum by (responseCode) (rate(appedge_outbound_cx_connect_fail{upstream=\"dynamic_forward_proxy_cluster\"}[$__rate_interval])) OR on() vector(0)",
+              "interval": "",
+              "legendFormat": "Connection Errors {{responseCode}}",
+              "queryType": "randomWalk",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Connection Failures",
+          "type": "timeseries"
+        },
+        {
+          "cards": {},
+          "color": {
+            "cardColor": "#F2495C",
+            "colorScale": "linear",
+            "colorScheme": "interpolateRdYlGn",
+            "exponent": 0.5,
+            "mode": "spectrum"
+          },
+          "dataFormat": "tsbuckets",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P1809F7CD0C75ACF3"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "custom": {
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "scaleDistribution": {
+                  "type": "linear"
+                }
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 6,
+            "w": 8,
+            "x": 16,
+            "y": 8
+          },
+          "heatmap": {},
+          "hideZeroBuckets": false,
+          "highlightCards": true,
+          "id": 20,
+          "legend": {
+            "show": false
+          },
+          "options": {
+            "calculate": false,
+            "calculation": {},
+            "cellGap": 2,
+            "cellValues": {},
+            "color": {
+              "exponent": 0.5,
+              "fill": "#F2495C",
+              "mode": "scheme",
+              "reverse": false,
+              "scale": "exponential",
+              "scheme": "RdYlGn",
+              "steps": 128
+            },
+            "exemplars": {
+              "color": "rgba(255,0,255,0.7)"
+            },
+            "filterValues": {
+              "le": 1e-9
+            },
+            "legend": {
+              "show": false
+            },
+            "rowsFrame": {
+              "layout": "auto"
+            },
+            "showValue": "never",
+            "tooltip": {
+              "show": true,
+              "yHistogram": false
+            },
+            "yAxis": {
+              "axisPlacement": "left",
+              "max": "10",
+              "min": "0",
+              "reverse": false,
+              "unit": "short"
+            }
+          },
+          "pluginVersion": "9.2.5",
+          "reverseYBuckets": false,
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "P1809F7CD0C75ACF3"
+              },
+              "editorMode": "code",
+              "expr": "sum(rate(appedge_outbound_rq_latency_bucket{upstream=\"${qmService_labelupstream:raw}\"}[$__rate_interval])) by (le)",
+              "format": "heatmap",
+              "instant": false,
+              "interval": "",
+              "intervalFactor": 2,
+              "legendFormat": "{{le}}",
+              "queryType": "randomWalk",
+              "refId": "A"
+            }
+          ],
+          "title": "Latency (${GoHttpMetricName}) - ms",
+          "tooltip": {
+            "show": true,
+            "showHistogram": false
+          },
+          "type": "heatmap",
+          "xAxis": {
+            "show": true
+          },
+          "yAxis": {
+            "format": "short",
+            "logBase": 10,
+            "max": "10",
+            "min": "0",
+            "show": true
+          },
+          "yBucketBound": "auto"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P1809F7CD0C75ACF3"
+          },
+          "description": "",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "continuous-GrYlRd"
+              },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 50,
+                "gradientMode": "opacity",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "normal"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "short",
+              "noValue": "0"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 5,
+            "w": 5,
+            "x": 11,
+            "y": 13
+          },
+          "id": 44,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "9.2.5",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "P1809F7CD0C75ACF3"
+              },
+              "editorMode": "code",
+              "expr": "sum by (responsecode) (rate(appedge_outbound_rq_total{upstream=\"${qmService_labelupstream:raw}\", responseCode!=\"200\"}[$__rate_interval]))",
+              "interval": "",
+              "legendFormat": "HTTP {{responseCode}}",
+              "queryType": "randomWalk",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Request Errors",
+          "type": "timeseries"
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P1809F7CD0C75ACF3"
+          },
+          "description": "",
+          "fill": 8,
+          "fillGradient": 0,
+          "gridPos": {
+            "h": 4,
+            "w": 6,
+            "x": 5,
+            "y": 14
+          },
+          "hiddenSeries": false,
+          "id": 29,
+          "legend": {
+            "avg": true,
+            "current": false,
+            "max": true,
+            "min": true,
+            "show": true,
+            "total": false,
+            "values": true
+          },
+          "lines": true,
+          "linewidth": 1,
+          "nullPointMode": "null",
+          "options": {
+            "alertThreshold": false
+          },
+          "percentage": false,
+          "pluginVersion": "9.2.5",
+          "pointradius": 2,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "stack": true,
+          "steppedLine": false,
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "P1809F7CD0C75ACF3"
+              },
+              "editorMode": "code",
+              "expr": "sum by (responseCode, upstream) (rate(appedge_outbound_cx_http3_total[$__rate_interval]))",
+              "interval": "",
+              "legendFormat": "HTTP3 {{namespace}}",
+              "queryType": "randomWalk",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "thresholds": [],
+          "timeRegions": [],
+          "title": "HTTP/3 Connections",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "mode": "time",
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "$$hashKey": "object:122",
+              "format": "short",
+              "label": "",
+              "logBase": 1,
+              "min": "0",
+              "show": true
+            },
+            {
+              "$$hashKey": "object:123",
+              "format": "short",
+              "label": "",
+              "logBase": 1,
+              "show": true
+            }
+          ],
+          "yaxis": {
+            "align": false
+          }
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P1809F7CD0C75ACF3"
+          },
+          "description": "",
+          "fieldConfig": {
+            "defaults": {
+              "mappings": [],
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "#EAB839",
+                    "value": 100
+                  },
+                  {
+                    "color": "red",
+                    "value": 1000
+                  }
+                ]
+              },
+              "unit": "s"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 4,
+            "x": 16,
+            "y": 14
+          },
+          "id": 27,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "last"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "9.2.5",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "P1809F7CD0C75ACF3"
+              },
+              "editorMode": "code",
+              "expr": "histogram_quantile(0.5, sum(rate(appedge_outbound_rq_latency_bucket{upstream=\"${qmService_labelupstream:raw}\"}[$__rate_interval])) by (le))",
+              "interval": "",
+              "legendFormat": "",
+              "queryType": "randomWalk",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "P50 latency (${GoHttpMetricName})",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P1809F7CD0C75ACF3"
+          },
+          "description": "",
+          "fieldConfig": {
+            "defaults": {
+              "mappings": [],
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "#EAB839",
+                    "value": 100
+                  },
+                  {
+                    "color": "red",
+                    "value": 1000
+                  }
+                ]
+              },
+              "unit": "s"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 4,
+            "x": 20,
+            "y": 14
+          },
+          "id": 46,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "last"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "9.2.5",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "P1809F7CD0C75ACF3"
+              },
+              "editorMode": "code",
+              "expr": "histogram_quantile(0.9, sum(rate(appedge_outbound_rq_latency_bucket{upstream=\"${qmService_labelupstream:raw}\"}[$__rate_interval])) by (le))",
+              "interval": "",
+              "legendFormat": "",
+              "queryType": "randomWalk",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "P90 latency (${GoHttpMetricName})",
+          "type": "stat"
+        },
+        {
+          "collapsed": true,
+          "gridPos": {
+            "h": 1,
+            "w": 24,
+            "x": 0,
+            "y": 18
+          },
+          "id": 33,
+          "panels": [
+            {
+              "aliasColors": {},
+              "bars": false,
+              "dashLength": 10,
+              "dashes": false,
+              "datasource": {
+                "type": "prometheus",
+                "uid": "P1809F7CD0C75ACF3"
+              },
+              "description": "",
+              "fill": 8,
+              "fillGradient": 0,
+              "gridPos": {
+                "h": 6,
+                "w": 6,
+                "x": 0,
+                "y": 3
+              },
+              "hiddenSeries": false,
+              "id": 39,
+              "legend": {
+                "avg": true,
+                "current": false,
+                "max": true,
+                "min": true,
+                "show": true,
+                "total": false,
+                "values": true
+              },
+              "lines": true,
+              "linewidth": 1,
+              "nullPointMode": "null",
+              "options": {
+                "alertThreshold": false
+              },
+              "percentage": false,
+              "pluginVersion": "9.2.5",
+              "pointradius": 2,
+              "points": false,
+              "renderer": "flot",
+              "seriesOverrides": [],
+              "spaceLength": 10,
+              "stack": true,
+              "steppedLine": false,
+              "targets": [
+                {
+                  "datasource": {
+                    "type": "prometheus",
+                    "uid": "P1809F7CD0C75ACF3"
+                  },
+                  "editorMode": "code",
+                  "expr": "sum by (responseCode, downstreamId, path) (rate(appedge_outbound_rq_total{myId=\"${downstreamService}\"}[$__rate_interval]))",
+                  "interval": "",
+                  "legendFormat": "{{downstreamId}} HTTP {{path}} {{responseCode}}",
+                  "queryType": "randomWalk",
+                  "range": true,
+                  "refId": "A"
+                }
+              ],
+              "thresholds": [],
+              "timeRegions": [],
+              "title": "Throughput",
+              "tooltip": {
+                "shared": true,
+                "sort": 0,
+                "value_type": "individual"
+              },
+              "type": "graph",
+              "xaxis": {
+                "mode": "time",
+                "show": true,
+                "values": []
+              },
+              "yaxes": [
+                {
+                  "$$hashKey": "object:122",
+                  "format": "short",
+                  "label": "",
+                  "logBase": 1,
+                  "min": "0",
+                  "show": true
+                },
+                {
+                  "$$hashKey": "object:123",
+                  "format": "short",
+                  "label": "",
+                  "logBase": 1,
+                  "show": true
+                }
+              ],
+              "yaxis": {
+                "align": false
+              }
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "P1809F7CD0C75ACF3"
+              },
+              "description": "",
+              "fieldConfig": {
+                "defaults": {
+                  "mappings": [],
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green"
+                      },
+                      {
+                        "color": "red",
+                        "value": 1
+                      }
+                    ]
+                  },
+                  "unit": "none"
+                },
+                "overrides": []
+              },
+              "gridPos": {
+                "h": 6,
+                "w": 3,
+                "x": 6,
+                "y": 3
+              },
+              "id": 40,
+              "options": {
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {
+                  "calcs": [
+                    "last"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "textMode": "auto"
+              },
+              "pluginVersion": "9.2.5",
+              "targets": [
+                {
+                  "datasource": {
+                    "type": "prometheus",
+                    "uid": "P1809F7CD0C75ACF3"
+                  },
+                  "expr": "sum(rate(k6_script_errors[$__rate_interval]))",
+                  "interval": "",
+                  "legendFormat": "Script errors",
+                  "queryType": "randomWalk",
+                  "refId": "A"
+                }
+              ],
+              "title": "Errors",
+              "type": "stat"
+            },
+            {
+              "cards": {},
+              "color": {
+                "cardColor": "#F2495C",
+                "colorScale": "linear",
+                "colorScheme": "interpolateRdYlGn",
+                "exponent": 0.5,
+                "mode": "spectrum"
+              },
+              "dataFormat": "tsbuckets",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "P1809F7CD0C75ACF3"
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "custom": {
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "scaleDistribution": {
+                      "type": "linear"
+                    }
+                  }
+                },
+                "overrides": []
+              },
+              "gridPos": {
+                "h": 6,
+                "w": 8,
+                "x": 9,
+                "y": 3
+              },
+              "heatmap": {},
+              "hideZeroBuckets": false,
+              "highlightCards": true,
+              "id": 41,
+              "legend": {
+                "show": false
+              },
+              "options": {
+                "calculate": false,
+                "calculation": {},
+                "cellGap": 2,
+                "cellValues": {},
+                "color": {
+                  "exponent": 0.5,
+                  "fill": "#F2495C",
+                  "mode": "scheme",
+                  "reverse": false,
+                  "scale": "exponential",
+                  "scheme": "RdYlGn",
+                  "steps": 128
+                },
+                "exemplars": {
+                  "color": "rgba(255,0,255,0.7)"
+                },
+                "filterValues": {
+                  "le": 1e-9
+                },
+                "legend": {
+                  "show": false
+                },
+                "rowsFrame": {
+                  "layout": "auto"
+                },
+                "showValue": "never",
+                "tooltip": {
+                  "show": true,
+                  "yHistogram": false
+                },
+                "yAxis": {
+                  "axisPlacement": "left",
+                  "max": "10",
+                  "min": "0",
+                  "reverse": false,
+                  "unit": "short"
+                }
+              },
+              "pluginVersion": "9.2.5",
+              "reverseYBuckets": false,
+              "targets": [
+                {
+                  "datasource": {
+                    "type": "prometheus",
+                    "uid": "P1809F7CD0C75ACF3"
+                  },
+                  "editorMode": "code",
+                  "expr": "sum(rate(appedge_outbound_rq_latency_bucket{upstream=\"${qmService_labelupstream:raw}\"}[$__rate_interval])) by (le)",
+                  "format": "heatmap",
+                  "instant": false,
+                  "interval": "",
+                  "intervalFactor": 2,
+                  "legendFormat": "{{le}}",
+                  "queryType": "randomWalk",
+                  "refId": "A"
+                }
+              ],
+              "title": "Latency (${GoHttpMetricName})",
+              "tooltip": {
+                "show": true,
+                "showHistogram": false
+              },
+              "type": "heatmap",
+              "xAxis": {
+                "show": true
+              },
+              "yAxis": {
+                "format": "short",
+                "logBase": 10,
+                "max": "10",
+                "min": "0",
+                "show": true
+              },
+              "yBucketBound": "auto"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "P1809F7CD0C75ACF3"
+              },
+              "description": "",
+              "fieldConfig": {
+                "defaults": {
+                  "mappings": [],
+                  "min": 0,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green"
+                      },
+                      {
+                        "color": "#EAB839",
+                        "value": 100
+                      },
+                      {
+                        "color": "red",
+                        "value": 1000
+                      }
+                    ]
+                  },
+                  "unit": "s"
+                },
+                "overrides": []
+              },
+              "gridPos": {
+                "h": 6,
+                "w": 3,
+                "x": 17,
+                "y": 3
+              },
+              "id": 42,
+              "options": {
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {
+                  "calcs": [
+                    "last"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "textMode": "auto"
+              },
+              "pluginVersion": "9.2.5",
+              "targets": [
+                {
+                  "datasource": {
+                    "type": "prometheus",
+                    "uid": "P1809F7CD0C75ACF3"
+                  },
+                  "editorMode": "code",
+                  "expr": "histogram_quantile(0.5, sum(rate(appedge_outbound_rq_latency_bucket{upstream=\"${qmService_labelupstream:raw}\"}[$__rate_interval])) by (le))",
+                  "interval": "",
+                  "legendFormat": "",
+                  "queryType": "randomWalk",
+                  "range": true,
+                  "refId": "A"
+                }
+              ],
+              "title": "P50 latency (${GoHttpMetricName})",
+              "type": "stat"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "P1809F7CD0C75ACF3"
+              },
+              "description": "",
+              "fieldConfig": {
+                "defaults": {
+                  "decimals": 0,
+                  "mappings": [],
+                  "max": 1,
+                  "min": 0,
+                  "noValue": "0",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "blue"
+                      },
+                      {
+                        "color": "red",
+                        "value": 0.01
+                      },
+                      {
+                        "color": "yellow",
+                        "value": 0.5
+                      },
+                      {
+                        "color": "green",
+                        "value": 0.8
+                      }
+                    ]
+                  },
+                  "unit": "percentUnit"
+                },
+                "overrides": []
+              },
+              "gridPos": {
+                "h": 6,
+                "w": 4,
+                "x": 20,
+                "y": 3
+              },
+              "id": 43,
+              "options": {
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {
+                  "calcs": [
+                    "last"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "textMode": "auto"
+              },
+              "pluginVersion": "9.2.5",
+              "targets": [
+                {
+                  "datasource": {
+                    "type": "prometheus",
+                    "uid": "P1809F7CD0C75ACF3"
+                  },
+                  "expr": "sum(rate(k6_check{outcome=\"fail\"}[$__rate_interval])) / sum(rate(k6_check[$__rate_interval]))",
+                  "interval": "",
+                  "legendFormat": "",
+                  "queryType": "randomWalk",
+                  "refId": "A"
+                }
+              ],
+              "title": "APDEX (ToDo)",
+              "transformations": [],
+              "type": "stat"
+            }
+          ],
+          "repeat": "version",
+          "repeatDirection": "h",
+          "title": "Downstreams by IdentitySets: ${IdSets}",
+          "type": "row"
+        },
+        {
+          "collapsed": true,
+          "gridPos": {
+            "h": 1,
+            "w": 24,
+            "x": 0,
+            "y": 19
+          },
+          "id": 48,
+          "panels": [
+            {
+              "aliasColors": {},
+              "bars": false,
+              "dashLength": 10,
+              "dashes": false,
+              "datasource": {
+                "type": "prometheus",
+                "uid": "P1809F7CD0C75ACF3"
+              },
+              "description": "",
+              "fill": 8,
+              "fillGradient": 0,
+              "gridPos": {
+                "h": 6,
+                "w": 6,
+                "x": 0,
+                "y": 70
+              },
+              "hiddenSeries": false,
+              "id": 49,
+              "legend": {
+                "avg": true,
+                "current": false,
+                "max": true,
+                "min": true,
+                "show": true,
+                "total": false,
+                "values": true
+              },
+              "lines": true,
+              "linewidth": 1,
+              "nullPointMode": "null",
+              "options": {
+                "alertThreshold": false
+              },
+              "percentage": false,
+              "pluginVersion": "9.2.5",
+              "pointradius": 2,
+              "points": false,
+              "renderer": "flot",
+              "seriesOverrides": [],
+              "spaceLength": 10,
+              "stack": true,
+              "steppedLine": false,
+              "targets": [
+                {
+                  "datasource": {
+                    "type": "prometheus",
+                    "uid": "P1809F7CD0C75ACF3"
+                  },
+                  "editorMode": "code",
+                  "expr": "sum by (responseCode, downstreamId, path) (rate(appedge_outbound_rq{myId=\"${qmService}\"}[$__rate_interval]))",
+                  "interval": "",
+                  "legendFormat": "HTTP {{responseCode}}",
+                  "queryType": "randomWalk",
+                  "range": true,
+                  "refId": "A"
+                }
+              ],
+              "thresholds": [],
+              "timeRegions": [],
+              "title": "Throughput",
+              "tooltip": {
+                "shared": true,
+                "sort": 0,
+                "value_type": "individual"
+              },
+              "type": "graph",
+              "xaxis": {
+                "mode": "time",
+                "show": true,
+                "values": []
+              },
+              "yaxes": [
+                {
+                  "$$hashKey": "object:122",
+                  "format": "short",
+                  "label": "",
+                  "logBase": 1,
+                  "min": "0",
+                  "show": true
+                },
+                {
+                  "$$hashKey": "object:123",
+                  "format": "short",
+                  "label": "",
+                  "logBase": 1,
+                  "show": true
+                }
+              ],
+              "yaxis": {
+                "align": false
+              }
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "P1809F7CD0C75ACF3"
+              },
+              "description": "",
+              "fieldConfig": {
+                "defaults": {
+                  "mappings": [],
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green"
+                      },
+                      {
+                        "color": "red",
+                        "value": 1
+                      }
+                    ]
+                  },
+                  "unit": "none"
+                },
+                "overrides": []
+              },
+              "gridPos": {
+                "h": 6,
+                "w": 3,
+                "x": 6,
+                "y": 70
+              },
+              "id": 50,
+              "options": {
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {
+                  "calcs": [
+                    "last"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "textMode": "auto"
+              },
+              "pluginVersion": "9.2.5",
+              "targets": [
+                {
+                  "datasource": {
+                    "type": "prometheus",
+                    "uid": "P1809F7CD0C75ACF3"
+                  },
+                  "expr": "sum(rate(k6_script_errors[$__rate_interval]))",
+                  "interval": "",
+                  "legendFormat": "Script errors",
+                  "queryType": "randomWalk",
+                  "refId": "A"
+                }
+              ],
+              "title": "Errors",
+              "type": "stat"
+            },
+            {
+              "cards": {},
+              "color": {
+                "cardColor": "#F2495C",
+                "colorScale": "linear",
+                "colorScheme": "interpolateRdYlGn",
+                "exponent": 0.5,
+                "mode": "spectrum"
+              },
+              "dataFormat": "tsbuckets",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "P1809F7CD0C75ACF3"
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "custom": {
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "scaleDistribution": {
+                      "type": "linear"
+                    }
+                  }
+                },
+                "overrides": []
+              },
+              "gridPos": {
+                "h": 6,
+                "w": 8,
+                "x": 9,
+                "y": 70
+              },
+              "heatmap": {},
+              "hideZeroBuckets": false,
+              "highlightCards": true,
+              "id": 51,
+              "legend": {
+                "show": false
+              },
+              "options": {
+                "calculate": false,
+                "calculation": {},
+                "cellGap": 2,
+                "cellValues": {},
+                "color": {
+                  "exponent": 0.5,
+                  "fill": "#F2495C",
+                  "mode": "scheme",
+                  "reverse": false,
+                  "scale": "exponential",
+                  "scheme": "RdYlGn",
+                  "steps": 128
+                },
+                "exemplars": {
+                  "color": "rgba(255,0,255,0.7)"
+                },
+                "filterValues": {
+                  "le": 1e-9
+                },
+                "legend": {
+                  "show": false
+                },
+                "rowsFrame": {
+                  "layout": "auto"
+                },
+                "showValue": "never",
+                "tooltip": {
+                  "show": true,
+                  "yHistogram": false
+                },
+                "yAxis": {
+                  "axisPlacement": "left",
+                  "max": "10",
+                  "min": "0",
+                  "reverse": false,
+                  "unit": "short"
+                }
+              },
+              "pluginVersion": "9.2.5",
+              "reverseYBuckets": false,
+              "targets": [
+                {
+                  "datasource": {
+                    "type": "prometheus",
+                    "uid": "P1809F7CD0C75ACF3"
+                  },
+                  "editorMode": "code",
+                  "expr": "sum(rate(appedge_outbound_rq_latency_bucket{upstream=\"${qmService_labelupstream:raw}\"}[$__rate_interval])) by (le)",
+                  "format": "heatmap",
+                  "instant": false,
+                  "interval": "",
+                  "intervalFactor": 2,
+                  "legendFormat": "{{le}}",
+                  "queryType": "randomWalk",
+                  "refId": "A"
+                }
+              ],
+              "title": "Latency (${GoHttpMetricName})",
+              "tooltip": {
+                "show": true,
+                "showHistogram": false
+              },
+              "type": "heatmap",
+              "xAxis": {
+                "show": true
+              },
+              "yAxis": {
+                "format": "short",
+                "logBase": 10,
+                "max": "10",
+                "min": "0",
+                "show": true
+              },
+              "yBucketBound": "auto"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "P1809F7CD0C75ACF3"
+              },
+              "description": "",
+              "fieldConfig": {
+                "defaults": {
+                  "mappings": [],
+                  "min": 0,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green"
+                      },
+                      {
+                        "color": "#EAB839",
+                        "value": 100
+                      },
+                      {
+                        "color": "red",
+                        "value": 1000
+                      }
+                    ]
+                  },
+                  "unit": "s"
+                },
+                "overrides": []
+              },
+              "gridPos": {
+                "h": 6,
+                "w": 3,
+                "x": 17,
+                "y": 70
+              },
+              "id": 52,
+              "options": {
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {
+                  "calcs": [
+                    "last"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "textMode": "auto"
+              },
+              "pluginVersion": "9.2.5",
+              "targets": [
+                {
+                  "datasource": {
+                    "type": "prometheus",
+                    "uid": "P1809F7CD0C75ACF3"
+                  },
+                  "editorMode": "code",
+                  "expr": "histogram_quantile(0.5, sum(rate(appedge_outbound_rq_latency_bucket{upstream=\"${qmService_labelupstream:raw}\"}[$__rate_interval])) by (le))",
+                  "interval": "",
+                  "legendFormat": "",
+                  "queryType": "randomWalk",
+                  "range": true,
+                  "refId": "A"
+                }
+              ],
+              "title": "P50 latency (${GoHttpMetricName})",
+              "type": "stat"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "P1809F7CD0C75ACF3"
+              },
+              "description": "",
+              "fieldConfig": {
+                "defaults": {
+                  "decimals": 0,
+                  "mappings": [],
+                  "max": 1,
+                  "min": 0,
+                  "noValue": "0",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "blue"
+                      },
+                      {
+                        "color": "red",
+                        "value": 0.01
+                      },
+                      {
+                        "color": "yellow",
+                        "value": 0.5
+                      },
+                      {
+                        "color": "green",
+                        "value": 0.8
+                      }
+                    ]
+                  },
+                  "unit": "percentUnit"
+                },
+                "overrides": []
+              },
+              "gridPos": {
+                "h": 6,
+                "w": 4,
+                "x": 20,
+                "y": 70
+              },
+              "id": 53,
+              "options": {
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {
+                  "calcs": [
+                    "last"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "textMode": "auto"
+              },
+              "pluginVersion": "9.2.5",
+              "targets": [
+                {
+                  "datasource": {
+                    "type": "prometheus",
+                    "uid": "P1809F7CD0C75ACF3"
+                  },
+                  "expr": "sum(rate(k6_check{outcome=\"fail\"}[$__rate_interval])) / sum(rate(k6_check[$__rate_interval]))",
+                  "interval": "",
+                  "legendFormat": "",
+                  "queryType": "randomWalk",
+                  "refId": "A"
+                }
+              ],
+              "title": "APDEX (ToDo)",
+              "transformations": [],
+              "type": "stat"
+            }
+          ],
+          "repeat": "version",
+          "repeatDirection": "h",
+          "title": "Downstreams by version: ${version}",
+          "type": "row"
+        },
+        {
+          "collapsed": true,
+          "gridPos": {
+            "h": 1,
+            "w": 24,
+            "x": 0,
+            "y": 20
+          },
+          "id": 67,
+          "panels": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "P1809F7CD0C75ACF3"
+              },
+              "description": "HTTP Requests by Service Version",
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "axisCenteredZero": false,
+                    "axisColorMode": "text",
+                    "axisLabel": "",
+                    "axisPlacement": "auto",
+                    "fillOpacity": 50,
+                    "gradientMode": "opacity",
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "lineWidth": 2,
+                    "scaleDistribution": {
+                      "type": "linear"
+                    }
+                  },
+                  "mappings": [],
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green"
+                      },
+                      {
+                        "color": "red",
+                        "value": 80
+                      }
+                    ]
+                  },
+                  "unit": "reqps"
+                },
+                "overrides": []
+              },
+              "gridPos": {
+                "h": 7,
+                "w": 12,
+                "x": 0,
+                "y": 23
+              },
+              "id": 7,
+              "options": {
+                "barRadius": 0.4,
+                "barWidth": 0.5,
+                "groupWidth": 0.7,
+                "legend": {
+                  "calcs": [],
+                  "displayMode": "list",
+                  "placement": "bottom",
+                  "showLegend": true
+                },
+                "orientation": "vertical",
+                "showValue": "always",
+                "stacking": "percent",
+                "tooltip": {
+                  "mode": "single",
+                  "sort": "none"
+                },
+                "xField": "Time",
+                "xTickLabelRotation": 0,
+                "xTickLabelSpacing": 100
+              },
+              "targets": [
+                {
+                  "datasource": {
+                    "type": "prometheus",
+                    "uid": "P1809F7CD0C75ACF3"
+                  },
+                  "editorMode": "code",
+                  "exemplar": false,
+                  "expr": "sum by (version) (rate(appedge_inbound_rq_total{myId=\"${qmService}\",downstreamId=\"${downstreamService:raw}\"}[$__rate_interval])  )",
+                  "format": "time_series",
+                  "instant": false,
+                  "legendFormat": "{{version}}",
+                  "range": true,
+                  "refId": "A"
+                },
+                {
+                  "datasource": {
+                    "type": "prometheus",
+                    "uid": "P1809F7CD0C75ACF3"
+                  },
+                  "editorMode": "code",
+                  "expr": "sum by (version) (rate(http_request_network_latency_count{container=\"bookbuyer-v3\"}[$__rate_interval]) )",
+                  "hide": false,
+                  "legendFormat": "{{version}}",
+                  "range": true,
+                  "refId": "B"
+                }
+              ],
+              "title": "${downstreamService:raw} -> ${qmService} Requests by Service Version",
+              "type": "barchart"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "P1809F7CD0C75ACF3"
+              },
+              "description": "Bookbuyer- Bookstore: Rate of Successful Requests and Errors (by version)",
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "axisCenteredZero": false,
+                    "axisColorMode": "text",
+                    "axisLabel": "",
+                    "axisPlacement": "auto",
+                    "barAlignment": 0,
+                    "drawStyle": "line",
+                    "fillOpacity": 25,
+                    "gradientMode": "none",
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "lineInterpolation": "linear",
+                    "lineWidth": 3,
+                    "pointSize": 12,
+                    "scaleDistribution": {
+                      "type": "linear"
+                    },
+                    "showPoints": "auto",
+                    "spanNulls": false,
+                    "stacking": {
+                      "group": "A",
+                      "mode": "none"
+                    },
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  },
+                  "mappings": [],
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green"
+                      },
+                      {
+                        "color": "red",
+                        "value": 80
+                      }
+                    ]
+                  }
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byFrameRefID",
+                      "options": "B"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.drawStyle",
+                        "value": "bars"
+                      },
+                      {
+                        "id": "custom.lineWidth",
+                        "value": 2
+                      },
+                      {
+                        "id": "custom.fillOpacity",
+                        "value": 25
+                      },
+                      {
+                        "id": "custom.gradientMode",
+                        "value": "opacity"
+                      },
+                      {
+                        "id": "custom.stacking",
+                        "value": {
+                          "group": "A",
+                          "mode": "percent"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byFrameRefID",
+                      "options": "C"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.drawStyle",
+                        "value": "bars"
+                      },
+                      {
+                        "id": "custom.lineWidth",
+                        "value": 2
+                      },
+                      {
+                        "id": "custom.fillOpacity",
+                        "value": 25
+                      },
+                      {
+                        "id": "custom.stacking",
+                        "value": {
+                          "group": "A",
+                          "mode": "percent"
+                        }
+                      },
+                      {
+                        "id": "custom.gradientMode",
+                        "value": "opacity"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "gridPos": {
+                "h": 7,
+                "w": 12,
+                "x": 12,
+                "y": 23
+              },
+              "id": 11,
+              "options": {
+                "legend": {
+                  "calcs": [],
+                  "displayMode": "list",
+                  "placement": "bottom",
+                  "showLegend": true
+                },
+                "tooltip": {
+                  "mode": "single",
+                  "sort": "none"
+                }
+              },
+              "targets": [
+                {
+                  "datasource": {
+                    "type": "prometheus",
+                    "uid": "P1809F7CD0C75ACF3"
+                  },
+                  "editorMode": "code",
+                  "expr": "sum by (version) (rate(appedge_outbound_rq_total{job=\"bookbuyer-prom\", upstream=\"dynamic_forward_proxy_cluster\"}[$__rate_interval]) )",
+                  "hide": false,
+                  "legendFormat": "__auto",
+                  "range": true,
+                  "refId": "B"
+                },
+                {
+                  "datasource": {
+                    "type": "prometheus",
+                    "uid": "P1809F7CD0C75ACF3"
+                  },
+                  "editorMode": "code",
+                  "expr": "sum by (version) (rate(http_request_network_latency_count{job=\"bookbuyer-native-prom\"}[$__rate_interval]) )",
+                  "format": "time_series",
+                  "hide": false,
+                  "instant": false,
+                  "interval": "",
+                  "legendFormat": "{{label_name}}",
+                  "range": true,
+                  "refId": "C"
+                },
+                {
+                  "datasource": {
+                    "type": "prometheus",
+                    "uid": "P1809F7CD0C75ACF3"
+                  },
+                  "editorMode": "code",
+                  "expr": "sum by (version) (rate(http_request_status_counter{job=\"bookbuyer-native-prom\", responseCode!=\"200\"}[$__rate_interval]) )",
+                  "format": "time_series",
+                  "hide": false,
+                  "interval": "",
+                  "legendFormat": "Error Rate: {{version}}",
+                  "range": true,
+                  "refId": "D"
+                },
+                {
+                  "datasource": {
+                    "type": "prometheus",
+                    "uid": "P1809F7CD0C75ACF3"
+                  },
+                  "editorMode": "code",
+                  "expr": "sum by (version) (rate(appedge_outbound_rq_xx{job=\"bookbuyer-prom\", upstream=\"${qmService}\", responseCodeClass=\"5\"}[$__rate_interval]))",
+                  "hide": false,
+                  "interval": "",
+                  "legendFormat": "Error Rate: {{version}}",
+                  "range": true,
+                  "refId": "A"
+                }
+              ],
+              "title": "Bookbuyer- Bookstore: Rate of Successful Requests and Errors (by version)",
+              "type": "timeseries"
+            }
+          ],
+          "repeat": "downstreamService",
+          "repeatDirection": "h",
+          "title": "Canary distribution to ${qmService} versions from Downstreams (${downstreamService})",
+          "type": "row"
+        },
+        {
+          "collapsed": false,
+          "gridPos": {
+            "h": 1,
+            "w": 24,
+            "x": 0,
+            "y": 21
+          },
+          "id": 94,
+          "panels": [],
+          "repeat": "version",
+          "repeatDirection": "h",
+          "title": "Security Stats (by Identities)",
+          "type": "row"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P1809F7CD0C75ACF3"
+          },
+          "description": "mTLS Failures - Connection attempts by clients with unauthorized SPIFFE IDs",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "continuous-reds",
+                "seriesBy": "last"
+              },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "lineInterpolation": "linear",
+                "lineWidth": 2,
+                "pointSize": 8,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "percentage",
+                "steps": [
+                  {
+                    "color": "super-light-red",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 50
+                  },
+                  {
+                    "color": "dark-red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "B"
+                },
+                "properties": [
+                  {
+                    "id": "custom.drawStyle",
+                    "value": "bars"
+                  },
+                  {
+                    "id": "custom.lineWidth",
+                    "value": 2
+                  },
+                  {
+                    "id": "custom.fillOpacity",
+                    "value": 25
+                  },
+                  {
+                    "id": "custom.gradientMode",
+                    "value": "opacity"
+                  },
+                  {
+                    "id": "custom.stacking",
+                    "value": {
+                      "group": "A",
+                      "mode": "percent"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "C"
+                },
+                "properties": [
+                  {
+                    "id": "custom.drawStyle",
+                    "value": "bars"
+                  },
+                  {
+                    "id": "custom.lineWidth",
+                    "value": 2
+                  },
+                  {
+                    "id": "custom.fillOpacity",
+                    "value": 25
+                  },
+                  {
+                    "id": "custom.stacking",
+                    "value": {
+                      "group": "A",
+                      "mode": "percent"
+                    }
+                  },
+                  {
+                    "id": "custom.gradientMode",
+                    "value": "opacity"
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 10,
+            "x": 0,
+            "y": 22
+          },
+          "id": 10,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "9.2.5",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "P1809F7CD0C75ACF3"
+              },
+              "editorMode": "code",
+              "expr": "sum(rate(appedge_inbound_cx_total{verdict=\"unauthorized\"}[$__rate_interval])) by (downstreamId) OR on() vector(0)",
+              "interval": "",
+              "legendFormat": "{{downstreamId}}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "QM mTLS Auth Errors",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P1809F7CD0C75ACF3"
+          },
+          "description": "mTLS Failures - Connection attempts by clients with authorized SPIFFE IDs",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "continuous-greens",
+                "seriesBy": "last"
+              },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "lineInterpolation": "linear",
+                "lineWidth": 2,
+                "pointSize": 8,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "percentage",
+                "steps": [
+                  {
+                    "color": "super-light-red",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 50
+                  },
+                  {
+                    "color": "dark-red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "B"
+                },
+                "properties": [
+                  {
+                    "id": "custom.drawStyle",
+                    "value": "bars"
+                  },
+                  {
+                    "id": "custom.lineWidth",
+                    "value": 2
+                  },
+                  {
+                    "id": "custom.fillOpacity",
+                    "value": 25
+                  },
+                  {
+                    "id": "custom.gradientMode",
+                    "value": "opacity"
+                  },
+                  {
+                    "id": "custom.stacking",
+                    "value": {
+                      "group": "A",
+                      "mode": "percent"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "C"
+                },
+                "properties": [
+                  {
+                    "id": "custom.drawStyle",
+                    "value": "bars"
+                  },
+                  {
+                    "id": "custom.lineWidth",
+                    "value": 2
+                  },
+                  {
+                    "id": "custom.fillOpacity",
+                    "value": 25
+                  },
+                  {
+                    "id": "custom.stacking",
+                    "value": {
+                      "group": "A",
+                      "mode": "percent"
+                    }
+                  },
+                  {
+                    "id": "custom.gradientMode",
+                    "value": "opacity"
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 10,
+            "x": 10,
+            "y": 22
+          },
+          "id": 12,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "9.2.5",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "P1809F7CD0C75ACF3"
+              },
+              "editorMode": "code",
+              "expr": "sum(rate(appedge_inbound_cx_total{verdict=\"authorized\"}[$__rate_interval])) by (downstreamId) OR on() vector(0)",
+              "interval": "",
+              "legendFormat": "{{downstreamId}}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "QM mTLS Auth Success",
+          "type": "timeseries"
+        },
+        {
+          "collapsed": true,
+          "datasource": {
+            "type": "datasource",
+            "uid": "grafana"
+          },
+          "gridPos": {
+            "h": 1,
+            "w": 24,
+            "x": 0,
+            "y": 29
+          },
+          "id": 15,
+          "panels": [
+            {
+              "datasource": {
+                "type": "loki",
+                "uid": "P982945308D3682D1"
+              },
+              "description": "${downstreamService} (Downstream) - ${qmService} (QM-Service) AppEdge Logs",
+              "gridPos": {
+                "h": 15,
+                "w": 24,
+                "x": 0,
+                "y": 78
+              },
+              "id": 31,
+              "options": {
+                "dedupStrategy": "none",
+                "enableLogDetails": false,
+                "prettifyLogMessage": true,
+                "showCommonLabels": true,
+                "showLabels": false,
+                "showTime": false,
+                "sortOrder": "Descending",
+                "wrapLogMessage": false
+              },
+              "targets": [
+                {
+                  "datasource": {
+                    "type": "loki",
+                    "uid": "P982945308D3682D1"
+                  },
+                  "editorMode": "builder",
+                  "expr": "{myId=\"$qmService\"} |= `UNAUTHORIZED`",
+                  "queryType": "range",
+                  "refId": "A"
+                },
+                {
+                  "datasource": {
+                    "uid": "P982945308D3682D1",
+                    "type": "loki"
+                  },
+                  "refId": "B",
+                  "hide": false,
+                  "editorMode": "code",
+                  "expr": "{container_name=\"reverse-proxy\"} | json downstreamId=\"downstreamService\"",
+                  "queryType": "range"
+                }
+              ],
+              "title": "${downstreamService} (Downstream) - ${qmService} (QM-Service) AppEdge Logs",
+              "type": "logs"
+            }
+          ],
+          "targets": [
+            {
+              "datasource": {
+                "type": "datasource",
+                "uid": "grafana"
+              },
+              "refId": "C"
+            }
+          ],
+          "title": "Logs: ${qmService} by Downstreams (${downstreamService})",
+          "type": "row"
+        }
+      ],
+      "refresh": "5s",
+      "schemaVersion": 37,
+      "style": "dark",
+      "tags": [
+        "qm-monitoring"
+      ],
+      "templating": {
+        "list": [
+          {
+            "current": {
+              "selected": true,
+              "text": [],
+              "value": []
+            },
+            "datasource": {
+              "type": "prometheus",
+              "uid": "P1809F7CD0C75ACF3"
+            },
+            "definition": "label_values(downstreamId)",
+            "description": "Downstream Service",
+            "hide": 0,
+            "includeAll": true,
+            "label": "Downstream Service",
+            "multi": true,
+            "name": "downstreamService",
+            "options": [],
+            "query": {
+              "query": "label_values(downstreamId)",
+              "refId": "standardVariableQuery"
+            },
+            "refresh": 1,
+            "regex": "",
+            "skipUrlSync": false,
+            "sort": 5,
+            "type": "query"
+          },
+          {
+            "current": {
+              "selected": true,
+              "text": [
+                "dynamic_forward_proxy_cluster"
+              ],
+              "value": [
+                "dynamic_forward_proxy_cluster"
+              ]
+            },
+            "datasource": {
+              "type": "prometheus",
+              "uid": "P1809F7CD0C75ACF3"
+            },
+            "definition": "label_values(myId)",
+            "description": "QM Service",
+            "hide": 0,
+            "includeAll": false,
+            "label": "qmService",
+            "multi": false,
+            "name": "qmService",
+            "options": [],
+            "query": {
+              "query": "label_values(myId)",
+              "refId": "StandardVariableQuery"
+            },
+            "refresh": 1,
+            "regex": "",
+            "skipUrlSync": false,
+            "sort": 5,
+            "type": "query"
+          },
+          {
+            "current": {
+              "selected": false
+            },
+            "datasource": {
+              "type": "prometheus",
+              "uid": "P1809F7CD0C75ACF3"
+            },
+            "definition": "label_values(upstream)",
+            "description": "QM Service - by name",
+            "hide": 0,
+            "includeAll": false,
+            "label": "qmService Name",
+            "multi": false,
+            "name": "qmService_labelupstream",
+            "options": [],
+            "query": {
+              "query": "label_values(upstream)",
+              "refId": "StandardVariableQuery"
+            },
+            "refresh": 1,
+            "regex": "",
+            "skipUrlSync": false,
+            "sort": 5,
+            "type": "query"
+          },
+          {
+            "allValue": "",
+            "current": {
+              "selected": true,
+              "text": [
+                "All"
+              ],
+              "value": [
+                "$__all"
+              ]
+            },
+            "datasource": {
+              "type": "prometheus",
+              "uid": "P1809F7CD0C75ACF3"
+            },
+            "definition": "label_values({myId=\"qmService\"}, version)",
+            "description": "Service deployment version",
+            "hide": 0,
+            "includeAll": true,
+            "label": "qmServiceVersion",
+            "multi": true,
+            "name": "version",
+            "options": [],
+            "query": {
+              "query": "label_values({myId=\"$qmService\"}, version)",
+              "refId": "StandardVariableQuery"
+            },
+            "refresh": 1,
+            "regex": "",
+            "skipUrlSync": false,
+            "sort": 5,
+            "type": "query"
+          },
+          {
+            "current": {
+              "selected": true,
+              "text": [
+                "None"
+              ],
+              "value": [
+                ""
+              ]
+            },
+            "datasource": {
+              "type": "prometheus",
+              "uid": "P1809F7CD0C75ACF3"
+            },
+            "definition": "label_values(k6_http_req_duration_count, name)",
+            "hide": 2,
+            "includeAll": false,
+            "label": "K6 Request Name",
+            "multi": true,
+            "name": "K6RequestName",
+            "options": [],
+            "query": {
+              "query": "label_values(k6_http_req_duration_count, name)",
+              "refId": "prometheus-K6RequestName-Variable-Query"
+            },
+            "refresh": 1,
+            "regex": "",
+            "skipUrlSync": false,
+            "sort": 0,
+            "tagValuesQuery": "",
+            "tagsQuery": "",
+            "type": "query",
+            "useTags": false
+          },
+          {
+            "current": {
+              "selected": true,
+              "text": "req_duration",
+              "value": "req_duration"
+            },
+            "hide": 2,
+            "includeAll": false,
+            "label": "Go HTTP Metric Name",
+            "multi": false,
+            "name": "GoHttpMetricName",
+            "options": [
+              {
+                "selected": true,
+                "text": "req_duration",
+                "value": "req_duration"
+              },
+              {
+                "selected": false,
+                "text": "req_blocked",
+                "value": "req_blocked"
+              },
+              {
+                "selected": false,
+                "text": "req_connecting",
+                "value": "req_connecting"
+              },
+              {
+                "selected": false,
+                "text": "req_receiving",
+                "value": "req_receiving"
+              },
+              {
+                "selected": false,
+                "text": "req_sending",
+                "value": "req_sending"
+              },
+              {
+                "selected": false,
+                "text": "req_tls_handshaking",
+                "value": "req_tls_handshaking"
+              },
+              {
+                "selected": false,
+                "text": "req_waiting",
+                "value": "req_waiting"
+              }
+            ],
+            "query": "req_duration,req_blocked,req_connecting,req_receiving,req_sending,req_tls_handshaking,req_waiting",
+            "queryValue": "",
+            "skipUrlSync": false,
+            "type": "custom"
+          },
+          {
+            "current": {
+              "selected": true,
+              "text": "security",
+              "value": "security"
+            },
+            "hide": 0,
+            "includeAll": false,
+            "label": "Dashboard Type",
+            "multi": false,
+            "name": "dashboardType",
+            "options": [
+              {
+                "selected": true,
+                "text": "performance",
+                "value": "performance"
+              },
+              {
+                "selected": false,
+                "text": "canary",
+                "value": "canary"
+              },
+              {
+                "selected": false,
+                "text": "security",
+                "value": "security"
+              },
+              {
+                "selected": false,
+                "text": "logs",
+                "value": "logs"
+              },
+              {
+                "selected": false,
+                "text": "traces",
+                "value": "traces"
+              },
+              {
+                "selected": false,
+                "text": "profile",
+                "value": "profile"
+              },
+              {
+                "selected": false,
+                "text": "custom",
+                "value": "custom"
+              }
+            ],
+            "query": "performance,security,custom",
+            "queryValue": "",
+            "skipUrlSync": false,
+            "type": "custom"
+          }
+        ]
+      },
+      "time": {
+        "from": "now-15m",
+        "to": "now"
+      },
+      "timepicker": {
+        "nowDelay": "",
+        "refresh_intervals": [
+          "1s",
+          "5s",
+          "10s",
+          "30s"
+        ]
+      },
+      "timezone": "",
+      "title": "Service Metrics - QM Service (by Downstreams)",
+      "uid": "zDpLnqaMz",
+      "version": 1,
+      "weekStart": ""
+    }
