@@ -9,7 +9,7 @@ QuicSec functions as middleware for your application. The steps involved in adop
 
 - Optionally, [Configuring](https://quicsec.io/docs/configure) non-default values for configuration if necessary.
 
-- [Using](https://quicsec.io/docs/use) QuicSec and benefiting from it for various use cases.
+- [Using](https://quicsec.io/docs/use) QuicSec and benefiting from it for various use cases. 
 
 
 ## [Demo Example](https://quicsec.io/docs/example-bookstore): Bookstore Microservice Applications
@@ -22,7 +22,11 @@ Following the [example](https://quicsec.io/docs/example-bookstore) will provide 
 
 * Automatically taking care of identity and certificate management workflows
 
-* Security with Identity-based TLS or mTLS policies.
+* Security with Identity-based TLS or mTLS policies. 
+
+* Optionally other security features can be enabled via plugins, including client authentication (via Auth0/Okta or other OIDC platform integration) using JWT workflows, Policy Authorization (using OPA), WAAP/WAF for defense-in-depth, etc..
+
+* QuicSec leverages the ext_authz framework to enable additional plugins (thereby allowing any of the security plugins enabled for the envoy proxy, but now natively into the app within the http layer and without needing a proxy).
 
 * Observability for the application with automatic logs and metrics.
 
