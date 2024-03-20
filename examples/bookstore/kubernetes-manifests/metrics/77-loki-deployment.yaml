@@ -1,0 +1,476 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: loki
+  namespace: qm-monitoring
+  labels:
+    app.kubernetes.io/name: loki
+    qm-monitoring: enabled
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: loki
+  serviceName: loki-headless
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: loki
+        qm-monitoring: enabled
+      annotations:
+        prometheus.io/port: http-metrics
+        prometheus.io/scrape: "true"
+    spec:
+      containers:
+      - args:
+        - -config.file=/etc/loki/loki.yaml
+        image: grafana/loki:2.7.4-amd64
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /metrics
+            port: http-metrics
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          successThreshold: 1
+          timeoutSeconds: 1
+        name: loki
+        ports:
+        - containerPort: 3100
+          name: http-metrics
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /ready
+            port: http-metrics
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          successThreshold: 1
+          timeoutSeconds: 1
+        volumeMounts:
+        - mountPath: /data
+          name: storage
+        - mountPath: /etc/loki
+          name: loki-config
+          readOnly: false
+      securityContext:
+        fsGroup: 10001
+        runAsGroup: 10001
+        runAsNonRoot: true
+        runAsUser: 10001
+      volumes:
+      - configMap:
+          name: loki-config
+        name: loki-config
+      - emptyDir: {}
+        name: storage
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: loki-promtail
+  namespace: qm-monitoring
+  labels:
+    app.kubernetes.io/name: promtail
+    qm-monitoring: enabled
+spec:
+  selector:
+    matchLabels:
+      #app.kubernetes.io/name: promtail
+      qm-monitoring: enabled
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: promtail
+        qm-monitoring: enabled
+      annotations:
+        prometheus.io/port: http-metrics
+        prometheus.io/scrape: "true"
+    spec:
+      containers:
+        - args:
+            - -config.file=/etc/promtail/promtail.yaml
+            - -client.url=http://loki:3100/api/prom/push
+            #- -log.level=debug
+          env:
+            - name: HOSTNAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: spec.nodeName
+          image: grafana/promtail:2.7.4-amd64
+          imagePullPolicy: IfNotPresent
+          name: promtail
+          ports:
+            - containerPort: 3101
+              name: http-metrics
+              protocol: TCP
+          readinessProbe:
+            failureThreshold: 5
+            httpGet:
+              path: /metrics
+              port: http-metrics
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          resources: {}
+          securityContext:
+            procMount: Default
+            readOnlyRootFilesystem: true
+            runAsGroup: 0
+            runAsUser: 0
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+            - mountPath: /etc/promtail
+              name: config
+            - mountPath: /run/promtail
+              name: run
+            - mountPath: /var/lib/docker/containers
+              name: docker
+              readOnly: true
+            - mountPath: /var/log/pods
+              name: pods
+              readOnly: true
+            - mountPath: /var/log/journal
+              name: journal
+              readOnly: true
+      serviceAccountName: loki-promtail
+      tolerations:
+        - effect: NoSchedule
+          key: node-role.kubernetes.io/master
+      volumes:
+        - configMap:
+            defaultMode: 420
+            name: loki-promtail
+          name: config
+        - hostPath:
+            path: /run/promtail
+            type: ""
+          name: run
+        - hostPath:
+            path: /var/lib/docker/containers
+            type: ""
+          name: docker
+        - hostPath:
+            path: /var/log/pods
+            type: ""
+          name: pods
+        - hostPath:
+            path: /var/log/journal
+            type: ""
+          name: journal
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: loki-promtail
+  namespace: qm-monitoring
+  labels:
+    app.kubernetes.io/name: promtail
+    qm-monitoring: enabled
+data:
+  promtail.yaml: |
+    client:
+      #backoff_config:
+      #  maxbackoff: 5s
+      #  maxretries: 5
+      #  minbackoff: 100ms
+      batchsize: 102400
+      batchwait: 1s
+      external_labels: {}
+      timeout: 10s
+    positions:
+      filename: /run/promtail/positions.yaml
+    server:
+      http_listen_port: 3101
+    target_config:
+      sync_period: 10s
+    scrape_configs:
+    - job_name: kubernetes-pods-name
+      pipeline_stages:
+      - match:
+          selector: '{container_name="reverse-proxy"}'
+          stages:
+          - regex:
+              expression: '^.*stdout F (?P<json_content>.*)$'
+          - json:
+              source: json_content
+              expressions:
+                timestamp: time
+                downstreamId: downstreamId
+                downstreamIp: downstreamIp
+                method: method
+                path: path
+                responseCode: responseCode
+                reqBody: reqBody
+                reqHeaders: reqHeaders
+                respHeaders: respHeaders
+                respBody: respBody
+                bytesSent: bytesSent
+                dur: dur
+                reuse: reuse
+                proto: proto
+          - labels:
+              downstreamId: downstreamId
+              path: path
+              method: method
+              responseCode: responseCode
+          - metrics:
+              rq_total:
+                source: method
+                config:
+                  action: inc
+                description: "A running counter of all requests, labeled by downstreamId"
+                type: Counter
+                prefix: appedge_inbound_
+              rq_duration:
+                source: dur
+                config:
+                  action: inc
+                  buckets:
+                    - 0.001
+                    - 0.005
+                    - 0.010
+                    - 0.030
+                    - 0.050
+                    - 0.100
+                    - 0.500
+                description: "Histogram of request durations, labeled by downstreamId"
+                type: Histogram
+                prefix: appedge_inbound_
+      - match:
+          selector: '{container_name="reverse-proxy"}'
+          stages:
+          - regex:
+              expression: '^.*stdout F (?P<timestamp>\d{2}:\d{2}:\d{2}) \[\[QM\]\] WARN.*SPIFFE "(?P<spiffe_id>spiffe://[^"]+)" (?P<verdict>UNAUTHORIZED|AUTHORIZED) policy=(?P<policy>.+)$'
+          - labels:
+              spiffe_id: spiffe_id
+              policy: policy
+              verdict: verdict
+              timestamp: timestamp
+          - labeldrop: 
+              - filename
+          #- output:
+          #    source: message
+      - match:
+          selector: '{container_name="forward-proxy"}'
+          stages:
+          # Regex parsing below is for containerd runtimes, e.g., EKS, which output log as a json with additional embedded json with escape characters
+          - regex:
+              expression: '^\S+\s+\S+\s+\S+\s+(?P<json_content>{.*})$'
+          - json:
+              expressions:
+                log_content: log
+                timestamp: time
+                method: method
+                path: path
+                responseCode: responseCode
+                upstreamProto: upstreamProto
+                upstreamHost: upstreamHost
+                upstream: upstream
+                responseFlags: responseFlags
+                proto: proto
+                bytesSent: bytesSent
+                dur: dur
+          # Regex parsing below is for Docker runtimes, e.g., kind, which directly output json
+          - regex:
+              expression: '^(?P<json_content>{.*?})\n?$'
+              source: log_content
+          - json:
+              source: json_content
+              expressions:
+                timestamp: time
+                method: method
+                path: path
+                responseCode: responseCode
+                upstreamProto: upstreamProto
+                upstreamHost: upstreamHost
+                upstream: upstream
+                responseFlags: responseFlags
+                proto: proto
+                bytesSent: bytesSent
+                dur: dur
+          - labels:
+              upstream: upstream
+              path: path
+              method: method
+              responseCode: responseCode
+              myId: myId
+          - metrics:
+              rq_total:
+                source: method
+                config:
+                  action: inc
+                description: "A running counter of all requests, labeled by upstream"
+                type: Counter
+                prefix: appedge_outbound_
+              rq_latency:
+                source: dur
+                config:
+                  action: inc
+                  buckets:
+                    - 0.001
+                    - 0.00125
+                    - 0.0015625
+                    - 0.001953125
+                    - 0.00244140625
+                    - 0.0030517578125
+                    - 0.003814697265625
+                    - 0.00476837158203125
+                    - 0.0059604644775390625
+                    - 0.007450580596923828
+                    - 0.009313225746154785
+                    - 0.011641532182693481
+                    - 0.014551915228366852
+                    - 0.018189894035458565
+                    - 0.022737367544323206
+                    - 0.028421709430404007
+                    - 0.03552713678800501
+                    - 0.04440892098500626
+                    - 0.05551115123125783
+                    - 0.06938893903907228
+                    - 0.100
+                    - 0.250
+                    - 0.500
+                description: "Histogram of request durations, labeled by upstreamId"
+                type: Histogram
+                prefix: appedge_outbound_
+          - labeldrop: 
+              - filename
+              - container
+      kubernetes_sd_configs:
+        - role: pod
+      relabel_configs:
+        - action: replace
+          source_labels:
+            - __meta_kubernetes_namespace
+          target_label: namespace
+        - action: replace
+          source_labels:
+            - __meta_kubernetes_pod_container_name
+          target_label: container_name
+        # Relabel __meta_kubernetes_pod_name to pod
+        - action: replace
+          source_labels: [__meta_kubernetes_pod_name]
+          target_label: pod
+        # Keep and relabel version label on the pod
+        - action: replace
+          source_labels: [__meta_kubernetes_pod_label_version]
+          target_label: version
+        # Relabel serviceAccount information
+        - action: replace
+          source_labels: [__meta_kubernetes_pod_service_account_name]
+          target_label: serviceaccount
+        # Create the myId label with the desired format
+        - action: replace
+          source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_pod_service_account_name]
+          target_label: myId
+          regex: "(.*);(.*)"
+          replacement: "spiffe://cluster.local/ns/$1/sa/$1"
+        # Combine the __meta_kubernetes_pod_name and __meta_kubernetes_pod_ip labels into myWl
+        - action: replace
+          source_labels: [__meta_kubernetes_pod_name, __meta_kubernetes_pod_ip]
+          separator: '/'
+          regex: '(.+)/(.+)'
+          target_label: myWl
+          replacement: '$1/$2'
+        - replacement: /var/log/pods/*$1/*.log
+          separator: /
+          source_labels:
+              - __meta_kubernetes_pod_uid
+              - __meta_kubernetes_pod_container_name
+          target_label: __path__
+        - action: keep
+          source_labels: [__meta_kubernetes_pod_label_qm_monitoring]
+          regex: "enabled"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: loki
+  namespace: qm-monitoring
+  labels:
+    app.kubernetes.io/name: loki
+    qm-monitoring: enabled
+spec:
+  type: ClusterIP
+  ports:
+    - name: http-metrics
+      port: 3100
+      protocol: TCP
+      targetPort: http-metrics
+  selector:
+    app.kubernetes.io/name: loki
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: loki-headless
+  namespace: qm-monitoring
+  labels:
+    app.kubernetes.io/name: loki
+    qm-monitoring: enabled
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    - name: http-metrics
+      port: 3100
+      protocol: TCP
+      targetPort: http-metrics
+  selector:
+    app.kubernetes.io/name: loki
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: loki-promtail
+  namespace: qm-monitoring
+  labels:
+    app.kubernetes.io/name: promtail
+    qm-monitoring: enabled
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: loki-promtail-clusterrole
+  labels:
+    app.kubernetes.io/name: promtail
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  - nodes/proxy
+  - services
+  - endpoints
+  - pods
+  verbs:
+  - get
+  - watch
+  - list
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: loki-promtail-clusterrolebinding
+  labels:
+    app.kubernetes.io/name: promtail
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: loki-promtail-clusterrole
+subjects:
+- kind: ServiceAccount
+  name: loki-promtail
+  namespace: qm-monitoring
+

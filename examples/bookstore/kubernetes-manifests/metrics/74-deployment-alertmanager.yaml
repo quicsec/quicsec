@@ -1,0 +1,16 @@
+apiVersion: monitoring.coreos.com/v1
+kind: Alertmanager
+metadata:
+  name: alertmgr
+  namespace: qm-monitoring
+  labels:
+    qm-monitoring: enabled
+spec:
+  replicas: 1
+  alertmanagerConfigSelector:
+    matchLabels:
+      alertmanagerConfig: qm-alerts
+  alertmanagerConfigNamespaceSelector:
+    matchLabels:
+      qm-monitoring: enabled
+---

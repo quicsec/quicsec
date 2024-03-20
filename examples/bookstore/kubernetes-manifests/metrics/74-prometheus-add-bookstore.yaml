@@ -1,0 +1,25 @@
+apiVersion: monitoring.coreos.com/v1
+kind: Prometheus
+metadata:
+  name: prometheus
+  namespace: qm-monitoring
+spec:
+  serviceAccountName: prometheus
+  enableRemoteWriteReceiver: true
+  enableFeatures: ["native-histograms", "exemplar-storage"]
+  serviceMonitorSelector:
+    matchLabels:
+      qm-monitoring: enabled
+  ruleSelector:
+    matchLabels:
+      prometheus: prometheus
+      role: alert-rules
+  resources:
+    requests:
+      memory: 400Mi
+  enableAdminAPI: false
+  alerting:
+    alertmanagers:
+    - namespace: qm-monitoring
+      name: alertmgr
+      port: 9093
